@@ -1,64 +1,93 @@
-:root {
-    --black: #000000;
-    --white: #ffffff;
-    --gray: #1a1a1a;
-    --light-gray: #333333;
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+// Настройки хардкорной экономики
+const CONFIG = {
+    adminId: 123456789, // ЗАМЕНИ НА СВОЙ ID
+    tapUpgrades: Array.from({length: 10}, (_, i) => ({
+        id: i, name: `Click Power LVL ${i+1}`, cost: Math.pow(5, i + 3), power: Math.pow(2, i + 1)
+    })),
+    passiveUpgrades: Array.from({length: 10}, (_, i) => ({
+        id: i, name: `Passive Juug LVL ${i+1}`, cost: Math.pow(6, i + 3), power: Math.pow(3, i + 1)
+    }))
+};
+
+let state = {
+    score: 0,
+    energy: 150,
+    maxEnergy: 150,
+    tapLvl: 0,
+    passiveLvl: 0,
+    isMusicOn: true
+};
+
+// Переключение экранов
+window.showScreen = (id) => {
+    document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+    document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
+    if (id === 'shop-screen') renderShop();
+};
+
+// Логика клика
+const tapBtn = document.getElementById('tapBtn');
+tapBtn.addEventListener('click', (e) => {
+    const power = 1 + (state.tapLvl > 0 ? CONFIG.tapUpgrades[state.tapLvl-1].power : 0);
+    if (state.energy >= 1) {
+        state.score += power;
+        state.energy -= 1;
+        updateUI();
+    }
+});
+
+// Регенерация энергии и пассивный доход
+setInterval(() => {
+    if (state.energy < state.maxEnergy) state.energy++;
+    const income = state.passiveLvl > 0 ? CONFIG.passiveUpgrades[state.passiveLvl-1].power : 0;
+    state.score += income;
+    updateUI();
+}, 1000);
+
+function updateUI() {
+    document.getElementById('score').innerText = Math.floor(state.score).toLocaleString();
+    document.getElementById('energy-text').innerText = `${state.energy} / ${state.maxEnergy}`;
+    document.getElementById('energy-fill').style.width = `${(state.energy / state.maxEnergy) * 100}%`;
 }
 
-body, html {
-    margin: 0; padding: 0;
-    background: var(--black);
-    color: var(--white);
-    font-family: 'Inter', sans-serif;
-    height: 100vh; overflow: hidden;
-    user-select: none;
+// Рендер магазина
+function renderShop() {
+    const container = document.getElementById('shop-items');
+    container.innerHTML = '<h3>UPGRADES</h3>';
+    
+    // Пример для клика
+    const nextTap = CONFIG.tapUpgrades[state.tapLvl];
+    if (nextTap) {
+        const item = document.createElement('div');
+        item.className = 'shop-item';
+        item.innerHTML = `
+            <div><b>${nextTap.name}</b><br><small>Cost: ${nextTap.cost}</small></div>
+            <button onclick="buyUpgrade('tap', ${nextTap.cost})">BUY</button>
+        `;
+        container.appendChild(item);
+    }
 }
 
-#app { display: flex; flex-direction: column; height: 100%; }
+window.buyUpgrade = (type, cost) => {
+    if (state.score >= cost) {
+        state.score -= cost;
+        if (type === 'tap') state.tapLvl++;
+        else state.passiveLvl++;
+        renderShop();
+        updateUI();
+    } else {
+        tg.showAlert("Недостаточно средств для Juug!");
+    }
+};
 
-.screen { flex: 1; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-.hidden { display: none !important; }
-
-/* Header */
-.header { width: 100%; display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; }
-
-/* Score */
-.score-container { text-align: center; margin-top: 40px; }
-.score-container .label { font-size: 14px; letter-spacing: 2px; color: #888; }
-#score { font-size: 64px; font-weight: 900; margin: 0; }
-
-/* Tap Button */
-.tap-zone { flex: 1; display: flex; align-items: center; justify-content: center; }
-.circle-btn {
-    width: 260px; height: 260px;
-    border: 4px solid var(--white);
-    border-radius: 50%;
-    transition: transform 0.05s;
-    box-shadow: 0 0 20px rgba(255,255,255,0.1);
+// Инициализация админки
+if (tg.initDataUnsafe?.user?.id === CONFIG.adminId) {
+    document.getElementById('adminBtn').classList.remove('hidden');
 }
-.circle-btn:active { transform: scale(0.96); background: var(--white); }
 
-/* Energy Bar */
-.energy-container { width: 100%; text-align: center; margin-bottom: 80px; }
-.progress-bar { height: 8px; background: var(--gray); border-radius: 4px; margin: 10px 0; overflow: hidden; }
-#energy-fill { height: 100%; background: var(--white); width: 100%; transition: width 0.3s; }
-
-/* Navigation */
-.bottom-nav {
-    display: flex; background: var(--gray);
-    padding: 10px 0; border-top: 1px solid var(--light-gray);
-}
-.bottom-nav button {
-    flex: 1; background: none; border: none; color: #666;
-    font-size: 10px; cursor: pointer;
-}
-.bottom-nav button.active { color: var(--white); font-weight: bold; }
-
-/* Shop & Lists */
-.scroll-area { width: 100%; overflow-y: auto; margin-top: 20px; }
-.shop-item {
-    background: var(--gray); padding: 15px; border-radius: 8px;
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
-}
-.shop-item.locked { opacity: 0.5; }
-.red { color: #ff4444 !important; border: 1px solid #ff4444; margin-top: 20px;}
+// Запуск
+updateUI();
