@@ -1,73 +1,126 @@
-:root {
-    --black: #000000;
-    --white: #ffffff;
-    --gray: #111111;
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
 }
 
-body, html {
-    margin: 0; padding: 0;
-    background: var(--black);
-    color: var(--white);
+body {
+    background-color: #000;
+    color: #fff;
     font-family: 'Inter', sans-serif;
-    height: 100vh; overflow: hidden;
+    height: 100vh;
+    overflow: hidden;
 }
 
-#app { display: flex; flex-direction: column; height: 100%; position: relative; }
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    align-items: center;
+}
 
-.screen { 
-    flex: 1; 
-    padding: 20px; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    animation: fadeIn 0.2s ease;
+.screen {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
 }
 
 .hidden { display: none !important; }
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
 /* Header */
-.header { width: 100%; display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; margin-top: 10px; }
+.header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 40px;
+}
 
-/* Score */
-.score-container { text-align: center; margin-top: 50px; }
-.label { font-size: 14px; letter-spacing: 4px; color: #888; margin-bottom: 5px; }
-#score { font-size: 72px; font-weight: 900; margin: 0; }
+/* Score Area */
+.score-section { text-align: center; }
+.score-label {
+    font-size: 14px;
+    letter-spacing: 3px;
+    color: #aaa;
+    margin-bottom: 5px;
+}
+#score {
+    font-size: 80px;
+    font-weight: 900;
+}
 
-/* Кнопка Тапа (как на дизайне) */
-.tap-zone { flex: 1; display: flex; align-items: center; justify-content: center; }
-.circle-btn {
-    width: 280px; height: 280px;
-    border: 3px solid var(--white);
+/* Circle Button */
+.tap-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.main-circle {
+    width: 280px;
+    height: 280px;
+    border: 4px solid #fff;
     border-radius: 50%;
-    transition: transform 0.05s, background 0.1s;
+    box-shadow: 0 0 15px rgba(255,255,255,0.1);
+    transition: transform 0.05s;
 }
-.circle-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
+.main-circle:active {
+    transform: scale(0.96);
+    background: rgba(255,255,255,0.05);
+}
 
-/* Energy Bar */
-.energy-container { width: 90%; text-align: center; margin-bottom: 100px; }
-.tap-to-earn { font-size: 12px; letter-spacing: 1px; margin-bottom: 10px; }
-.progress-bar { height: 6px; background: #222; border-radius: 10px; overflow: hidden; }
-#energy-fill { height: 100%; background: var(--white); width: 100%; transition: width 0.1s; }
-#energy-text { margin-top: 10px; font-weight: bold; }
+/* Progress Bar */
+.status-section {
+    width: 90%;
+    text-align: center;
+    margin-bottom: 110px;
+}
+.tap-hint { font-size: 12px; margin-bottom: 12px; font-weight: 600; }
+.progress-container {
+    height: 8px;
+    background: #1a1a1a;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+#energy-fill {
+    height: 100%;
+    background: #fff;
+    width: 100%;
+    transition: width 0.2s;
+}
+#energy-text { font-weight: 700; font-size: 16px; }
 
-/* Bottom Nav */
-.bottom-nav {
-    position: absolute; bottom: 0; width: 100%;
-    display: flex; background: var(--black);
-    border-top: 1px solid #222; padding: 15px 0 25px 0;
+/* Navigation */
+.nav-bar {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    background: #000;
+    border-top: 1px solid #222;
+    padding: 10px 0 25px 0;
 }
-.bottom-nav button {
-    flex: 1; background: none; border: none; color: #555;
-    font-size: 11px; font-weight: bold; cursor: pointer;
+.nav-item {
+    flex: 1;
+    background: none;
+    border: none;
+    color: #444;
+    font-size: 10px;
+    font-weight: 800;
+    text-align: center;
 }
-.bottom-nav button.active { color: var(--white); }
+.nav-item.active { color: #fff; }
+.nav-item .icon { font-size: 18px; margin-bottom: 4px; display: inline-block; }
 
-/* Магазин и Кнопки */
-.title { font-size: 32px; font-weight: 900; margin-bottom: 30px; }
-.menu-btn {
-    width: 100%; padding: 15px; background: none; border: 1px solid var(--white);
-    color: var(--white); margin-bottom: 10px; cursor: pointer; font-weight: bold;
+/* Others */
+.page-title { margin-top: 20px; font-size: 32px; font-weight: 900; }
+.action-btn {
+    width: 100%; padding: 15px; background: none; border: 1px solid #fff;
+    color: #fff; font-weight: 700; margin-top: 15px; border-radius: 5px;
 }
-.admin-btn { border-color: #ff4444; color: #ff4444; }
