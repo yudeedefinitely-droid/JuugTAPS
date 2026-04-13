@@ -15,10 +15,8 @@
         .screen { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
         .hidden { display: none !important; }
 
-        /* Header */
+        /* UI Elements */
         .header { width: 100%; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 20px; color: #555; }
-
-        /* Game UI */
         #score { font-size: 72px; font-weight: 900; margin-top: 5px; }
         .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; }
         .main-circle { width: 280px; height: 280px; border: 4px solid var(--w); border-radius: 50%; transition: transform 0.05s; }
@@ -29,11 +27,11 @@
         #e-fill { height: 100%; width: 100%; background: #fff; transition: width 0.2s; }
 
         /* Cards */
-        .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 18px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 900; min-width: 80px; text-align: center; }
+        .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 18px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 900; min-width: 80px; }
         .buy-btn:disabled { background: #333; color: #555; }
 
-        /* Navigation */
+        /* Nav */
         nav { position: absolute; bottom: 0; width: 100%; display: flex; background: var(--b); border-top: 1px solid var(--sg); padding: 15px 0 35px; }
         .nav-item { flex: 1; text-align: center; color: #444; font-size: 11px; font-weight: 800; cursor: pointer; }
         .nav-item.active { color: var(--w); }
@@ -82,7 +80,6 @@
     <section id="s-gear" class="screen hidden">
         <h2 style="align-self:flex-start; margin-bottom:20px; font-weight:900;">GEAR</h2>
         <div id="admin-panel" class="hidden" style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:12px;">
-            <p style="color:#ff4444; font-size:10px; font-weight:900; margin-bottom:10px;">ADMIN PANEL</p>
             <button style="width:100%; padding:15px; font-weight:900; background:#fff; border:none; border-radius:8px;">EVENT CONTROL</button>
         </div>
     </section>
@@ -118,7 +115,6 @@
     let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), username: myName };
     const rankNames = ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"];
 
-    // Логика рангов
     function getRankByLevel(level) {
         return rankNames[Math.min(Math.floor(level / 10), 4)];
     }
@@ -130,42 +126,54 @@
         return Math.floor(n);
     }
 
-    // Инициализация
     db.ref(`users/${user.id}`).once('value', (snap) => {
-        if (snap.val()) state = { ...state, ...snap.val() };
+        if (snap.val()) {
+            const data = snap.val();
+            state = { ...state, ...data };
+            const offline = Math.floor((Date.now() - (state.lastUpdate || Date.now())) / 1000);
+            state.score += Math.max(0, offline * (state.passiveLvl || 0));
+        }
         state.username = myName;
         document.getElementById('p-name').innerText = "@" + state.username;
         save();
         updateUI();
     });
 
-    // Живой Топ
+    // УМНЫЙ ЖИВОЙ ТОП (Считает доход оффлайн игроков)
     function loadLeaderboard() {
         const list = document.getElementById('leaderboard-list');
         db.ref('users').on('value', (snap) => {
             const data = snap.val();
             if (!data) return;
+            const now = Date.now();
+
             let players = Object.values(data)
                 .filter(p => p.username && typeof p.score === 'number')
-                .sort((a, b) => b.score - a.score).slice(0, 5);
+                .map(p => {
+                    const offlineSec = Math.max(0, (now - (p.lastUpdate || now)) / 1000);
+                    const currentScore = p.score + (offlineSec * (p.passiveLvl || 0));
+                    return { ...p, liveScore: currentScore };
+                })
+                .sort((a, b) => b.liveScore - a.liveScore).slice(0, 5);
+
             list.innerHTML = "";
             players.forEach((p, i) => {
                 const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-                const rank = getRankByLevel(p.tapLvl + (p.passiveLvl || 0));
+                const rank = getRankByLevel(p.tapLvl);
+                const isMe = p.username === myName ? 'border: 1px solid #333' : '';
                 list.innerHTML += `
-                    <div class="card" style="${p.username === myName ? 'border: 1px solid #333' : ''}">
+                    <div class="card" style="${isMe}">
                         <div style="font-size:20px; min-width:40px;">${medals[i]}</div>
                         <div style="flex:1">
                             <div style="font-weight:900;">@${p.username}</div>
                             <div style="font-size:10px; color:#555">${rank} (Lvl ${p.tapLvl + p.passiveLvl})</div>
                         </div>
-                        <div style="font-weight:900;">${format(p.score)}</div>
+                        <div style="font-weight:900;">${format(p.liveScore)}</div>
                     </div>`;
             });
         });
     }
 
-    // Магазин
     window.openUpgrade = (type) => {
         document.getElementById('shop-main').classList.add('hidden');
         document.getElementById('shop-detail').classList.remove('hidden');
@@ -181,18 +189,13 @@
         const cont = document.getElementById('upgrade-items');
         const lvl = type === 'click' ? state.tapLvl : state.passiveLvl;
         const price = Math.floor(100 * Math.pow(1.4, lvl));
-        const currentRankName = getRankByLevel(lvl);
+        const rank = getRankByLevel(lvl);
 
         cont.innerHTML = `
             <div class="card">
-                <div style="flex:1">
-                    <b>${currentRankName}</b>
-                    <span style="font-size:11px; color:#666">Level ${lvl} → ${lvl+1}</span>
-                </div>
-                <button class="buy-btn" ${state.score < price ? 'disabled' : ''} 
-                    onclick="buy('${type}', ${price})">${format(price)}</button>
-            </div>
-        `;
+                <div style="flex:1"><b>${rank}</b><br><span style="font-size:11px; color:#666">Level ${lvl} → ${lvl+1}</span></div>
+                <button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button>
+            </div>`;
     }
 
     window.buy = (type, p) => {
