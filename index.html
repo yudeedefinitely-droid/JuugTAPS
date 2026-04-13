@@ -3,100 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JuugTAPS</title>
+    <title>JuugTAPS Admin Logic</title>
     <style>
-        :root { --b: #000; --w: #fff; --g: #111; --sg: #222; }
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--b); color: var(--w); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
-        #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; position: relative; height: 100%; }
+        :root { --b: #000; --w: #fff; --g: #111; }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body { background: var(--b); color: var(--w); font-family: sans-serif; height: 100vh; display: flex; justify-content: center; }
         
-        .screen { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; padding-bottom: 100px; overflow-y: auto; }
+        #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; padding: 20px; }
+        .screen { flex: 1; display: flex; flex-direction: column; align-items: center; }
         .hidden { display: none !important; }
 
-        /* Header */
-        .header { width: 100%; display: flex; justify-content: space-between; font-size: 12px; font-weight: 900; margin-bottom: 30px; }
-        
-        /* Game Screen */
-        .score-label { font-size: 12px; letter-spacing: 4px; color: #666; margin-top: 20px; }
-        #score { font-size: 64px; font-weight: 900; margin-bottom: 5px; }
-        #passive-info { font-size: 14px; color: #888; margin-bottom: 30px; }
-        
-        .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 300px; }
-        .main-circle { width: 280px; height: 280px; border: 4px solid var(--w); border-radius: 50%; transition: transform 0.05s; }
-        .main-circle:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
+        /* Шапка с таймером */
+        .header { width: 100%; display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 50px; }
+        #event-timer { color: #ff4444; }
+        #event-timer.active { color: #44ff44; }
 
-        .progress-container { width: 100%; margin-top: 20px; text-align: center; }
-        .bar { width: 100%; height: 10px; background: var(--g); border-radius: 10px; margin: 10px 0; overflow: hidden; }
-        #energy-fill { height: 100%; width: 100%; background: var(--w); transition: width 0.2s; }
+        /* Секция настроек (GEAR) */
+        .settings-list { width: 100%; margin-top: 20px; }
+        .menu-item { 
+            width: 100%; padding: 20px; background: var(--g); 
+            border: 1px solid #333; color: #fff; margin-bottom: 10px; 
+            text-align: left; font-weight: bold; cursor: pointer;
+        }
 
-        /* UI Elements */
-        .title { font-size: 28px; font-weight: 900; margin-bottom: 20px; align-self: flex-start; }
-        .list-item { width: 100%; background: var(--g); padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border: 1px solid var(--sg); }
-        .list-item.top-rank { border-color: var(--w); }
-        .buy-btn { background: var(--w); color: var(--b); border: none; padding: 8px 15px; border-radius: 5px; font-weight: 900; font-size: 12px; cursor: pointer; }
-        .buy-btn:disabled { background: #444; color: #888; }
+        /* Админ-панель */
+        .admin-panel { 
+            width: 100%; border: 2px dashed #ff4444; padding: 15px; 
+            margin-top: 20px; border-radius: 10px; 
+        }
+        .admin-title { color: #ff4444; font-size: 12px; margin-bottom: 10px; font-weight: bold; }
+        .admin-btn { 
+            width: 100%; padding: 15px; background: #ff4444; 
+            color: #000; border: none; font-weight: 900; cursor: pointer; 
+        }
 
-        /* Navigation */
-        nav { position: absolute; bottom: 0; width: 100%; display: flex; background: var(--b); border-top: 1px solid var(--sg); padding: 10px 0 30px; }
-        .nav-btn { flex: 1; background: none; border: none; color: #444; font-size: 10px; font-weight: 900; cursor: pointer; }
-        .nav-btn.active { color: var(--w); }
-        .nav-btn span { font-size: 20px; display: block; margin-bottom: 4px; }
-
-        /* Admin */
-        .admin-box { width: 100%; border: 1px solid red; padding: 15px; margin-top: 20px; }
+        /* Навигация */
+        nav { position: fixed; bottom: 0; width: 100%; display: flex; border-top: 1px solid #222; padding: 20px 0; background: #000; }
+        .nav-item { flex: 1; text-align: center; color: #555; font-size: 12px; cursor: pointer; }
+        .nav-item.active { color: #fff; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <section id="s-game" class="screen">
+    <section id="game-screen" class="screen">
         <div class="header">
-            <span id="u-name">@USER</span>
-            <span id="event-timer">EVENT: --m --d</span>
+            <span>@malenkiydanik</span>
+            <span id="event-timer">ИВЕНТ ОСТАНОВЛЕН</span>
         </div>
-        <p class="score-label">SCORE</p>
-        <h1 id="score">0</h1>
-        <p id="passive-info">Passive: 0/sec</p>
+        <h1 style="font-size: 80px; margin-top: 100px;">0</h1>
+        <p style="color: #444; margin-top: 20px;">(Экран игры)</p>
+    </section>
+
+    <section id="gear-screen" class="screen hidden">
+        <h2 style="align-self: flex-start; margin-bottom: 20px;">GEAR</h2>
         
-        <div class="tap-area">
-            <div id="tapBtn" class="main-circle"></div>
-        </div>
-
-        <div class="progress-container">
-            <p style="font-size: 12px; font-weight: 800;">TAP TO EARN</p>
-            <div class="bar"><div id="energy-fill"></div></div>
-            <p id="energy-text" style="font-weight: 900;">150 / 150</p>
-        </div>
-    </section>
-
-    <section id="s-shop" class="screen hidden">
-        <h2 class="title">SHOP</h2>
-        <div style="display:flex; gap:10px; width:100%; margin-bottom:20px;">
-            <button class="buy-btn" onclick="renderShop('tap')" style="flex:1">CLICK UPGRADES</button>
-            <button class="buy-btn" onclick="renderShop('passive')" style="flex:1">PASSIVE INCOME</button>
-        </div>
-        <div id="shop-list" style="width:100%"></div>
-    </section>
-
-    <section id="s-top" class="screen hidden">
-        <h2 class="title">LEADERBOARD</h2>
-        <div id="leader-list" style="width:100%"></div>
-    </section>
-
-    <section id="s-gear" class="screen hidden">
-        <h2 class="title">GEAR</h2>
-        <button class="list-item" onclick="alert('Music toggled')">MUSIC: <span style="color:lawngreen">ON</span></button>
-        <div id="admin-panel" class="hidden admin-box">
-            <p style="color:red; font-weight:900; margin-bottom:10px;">ADMIN PANEL</p>
-            <button class="buy-btn" onclick="startEvent()">START 3 MONTH EVENT</button>
+        <div class="settings-list">
+            <div class="menu-item">MUSIC: ON</div>
+            <div class="menu-item">LANGUAGE: RU</div>
+            
+            <div id="admin-section" class="hidden">
+                <div class="admin-panel">
+                    <div class="admin-title">ADMIN PANEL</div>
+                    <button class="admin-btn" id="toggleEventBtn">ЗАПУСТИТЬ ИВЕНТ (3 МЕС.)</button>
+                </div>
+            </div>
         </div>
     </section>
 
     <nav>
-        <button class="nav-btn" onclick="show('s-top')"><span>🏆</span>TOP</button>
-        <button class="nav-btn active" onclick="show('s-game')"><span>💎</span>GAME</button>
-        <button class="nav-btn" onclick="show('s-shop')"><span>🎁</span>SHOP</button>
-        <button class="nav-btn" onclick="show('s-gear')"><span>⚙️</span>GEAR</button>
+        <div class="nav-item" onclick="show('game-screen')">GAME</div>
+        <div class="nav-item" onclick="show('gear-screen')">GEAR</div>
     </nav>
 </div>
 
@@ -104,131 +81,64 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // СОСТОЯНИЕ
-    let state = {
-        score: 0,
-        energy: 150,
-        maxEnergy: 150,
-        tapLvl: 1,      // 1-50
-        passiveLvl: 0,  // 0-50
-        username: tg.initDataUnsafe?.user?.username || "Guest",
-        isAdmin: (tg.initDataUnsafe?.user?.id === 123456789) // ТВОЙ ID ТУТ
-    };
+    // КОНФИГ
+    const MY_ID = 5291965471; // <--- ТВОЙ ID ИЗ ПРОШЛОГО СКРИНШОТА
+    let eventEndTime = null; 
+    let eventActive = false;
 
-    // ГЕНЕРАЦИЯ ЦЕН (Хардкор: рост в 1.8х - 2.5х раза за уровень)
-    const getCost = (lvl, type) => {
-        let base = type === 'tap' ? 1000 : 2500;
-        return Math.floor(base * Math.pow(1.6, lvl));
-    };
-
-    const getPower = (lvl, type) => {
-        return type === 'tap' ? lvl : Math.floor(Math.pow(1.5, lvl));
-    };
-
-    // НАВИГАЦИЯ
-    function show(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        if(id === 's-shop') renderShop('tap');
-        if(id === 's-top') renderLeaderboard();
+    // 1. Проверка на админа
+    const userId = tg.initDataUnsafe?.user?.id;
+    if (userId === MY_ID) {
+        document.getElementById('admin-section').classList.remove('hidden');
     }
 
-    // ТАП
-    document.getElementById('tapBtn').addEventListener('click', () => {
-        if (state.energy >= 1) {
-            state.score += state.tapLvl;
-            state.energy -= 1;
-            updateUI();
-            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-        }
-    });
+    // 2. Логика таймера
+    const timerEl = document.getElementById('event-timer');
+    const adminBtn = document.getElementById('toggleEventBtn');
 
-    // ПАССИВНЫЙ ДОХОД И ЭНЕРГИЯ
+    adminBtn.onclick = () => {
+        if (!eventActive) {
+            // Устанавливаем дату завершения: сейчас + 3 месяца
+            eventEndTime = Date.now() + (90 * 24 * 60 * 60 * 1000);
+            eventActive = true;
+            adminBtn.innerText = "ОСТАНОВИТЬ ИВЕНТ";
+            timerEl.classList.add('active');
+        } else {
+            eventActive = false;
+            eventEndTime = null;
+            adminBtn.innerText = "ЗАПУСТИТЬ ИВЕНТ (3 МЕС.)";
+            timerEl.classList.remove('active');
+            timerEl.innerText = "ИВЕНТ ОСТАНОВЛЕН";
+        }
+    };
+
+    // Обновление таймера каждую секунду
     setInterval(() => {
-        state.score += getPower(state.passiveLvl, 'passive');
-        if (state.energy < state.maxEnergy) state.energy += 1;
-        updateUI();
+        if (!eventActive || !eventEndTime) return;
+
+        const now = Date.now();
+        const diff = eventEndTime - now;
+
+        if (diff <= 0) {
+            eventActive = false;
+            timerEl.innerText = "ИВЕНТ ОКОНЧЕН";
+            return;
+        }
+
+        // Считаем дни, часы, минуты
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+        timerEl.innerText = `EVENT: ${days}d ${hours}h ${mins}m ${secs}s`;
     }, 1000);
 
-    function updateUI() {
-        document.getElementById('score').innerText = Math.floor(state.score).toLocaleString();
-        document.getElementById('energy-text').innerText = `${state.energy} / ${state.maxEnergy}`;
-        document.getElementById('energy-fill').style.width = (state.energy/state.maxEnergy*100)+'%';
-        document.getElementById('passive-info').innerText = `Passive: ${getPower(state.passiveLvl, 'passive')}/sec`;
-    }
-
-    // МАГАЗИН
-    function renderShop(type) {
-        const list = document.getElementById('shop-list');
-        list.innerHTML = '';
-        let currentLvl = type === 'tap' ? state.tapLvl : state.passiveLvl;
-        
-        for(let i = 1; i <= 5; i++) { // Показываем следующие 5 уровней
-            let targetLvl = currentLvl + i;
-            if(targetLvl > 50) break;
-            
-            let cost = getCost(targetLvl, type);
-            let item = document.createElement('div');
-            item.className = 'list-item';
-            item.innerHTML = `
-                <div>
-                    <p><b>LVL ${targetLvl}</b></p>
-                    <small>${type === 'tap' ? '+1 per tap' : '+income'}</small>
-                </div>
-                <button class="buy-btn" ${state.score < cost ? 'disabled' : ''} 
-                    onclick="buy('${type}', ${cost}, ${targetLvl})">
-                    ${cost.toLocaleString()}
-                </button>
-            `;
-            list.appendChild(item);
-        }
-    }
-
-    window.buy = (type, cost, lvl) => {
-        if(state.score >= cost) {
-            state.score -= cost;
-            if(type === 'tap') state.tapLvl = lvl;
-            else state.passiveLvl = lvl;
-            updateUI();
-            renderShop(type);
-        }
+    // Переключение экранов
+    window.show = (id) => {
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
     };
-
-    // ЛИДЕРБОРД (Имитация 5 мест с Username)
-    function renderLeaderboard() {
-        const list = document.getElementById('leader-list');
-        const mockUsers = [
-            {u: state.username, s: state.score, tl: state.tapLvl, pl: state.passiveLvl},
-            {u: "CryptoWhale", s: 1500000, tl: 45, pl: 40},
-            {u: "JuugMaster", s: 890000, tl: 30, pl: 25},
-            {u: "TapperX", s: 450000, tl: 20, pl: 15},
-            {u: "Daniil_Pro", s: 120000, tl: 10, pl: 8}
-        ].sort((a,b) => b.s - a.s);
-
-        list.innerHTML = '';
-        mockUsers.forEach((user, i) => {
-            list.innerHTML += `
-                <div class="list-item ${user.u === state.username ? 'top-rank' : ''}">
-                    <div><b>#${i+1} @${user.u}</b><br><small>T-LVL: ${user.tl} | P-LVL: ${user.pl}</small></div>
-                    <div style="font-weight:900">${Math.floor(user.s).toLocaleString()}</div>
-                </div>
-            `;
-        });
-    }
-
-    // АДМИН
-    if(state.isAdmin) document.getElementById('admin-panel').classList.remove('hidden');
-    
-    function startEvent() {
-        let end = Date.now() + (90 * 24 * 60 * 60 * 1000);
-        alert("Event Started! End: " + new Date(end).toLocaleDateString());
-    }
-
-    // Инициализация
-    document.getElementById('u-name').innerText = "@" + state.username;
-    updateUI();
 </script>
 
 </body>
