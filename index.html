@@ -8,187 +8,263 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --b: #000; --w: #fff; --g: #111; }
+        :root { --b: #000; --w: #fff; --g: #111; --sg: #222; }
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--b); color: var(--w); font-family: 'Inter', -apple-system, sans-serif; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
+        body { background: var(--b); color: var(--w); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
+        #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; position: relative; height: 100%; }
         
-        #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; padding: 20px; position: relative; }
-        .screen { flex: 1; display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .screen { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
         .hidden { display: none !important; }
 
-        /* Шапка */
-        .header { width: 100%; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 40px; }
+        /* Header */
+        .header { width: 100%; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 20px; }
         #event-timer { color: #555; }
-        #event-timer.active { color: var(--w); }
+        #event-timer.active { color: #fff; }
 
-        /* Игровой экран */
-        .score-section { text-align: center; }
-        .score-label { font-size: 12px; letter-spacing: 4px; color: #666; margin-bottom: 5px; }
-        #score { font-size: 72px; font-weight: 900; }
-        
-        .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; }
-        .main-circle { 
-            width: 280px; height: 280px; 
-            border: 4px solid var(--w); border-radius: 50%; 
-            transition: transform 0.05s; cursor: pointer;
-        }
-        .main-circle:active { transform: scale(0.96); background: rgba(255,255,255,0.05); }
+        /* Score Display */
+        #score { font-size: 64px; font-weight: 900; margin-top: 10px; }
+        #passive-display { color: #888; font-size: 14px; margin-bottom: 30px; font-weight: bold; }
 
-        .energy-section { width: 100%; text-align: center; margin-bottom: 120px; }
-        .progress-bar { width: 100%; height: 8px; background: #1a1a1a; border-radius: 10px; margin: 15px 0 10px; overflow: hidden; }
-        #energy-fill { height: 100%; width: 100%; background: var(--w); transition: width 0.2s; }
-        #energy-text { font-weight: 900; font-size: 16px; }
+        /* Tap Circle */
+        .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 300px; }
+        .main-circle { width: 280px; height: 280px; border: 4px solid var(--w); border-radius: 50%; transition: transform 0.05s; }
+        .main-circle:active { transform: scale(0.96); background: rgba(255,255,255,0.1); }
 
-        /* Экран Gear */
-        .title { align-self: flex-start; font-size: 32px; font-weight: 900; margin-bottom: 30px; }
-        .menu-item { width: 100%; padding: 20px; background: var(--g); border: 1px solid #222; margin-bottom: 10px; font-weight: bold; border-radius: 8px; }
-        
-        .admin-box { width: 100%; border: 1px solid #ff4444; padding: 20px; border-radius: 12px; margin-top: 20px; }
-        .admin-btn { width: 100%; padding: 15px; background: #fff; color: #000; border: none; font-weight: 900; cursor: pointer; border-radius: 6px; }
+        /* Energy */
+        .energy-box { width: 100%; text-align: center; margin-bottom: 20px; }
+        .bar-bg { height: 8px; background: #1a1a1a; border-radius: 10px; margin: 10px 0; overflow: hidden; }
+        #e-fill { height: 100%; width: 100%; background: #fff; transition: width 0.2s; }
 
-        /* Навигация */
-        nav { position: absolute; bottom: 0; left: 0; width: 100%; display: flex; border-top: 1px solid #222; padding: 15px 0 35px; background: #000; }
+        /* Shop Tabs */
+        .shop-tabs { display: flex; width: 100%; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; background: var(--g); border: 1px solid var(--sg); color: #555; font-weight: 900; border-radius: 8px; cursor: pointer; }
+        .tab-btn.active { color: var(--w); border-color: var(--w); }
+
+        /* Upgrade Cards */
+        .upgrade-card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .up-info b { display: block; font-size: 16px; }
+        .up-info span { font-size: 12px; color: #666; }
+        .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 15px; border-radius: 6px; font-weight: 900; }
+        .buy-btn:disabled { background: #333; color: #555; }
+
+        /* Admin Box */
+        .admin-box { width: 100%; border: 1px solid #ff4444; padding: 15px; border-radius: 10px; margin-top: 20px; }
+        .admin-btn { width: 100%; padding: 12px; background: #fff; border: none; font-weight: 900; border-radius: 5px; cursor: pointer; }
+
+        /* Navigation */
+        nav { position: absolute; bottom: 0; width: 100%; display: flex; background: var(--b); border-top: 1px solid var(--sg); padding: 15px 0 35px; }
         .nav-item { flex: 1; text-align: center; color: #444; font-size: 11px; font-weight: 800; cursor: pointer; }
-        .nav-item.active { color: #fff; }
+        .nav-item.active { color: var(--w); }
         .nav-item span { display: block; font-size: 20px; margin-bottom: 4px; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <section id="screen-game" class="screen">
+    <section id="s-game" class="screen">
         <div class="header">
-            <span id="player-username">@loading</span>
-            <span id="event-timer">ИВЕНТ ОСТАНОВЛЕН</span>
+            <span id="p-name">@loading</span>
+            <span id="event-timer">ПРОВЕРКА...</span>
         </div>
-        <div class="score-section">
-            <p class="score-label">SCORE</p>
-            <div id="score">0</div>
-        </div>
-        <div class="tap-area">
-            <div class="main-circle" id="tapBtn"></div>
-        </div>
-        <div class="energy-section">
-            <p style="font-size: 12px; font-weight: 700;">TAP TO EARN</p>
-            <div class="progress-bar"><div id="energy-fill"></div></div>
-            <div id="energy-text">150 / 150</div>
+        <div id="score">0</div>
+        <div id="passive-display">Passive: 0/sec</div>
+        
+        <div class="tap-area"><div class="main-circle" id="tapBtn"></div></div>
+
+        <div class="energy-box">
+            <p style="font-size: 12px; font-weight: 800;">TAP TO EARN</p>
+            <div class="bar-bg"><div id="e-fill"></div></div>
+            <b id="e-text">150 / 150</b>
         </div>
     </section>
 
-    <section id="screen-gear" class="screen hidden">
-        <h2 class="title">GEAR</h2>
-        <div class="menu-item">MUSIC: ON</div>
-        <div class="menu-item">LANGUAGE: RU</div>
+    <section id="s-shop" class="screen hidden">
+        <h2 style="align-self:flex-start; margin-bottom:20px;">SHOP</h2>
+        <div class="shop-tabs">
+            <button class="tab-btn active" id="btn-click" onclick="toggleShop('click')">CLICK</button>
+            <button class="tab-btn" id="btn-passive" onclick="toggleShop('passive')">PASSIVE</button>
+        </div>
+        <div id="shop-items" style="width:100%;"></div>
+    </section>
+
+    <section id="s-gear" class="screen hidden">
+        <h2 style="align-self:flex-start; margin-bottom:20px;">GEAR</h2>
+        <div class="upgrade-card"><div class="up-info"><b>MUSIC</b><span>Sound effects & background</span></div>OFF</div>
         
         <div id="admin-panel" class="admin-box hidden">
-            <p style="color:#ff4444; font-size:11px; margin-bottom:12px; font-weight:bold; letter-spacing: 1px;">ADMIN CONTROL</p>
-            <button class="admin-btn" id="eventToggleBtn">ЗАПУСТИТЬ ИВЕНТ</button>
+            <p style="color:#ff4444; font-size:10px; font-weight:bold; margin-bottom:10px;">ADMIN PANEL</p>
+            <button class="admin-btn" id="eventControl">ЗАГРУЗКА...</button>
         </div>
     </section>
 
     <nav>
-        <div class="nav-item" onclick="changeTab('top')"><span>🏆</span>TOP</div>
-        <div class="nav-item active" id="nav-game" onclick="changeTab('game')"><span>💎</span>GAME</div>
-        <div class="nav-item" onclick="changeTab('shop')"><span>🎁</span>DAILY</div>
-        <div class="nav-item" id="nav-gear" onclick="changeTab('gear')"><span>⚙️</span>GEAR</div>
+        <div class="nav-item" onclick="show('s-top')"><span>🏆</span>TOP</div>
+        <div class="nav-item active" id="n-game" onclick="show('s-game')"><span>💎</span>GAME</div>
+        <div class="nav-item" id="n-shop" onclick="show('s-shop')"><span>🎁</span>SHOP</div>
+        <div class="nav-item" id="n-gear" onclick="show('s-gear')"><span>⚙️</span>GEAR</div>
     </nav>
 </div>
 
 <script>
-    // КОНФИГ FIREBASE
+    // ИНИЦИАЛИЗАЦИЯ FIREBASE
     const firebaseConfig = {
-  apiKey: "AIzaSyDcUMfQAd9QnoPUVxfM9SWp_lHBc2CaRKY",
-  authDomain: "juugtaaap.firebaseapp.com",
-  databaseURL: "https://juugtaaap-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "juugtaaap",
-  storageBucket: "juugtaaap.firebasestorage.app",
-  messagingSenderId: "230755213175",
-  appId: "1:230755213175:web:60d2bd14da628347284b72",
-  measurementId: "G-7NH27N7JMQ"
-};
+        apiKey: "AIzaSyDcUMfQAd9QnoPUVxfM9SWp_lHBc2CaRKY",
+        authDomain: "juugtaaap.firebaseapp.com",
+        databaseURL: "https://juugtaaap-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "juugtaaap",
+        storageBucket: "juugtaaap.firebasestorage.app",
+        messagingSenderId: "230755213175",
+        appId: "1:230755213175:web:60d2bd14da628347284b72",
+        measurementId: "G-7NH27N7JMQ"
+    };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // ДАННЫЕ ИГРОКА И АДМИНА
+    // ПЕРЕМЕННЫЕ
     const MY_ID = 5291965471;
     const player = tg.initDataUnsafe?.user || { id: 0, username: "malenkiydanik" };
-    
-    // Отображаем username конкретного игрока
-    document.getElementById('player-username').innerText = "@" + (player.username || "player");
+    const playerPath = `users/${player.id}`;
 
-    // Показываем админку только тебе
-    if (player.id === MY_ID) {
-        document.getElementById('admin-panel').classList.remove('hidden');
-    }
-
-    // ЛОГИКА ТАЙМЕРА И БАЗЫ
+    let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now() };
     let eventEndTime = 0;
-    const timerEl = document.getElementById('event-timer');
-    const adminBtn = document.getElementById('eventToggleBtn');
+    let shopType = 'click';
+    const names = ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"];
 
+    // 1. ЗАГРУЗКА ДАННЫХ ИЗ FIREBASE
+    db.ref(playerPath).once('value', (snap) => {
+        const data = snap.val();
+        if (data) {
+            state = { ...state, ...data };
+            // Досчитываем пассив за время отсутствия
+            const offlineTime = Math.floor((Date.now() - state.lastUpdate) / 1000);
+            state.score += offlineTime * state.passiveLvl;
+        }
+        document.getElementById('p-name').innerText = "@" + (player.username || "player");
+        updateUI();
+    });
+
+    // 2. СИНХРОНИЗАЦИЯ ИВЕНТА
     db.ref('event').on('value', (snap) => {
         const data = snap.val();
+        const timerEl = document.getElementById('event-timer');
+        const adminBtn = document.getElementById('eventControl');
         if (data && data.active) {
             eventEndTime = data.endTime;
             timerEl.classList.add('active');
             adminBtn.innerText = "ОСТАНОВИТЬ ИВЕНТ";
         } else {
             eventEndTime = 0;
-            timerEl.classList.remove('active');
             timerEl.innerText = "ИВЕНТ ОСТАНОВЛЕН";
+            timerEl.classList.remove('active');
             adminBtn.innerText = "ЗАПУСТИТЬ ИВЕНТ";
         }
     });
 
-    adminBtn.onclick = () => {
+    // 3. АДМИНКА
+    if (player.id === MY_ID) document.getElementById('admin-panel').classList.remove('hidden');
+    document.getElementById('eventControl').onclick = () => {
         if (eventEndTime === 0) {
-            const time = Date.now() + (90 * 24 * 60 * 60 * 1000); // 3 месяца
-            db.ref('event').set({ active: true, endTime: time });
+            db.ref('event').set({ active: true, endTime: Date.now() + (90 * 24 * 60 * 60 * 1000) });
         } else {
             db.ref('event').set({ active: false, endTime: 0 });
         }
     };
 
+    // 4. ЭКОНОМИКА МАГАЗИНА
+    function getPrice(lvl) { return Math.floor(500 * Math.pow(1.8, lvl)); }
+
+    function renderShop() {
+        const container = document.getElementById('shop-items');
+        container.innerHTML = '';
+        const currentLvl = shopType === 'click' ? state.tapLvl : state.passiveLvl;
+        
+        // Определяем какой сейчас Juuger (каждые 10 лвл новый)
+        const nameIdx = Math.min(Math.floor(currentLvl / 10), 4);
+        const price = getPrice(currentLvl + 1);
+
+        const card = document.createElement('div');
+        card.className = 'upgrade-card';
+        card.innerHTML = `
+            <div class="up-info">
+                <b>${names[nameIdx]}</b>
+                <span>Level ${currentLvl} / 50 (+1 ${shopType})</span>
+            </div>
+            <button class="buy-btn" ${state.score < price || currentLvl >= 50 ? 'disabled' : ''} 
+                onclick="buy(${price})">${price.toLocaleString()}</button>
+        `;
+        container.appendChild(card);
+    }
+
+    window.buy = (price) => {
+        if (state.score >= price) {
+            state.score -= price;
+            if (shopType === 'click') state.tapLvl++; else state.passiveLvl++;
+            saveData();
+            updateUI();
+            renderShop();
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+    };
+
+    // 5. ЛОГИКА ИГРЫ
+    document.getElementById('tapBtn').onclick = () => {
+        if (state.energy > 0) {
+            state.score += state.tapLvl;
+            state.energy--;
+            updateUI();
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+    };
+
+    // Пассив и Энергия
+    setInterval(() => {
+        state.score += state.passiveLvl;
+        if (state.energy < 150) state.energy++;
+        updateUI();
+        if (Math.random() > 0.9) saveData(); // Автосохранение раз в 10 сек
+    }, 1000);
+
+    // Таймер ивента
     setInterval(() => {
         if (eventEndTime === 0) return;
         const diff = eventEndTime - Date.now();
-        if (diff <= 0) { timerEl.innerText = "ИВЕНТ ЗАВЕРШЕН"; return; }
+        if (diff <= 0) { document.getElementById('event-timer').innerText = "ОКОНЧЕН"; return; }
         const d = Math.floor(diff / 86400000);
         const h = Math.floor((diff % 86400000) / 3600000);
         const m = Math.floor((diff % 3600000) / 60000);
         const s = Math.floor((diff % 60000) / 1000);
-        timerEl.innerText = `EVENT: ${d}d ${h}h ${m}m ${s}s`;
+        document.getElementById('event-timer').innerText = `EVENT: ${d}d ${h}h ${m}m ${s}s`;
     }, 1000);
 
-    // НАВИГАЦИЯ
-    window.changeTab = (tab) => {
+    function updateUI() {
+        document.getElementById('score').innerText = Math.floor(state.score).toLocaleString();
+        document.getElementById('passive-display').innerText = `Passive: ${state.passiveLvl}/sec`;
+        document.getElementById('e-text').innerText = `${state.energy} / 150`;
+        document.getElementById('e-fill').style.width = (state.energy/1.5) + '%';
+    }
+
+    function saveData() {
+        state.lastUpdate = Date.now();
+        db.ref(playerPath).set(state);
+    }
+
+    window.toggleShop = (t) => {
+        shopType = t;
+        document.getElementById('btn-click').classList.toggle('active', t === 'click');
+        document.getElementById('btn-passive').classList.toggle('active', t === 'passive');
+        renderShop();
+    }
+
+    window.show = (id) => {
         document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-
-        if (tab === 'game') {
-            document.getElementById('screen-game').classList.remove('hidden');
-            document.getElementById('nav-game').classList.add('active');
-        } else if (tab === 'gear') {
-            document.getElementById('screen-gear').classList.remove('hidden');
-            document.getElementById('nav-gear').classList.add('active');
-        }
-        // Для кнопок TOP и DAILY можно добавить аналогичные условия позже
-    };
-
-    // БАЗОВАЯ ИГРА
-    let score = 0;
-    let energy = 150;
-    document.getElementById('tapBtn').onclick = () => {
-        if (energy > 0) {
-            score++;
-            energy--;
-            document.getElementById('score').innerText = score;
-            document.getElementById('energy-text').innerText = `${energy} / 150`;
-            document.getElementById('energy-fill').style.width = (energy/150*100) + '%';
-            tg.HapticFeedback.impactOccurred('medium');
-        }
+        document.getElementById(id).classList.remove('hidden');
+        if (id === 's-shop') { document.getElementById('n-shop').classList.add('active'); renderShop(); }
+        else if (id === 's-game') document.getElementById('n-game').classList.add('active');
+        else if (id === 's-gear') document.getElementById('n-gear').classList.add('active');
     };
 </script>
 </body>
