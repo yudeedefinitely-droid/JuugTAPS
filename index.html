@@ -142,7 +142,7 @@
         ru: { sync: "В СЕТИ", scoreL: "СЧЕТ", tapL: "ТАПАЙ ЧТОБЫ ЗАРАБОТАТЬ", passL: "Пассив", topT: "ТОП 5 ДЖУГЕРОВ", shopT: "МАГАЗИН", clUp: "ПРОКАЧКА КЛИКА", clDe: "Увеличить доход за тап", psUp: "ПАССИВНЫЙ ДОХОД", psDe: "Автоматический доход", back: "← НАЗАД", gearT: "МЕНЮ", langL: "Язык", soundL: "Звук", navTop: "ТОП", navGame: "ИГРА", navShop: "МАГАЗИН", navGear: "МЕНЮ", ranks: ["Нуб Джугер", "Обычный Джугер", "Про Джугер", "Хакер Джугер", "Бог Джугер"] }
     };
 
-    // --- CANVAS BACKGROUND ---
+    // --- BACKGROUND ---
     const canvas = document.getElementById('particleCanvas');
     const ctx = canvas.getContext('2d');
     let bgParticles = [];
@@ -158,43 +158,57 @@
     function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); bgParticles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
     animate();
 
-    // --- GAME FUNCTIONS ---
+    // --- LOGIC ---
     function format(n) { return n >= 1e6 ? (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? (n/1e3).toFixed(1) + 'K' : Math.floor(n); }
-    function getRank(lvl) { return langData[state.lang].ranks[Math.min(Math.floor(lvl / 10), 4)]; }
+    function getRank(lvl) { return langData[state.lang].ranks[Math.min(Math.floor((lvl || 1) / 10), 4)]; }
 
-    // INITIAL LOAD
+    // Загрузка с защитой от перезаписи
     db.ref(`users/${user.id}`).once('value', (snap) => {
         const data = snap.val();
-        if (data) {
-            state = { ...state, ...data };
-            const off = Math.floor((Date.now() - (state.lastUpdate || Date.now())) / 1000);
-            state.score += Math.max(0, off * (state.passiveLvl || 0));
-            if (state.energy < 150) state.energy = Math.min(150, state.energy + off);
+        if (data && data.username) {
+            // Рассчитываем оффлайн доход
+            const now = Date.now();
+            const offTime = Math.floor((now - (data.lastUpdate || now)) / 1000);
+            const earned = Math.max(0, offTime * (data.passiveLvl || 0));
+            
+            state = { 
+                ...state, 
+                ...data,
+                score: (data.score || 0) + earned,
+                energy: Math.min(150, (data.energy || 150) + offTime)
+            };
         }
-        state.username = myName; isLoaded = true;
+        state.username = myName;
+        isLoaded = true;
         document.getElementById('p-name').innerText = "@" + state.username;
         if (user.id === MY_ID) document.getElementById('admin-panel').classList.remove('hidden');
-        updateLangUI(); updateUI(); save();
+        updateLangUI(); updateUI();
     });
 
-    function save() { if (isLoaded) { state.lastUpdate = Date.now(); db.ref(`users/${user.id}`).set(state); } }
+    function save() { 
+        if (isLoaded) { 
+            state.lastUpdate = Date.now(); 
+            // Используем update вместо set для безопасности
+            db.ref(`users/${user.id}`).update(state); 
+        } 
+    }
 
     function updateUI() {
         document.getElementById('score').innerText = format(state.score);
-        document.getElementById('passive-display').innerText = `${langData[state.lang].passL}: ${state.passiveLvl}/sec`;
-        document.getElementById('e-text').innerText = `${state.energy} / 150`;
-        document.getElementById('e-fill').style.width = (state.energy / 1.5) + '%';
+        document.getElementById('passive-display').innerText = `${langData[state.lang].passL}: ${state.passiveLvl || 0}/sec`;
+        document.getElementById('e-text').innerText = `${state.energy || 0} / 150`;
+        document.getElementById('e-fill').style.width = ((state.energy || 0) / 1.5) + '%';
     }
 
-    // CLICK HANDLER
     document.getElementById('tapBtn').onclick = (e) => {
         if (isLoaded && state.energy > 0) {
-            state.score += state.tapLvl; state.energy--;
+            state.score += (state.tapLvl || 1); 
+            state.energy--;
             updateUI(); 
             if(state.sound) tg.HapticFeedback.impactOccurred('light');
 
             const num = document.createElement('div');
-            num.className = 'tap-effect'; num.innerText = `+${state.tapLvl}`;
+            num.className = 'tap-effect'; num.innerText = `+${state.tapLvl || 1}`;
             num.style.left = e.clientX + 'px'; num.style.top = e.clientY + 'px';
             document.body.appendChild(num); setTimeout(() => num.remove(), 600);
 
@@ -209,37 +223,36 @@
         }
     };
 
-    // LEADERBOARD (FIXED)
     function loadLeaderboard() {
         const list = document.getElementById('leaderboard-list');
-        list.innerHTML = "<p style='text-align:center; color:#555;'>Loading...</p>";
+        list.innerHTML = "<p style='text-align:center; color:#555;'>Syncing...</p>";
         db.ref('users').once('value', (snap) => {
             const data = snap.val(); if (!data) return;
             let players = Object.values(data)
-                .filter(p => p.username && p.score !== undefined) // Фильтр пустых игроков
-                .sort((a, b) => b.score - a.score)
+                .filter(p => p && p.username)
+                .sort((a, b) => (b.score || 0) - (a.score || 0))
                 .slice(0, 5);
             list.innerHTML = "";
             players.forEach((p, i) => {
                 const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-                const pRank = langData[state.lang].ranks[Math.min(Math.floor((p.tapLvl || 1) / 10), 4)];
-                list.innerHTML += `<div class="card" style="${p.username === myName ? 'border-color: #555;' : ''}">
+                const pLvl = p.tapLvl || 1;
+                const pRank = langData[state.lang].ranks[Math.min(Math.floor(pLvl / 10), 4)];
+                list.innerHTML += `<div class="card" style="${p.username === myName ? 'border-color: #777;' : ''}">
                     <div style="font-size:20px; min-width:40px;">${medals[i]}</div>
-                    <div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${pRank} (Lvl ${p.tapLvl || 1})</div></div>
-                    <div style="font-weight:900;">${format(p.score)}</div>
+                    <div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${pRank} (Lvl ${pLvl})</div></div>
+                    <div style="font-weight:900;">${format(p.score || 0)}</div>
                 </div>`;
             });
         });
     }
 
-    // SHOP
     window.openUpgrade = (type) => { document.getElementById('shop-main').classList.add('hidden'); document.getElementById('shop-detail').classList.remove('hidden'); renderUpgradeItems(type); };
     window.backToShop = () => { document.getElementById('shop-main').classList.remove('hidden'); document.getElementById('shop-detail').classList.add('hidden'); };
     
     function renderUpgradeItems(type) {
         const cont = document.getElementById('upgrade-items');
-        const lvl = type === 'click' ? state.tapLvl : state.passiveLvl;
-        const price = Math.floor(100 * Math.pow(1.4, lvl));
+        const lvl = type === 'click' ? (state.tapLvl || 1) : (state.passiveLvl || 0);
+        const price = Math.floor(100 * Math.pow(1.4, lvl + (type==='click'?0:1))); 
         const rank = getRank(lvl);
         cont.innerHTML = `<div class="card">
             <div style="flex:1"><b>${rank}</b><br><span style="font-size:11px; color:#666">Level ${lvl} → ${lvl+1}</span></div>
@@ -250,23 +263,22 @@
     window.buy = (type, p) => { 
         if (state.score >= p) { 
             state.score -= p; 
-            if (type === 'click') state.tapLvl++; else state.passiveLvl++; 
-            save(); updateUI(); renderUpgradeItems(type); 
+            if (type === 'click') state.tapLvl = (state.tapLvl || 1) + 1; 
+            else state.passiveLvl = (state.passiveLvl || 0) + 1; 
+            updateUI(); renderUpgradeItems(type); save(); // Мгновенный сейв
             if(state.sound) tg.HapticFeedback.notificationOccurred('success'); 
         } 
     };
     
-    // NAVIGATION & UTILS
     function updateLangUI() {
         const l = langData[state.lang];
         const map = { 'sync-text':'sync', 't-score-label':'scoreL', 't-tap-label':'tapL', 't-top-title':'topT', 't-shop-title':'shopT', 't-click-up':'clUp', 't-click-desc':'clDe', 't-pass-up':'psUp', 't-pass-desc':'psDe', 't-back':'back', 't-gear-title':'gearT', 't-lang-label':'langL', 't-sound-label':'soundL', 't-nav-top':'navTop', 't-nav-game':'navGame', 't-nav-shop':'navShop', 't-nav-gear':'navGear' };
         for(let id in map) if(document.getElementById(id)) document.getElementById(id).innerText = l[map[id]];
         document.getElementById('cur-lang').innerText = state.lang === 'en' ? "English" : "Русский";
         document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
-        updateUI();
     }
 
-    function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); save(); }
+    function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); updateUI(); save(); }
     function toggleSound() { state.sound = !state.sound; document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF"; save(); }
     
     window.show = (id) => { 
@@ -277,13 +289,16 @@
         if (id === 's-top') loadLeaderboard(); 
     };
 
+    // Основной цикл
     setInterval(() => { 
         if (!isLoaded) return; 
         state.score += (state.passiveLvl || 0); 
         if (state.energy < 150) state.energy++; 
         updateUI(); 
-        if (Math.floor(Date.now() / 1000) % 5 === 0) save(); 
     }, 1000);
+
+    // Сейв цикл (раз в 10 секунд для снижения нагрузки)
+    setInterval(() => { if(isLoaded) save(); }, 10000);
 </script>
 </body>
 </html>
