@@ -3,43 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JuugTAPS Admin Logic</title>
+    <title>JuugTAPS</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --b: #000; --w: #fff; --g: #111; }
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        body { background: var(--b); color: var(--w); font-family: sans-serif; height: 100vh; display: flex; justify-content: center; }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--b); color: var(--w); font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
         
-        #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; padding: 20px; }
+        #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; padding: 20px; position: relative; }
         .screen { flex: 1; display: flex; flex-direction: column; align-items: center; }
         .hidden { display: none !important; }
 
-        /* Шапка с таймером */
-        .header { width: 100%; display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 50px; }
-        #event-timer { color: #ff4444; }
-        #event-timer.active { color: #44ff44; }
+        /* Таймер */
+        .header { width: 100%; display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; }
+        #event-timer { color: #555; transition: color 0.3s; }
+        #event-timer.active { color: var(--w); }
 
-        /* Секция настроек (GEAR) */
-        .settings-list { width: 100%; margin-top: 20px; }
-        .menu-item { 
-            width: 100%; padding: 20px; background: var(--g); 
-            border: 1px solid #333; color: #fff; margin-bottom: 10px; 
-            text-align: left; font-weight: bold; cursor: pointer;
-        }
+        /* Контент */
+        .score-section { margin-top: 50px; text-align: center; }
+        #score { font-size: 80px; font-weight: 800; }
+        
+        /* Кнопка */
+        .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; }
+        .main-circle { width: 280px; height: 280px; border: 4px solid var(--w); border-radius: 50%; transition: transform 0.05s; }
+        .main-circle:active { transform: scale(0.96); background: rgba(255,255,255,0.05); }
 
-        /* Админ-панель */
-        .admin-panel { 
-            width: 100%; border: 2px dashed #ff4444; padding: 15px; 
-            margin-top: 20px; border-radius: 10px; 
-        }
-        .admin-title { color: #ff4444; font-size: 12px; margin-bottom: 10px; font-weight: bold; }
-        .admin-btn { 
-            width: 100%; padding: 15px; background: #ff4444; 
-            color: #000; border: none; font-weight: 900; cursor: pointer; 
-        }
+        /* Настройки (Gear) */
+        .title { align-self: flex-start; font-size: 32px; font-weight: 900; margin-bottom: 20px; }
+        .menu-item { width: 100%; padding: 20px; background: var(--g); border: 1px solid #222; margin-bottom: 10px; font-weight: bold; }
+        
+        /* Админка */
+        .admin-box { width: 100%; border: 1px solid #ff4444; padding: 15px; border-radius: 10px; margin-top: 20px; }
+        .admin-btn { width: 100%; padding: 15px; background: #fff; color: #000; border: none; font-weight: 900; cursor: pointer; }
 
         /* Навигация */
-        nav { position: fixed; bottom: 0; width: 100%; display: flex; border-top: 1px solid #222; padding: 20px 0; background: #000; }
-        .nav-item { flex: 1; text-align: center; color: #555; font-size: 12px; cursor: pointer; }
+        nav { position: absolute; bottom: 0; left: 0; width: 100%; display: flex; border-top: 1px solid #222; padding: 15px 0 30px; background: #000; }
+        .nav-item { flex: 1; text-align: center; color: #444; font-size: 11px; font-weight: bold; cursor: pointer; }
         .nav-item.active { color: #fff; }
     </style>
 </head>
@@ -48,98 +49,115 @@
 <div id="app">
     <section id="game-screen" class="screen">
         <div class="header">
-            <span>@malenkiydanik</span>
-            <span id="event-timer">ИВЕНТ ОСТАНОВЛЕН</span>
+            <span id="display-username">@malenkiydanik</span>
+            <span id="event-timer">ПРОВЕРКА ИВЕНТА...</span>
         </div>
-        <h1 style="font-size: 80px; margin-top: 100px;">0</h1>
-        <p style="color: #444; margin-top: 20px;">(Экран игры)</p>
+        <div class="score-section">
+            <div id="score">0</div>
+        </div>
+        <div class="tap-area">
+            <div class="main-circle"></div>
+        </div>
     </section>
 
     <section id="gear-screen" class="screen hidden">
-        <h2 style="align-self: flex-start; margin-bottom: 20px;">GEAR</h2>
+        <h2 class="title">GEAR</h2>
+        <div class="menu-item">MUSIC: ON</div>
         
-        <div class="settings-list">
-            <div class="menu-item">MUSIC: ON</div>
-            <div class="menu-item">LANGUAGE: RU</div>
-            
-            <div id="admin-section" class="hidden">
-                <div class="admin-panel">
-                    <div class="admin-title">ADMIN PANEL</div>
-                    <button class="admin-btn" id="toggleEventBtn">ЗАПУСТИТЬ ИВЕНТ (3 МЕС.)</button>
-                </div>
-            </div>
+        <div id="admin-panel" class="admin-box hidden">
+            <p style="color:#ff4444; font-size:10px; margin-bottom:10px; font-weight:bold;">ADMIN PANEL</p>
+            <button class="admin-btn" id="eventToggleBtn">ЗАГРУЗКА...</button>
         </div>
     </section>
 
     <nav>
-        <div class="nav-item" onclick="show('game-screen')">GAME</div>
-        <div class="nav-item" onclick="show('gear-screen')">GEAR</div>
+        <div class="nav-item" onclick="show('top')">🏆<br>TOP</div>
+        <div class="nav-item active" onclick="show('game')">💎<br>GAME</div>
+        <div class="nav-item" onclick="show('shop')">🎁<br>DAILY</div>
+        <div class="nav-item" onclick="show('gear')">⚙️<br>GEAR</div>
     </nav>
 </div>
 
 <script>
+    // ВСТАВЬ СВОЙ КОНФИГ НИЖЕ
+   const firebaseConfig = {
+  apiKey: "AIzaSyDcUMfQAd9QnoPUVxfM9SWp_lHBc2CaRKY",
+  authDomain: "juugtaaap.firebaseapp.com",
+  databaseURL: "https://juugtaaap-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "juugtaaap",
+  storageBucket: "juugtaaap.firebasestorage.app",
+  messagingSenderId: "230755213175",
+  appId: "1:230755213175:web:60d2bd14da628347284b72",
+  measurementId: "G-7NH27N7JMQ"
+};
+
+    // Инициализация
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // КОНФИГ
-    const MY_ID = 5291965471; // <--- ТВОЙ ID ИЗ ПРОШЛОГО СКРИНШОТА
-    let eventEndTime = null; 
-    let eventActive = false;
+    const MY_ID = 5291965471; 
+    let eventEndTime = 0;
 
-    // 1. Проверка на админа
-    const userId = tg.initDataUnsafe?.user?.id;
-    if (userId === MY_ID) {
-        document.getElementById('admin-section').classList.remove('hidden');
+    // Проверка доступа
+    const user = tg.initDataUnsafe?.user || { id: 0, username: "malenkiydanik" }; 
+    if (user.id === MY_ID || user.username === "malenkiydanik") {
+        document.getElementById('admin-panel').classList.remove('hidden');
     }
 
-    // 2. Логика таймера
+    // Элементы
     const timerEl = document.getElementById('event-timer');
-    const adminBtn = document.getElementById('toggleEventBtn');
+    const adminBtn = document.getElementById('eventToggleBtn');
 
-    adminBtn.onclick = () => {
-        if (!eventActive) {
-            // Устанавливаем дату завершения: сейчас + 3 месяца
-            eventEndTime = Date.now() + (90 * 24 * 60 * 60 * 1000);
-            eventActive = true;
-            adminBtn.innerText = "ОСТАНОВИТЬ ИВЕНТ";
+    // Синхронизация с Firebase
+    db.ref('event').on('value', (snap) => {
+        const data = snap.val();
+        if (data && data.active) {
+            eventEndTime = data.endTime;
             timerEl.classList.add('active');
+            adminBtn.innerText = "ОСТАНОВИТЬ ИВЕНТ";
         } else {
-            eventActive = false;
-            eventEndTime = null;
-            adminBtn.innerText = "ЗАПУСТИТЬ ИВЕНТ (3 МЕС.)";
+            eventEndTime = 0;
             timerEl.classList.remove('active');
             timerEl.innerText = "ИВЕНТ ОСТАНОВЛЕН";
+            adminBtn.innerText = "ЗАПУСТИТЬ ИВЕНТ";
+        }
+    });
+
+    // Кнопка Админа
+    adminBtn.onclick = () => {
+        if (eventEndTime === 0) {
+            const time = Date.now() + (90 * 24 * 60 * 60 * 1000);
+            db.ref('event').set({ active: true, endTime: time });
+        } else {
+            db.ref('event').set({ active: false, endTime: 0 });
         }
     };
 
-    // Обновление таймера каждую секунду
+    // Логика таймера
     setInterval(() => {
-        if (!eventActive || !eventEndTime) return;
-
-        const now = Date.now();
-        const diff = eventEndTime - now;
-
+        if (eventEndTime === 0) return;
+        const diff = eventEndTime - Date.now();
         if (diff <= 0) {
-            eventActive = false;
-            timerEl.innerText = "ИВЕНТ ОКОНЧЕН";
+            timerEl.innerText = "ИВЕНТ ЗАВЕРШЕН";
             return;
         }
-
-        // Считаем дни, часы, минуты
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const secs = Math.floor((diff % (1000 * 60)) / 1000);
-
-        timerEl.innerText = `EVENT: ${days}d ${hours}h ${mins}m ${secs}s`;
+        const d = Math.floor(diff / 86400000);
+        const h = Math.floor((diff % 86400000) / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        timerEl.innerText = `EVENT: ${d}d ${h}h ${m}m ${s}s`;
     }, 1000);
 
-    // Переключение экранов
-    window.show = (id) => {
+    // Навигация
+    window.show = (screen) => {
         document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        if (screen === 'game') document.getElementById('game-screen').classList.remove('hidden');
+        if (screen === 'gear') document.getElementById('gear-screen').classList.remove('hidden');
+        event.currentTarget.classList.add('active');
     };
 </script>
-
 </body>
 </html>
