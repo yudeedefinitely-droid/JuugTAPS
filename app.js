@@ -1,134 +1,169 @@
 // Инициализация Telegram WebApp
 const tg = window.Telegram.WebApp;
 tg.expand();
+tg.ready();
 
-// Состояние игры
-let gameState = {
+// Состояние игры по умолчанию
+const DEFAULT_STATE = {
     balance: 0,
     energy: 1000,
     maxEnergy: 1000,
     tapPower: 1,
-    pps: 0, // Passive Per Second
+    pps: 0,
     lastUpdate: Date.now(),
     upgrades: { tap: [], passive: [] },
     settings: { sound: true },
-    seasonEnd: new Date("2026-07-13T00:00:00").getTime() // Пример даты на 3 месяца
+    seasonEnd: new Date("2026-07-13T00:00:00").getTime()
 };
 
-// Загрузка данных
+let gameState = { ...DEFAULT_STATE };
+
+// Исправленная загрузка данных
 function loadData() {
     const saved = localStorage.getItem('juugTapsData');
     if (saved) {
-        const data = JSON.parse(saved);
-        const offlineTime = (Date.now() - data.lastUpdate) / 1000;
-        
-        gameState = {...gameState, ...data};
-        
-        // Начисление офлайн дохода
-        gameState.balance += offlineTime * data.pps;
-        gameState.energy = Math.min(data.maxEnergy, data.energy + (offlineTime * 1.5)); // Восст. 1.5 ед/сек
+        try {
+            const parsed = JSON.parse(saved);
+            gameState = { ...gameState, ...parsed };
+            
+            // Важно: пересчитываем офлайн прогресс
+            const now = Date.now();
+            const offlineSeconds = Math.max(0, (now - gameState.lastUpdate) / 1000);
+            
+            // Начисляем пассивный доход за время отсутствия
+            gameState.balance += offlineSeconds * gameState.pps;
+            // Восстанавливаем энергию (3 ед. в секунду)
+            gameState.energy = Math.min(gameState.maxEnergy, gameState.energy + (offlineSeconds * 3));
+            gameState.lastUpdate = now;
+        } catch (e) {
+            console.error("Ошибка загрузки данных, сброс...", e);
+            gameState = { ...DEFAULT_STATE };
+        }
     }
     initShopData();
-    updateUI();
 }
 
-// Генерация 100 улучшений (50 тап, 50 пассив)
+// Генерация улучшений с проверкой на дубликаты
 function initShopData() {
     if (gameState.upgrades.tap.length === 0) {
         for(let i=1; i<=50; i++) {
-            gameState.upgrades.tap.push({ id: i, level: 0, basePrice: i * 50, power: i * 2 });
-            gameState.upgrades.passive.push({ id: i, level: 0, basePrice: i * 150, power: i * 5 });
+            gameState.upgrades.tap.push({ level: 0, basePrice: i * 15, power: i });
+        }
+    }
+    if (gameState.upgrades.passive.length === 0) {
+        for(let i=1; i<=50; i++) {
+            gameState.upgrades.passive.push({ level: 0, basePrice: i * 100, power: i * 0.5 });
         }
     }
 }
 
-// Рендер магазина
-function renderShop(type) {
+// Умный расчет цены (экспонента)
+function getPrice(item) {
+    return Math.floor(item.basePrice * Math.pow(1.25, item.level));
+}
+
+// Рендер магазина (исправлен баг с очисткой)
+let currentShopTab = 'tap';
+window.switchShop = (type) => {
+    currentShopTab = type;
+    renderShop();
+};
+
+function renderShop() {
     const list = document.getElementById('shop-list');
+    if (!list) return;
     list.innerHTML = '';
-    const items = type === 'tap' ? gameState.upgrades.tap : gameState.upgrades.passive;
+    
+    const items = gameState.upgrades[currentShopTab];
 
     items.forEach((item, index) => {
-        const price = Math.floor(item.basePrice * Math.pow(1.5, item.level));
+        const price = getPrice(item);
         const card = document.createElement('div');
         card.className = 'upgrade-card';
         card.innerHTML = `
-            <div>
-                <b>${type === 'tap' ? 'Power Up' : 'Juug Bot'} #${item.id}</b><br>
-                <small>LVL ${item.level} (+${item.power}${type === 'tap' ? '' : '/s'})</small>
+            <div style="text-align: left;">
+                <b style="color: var(--accent)">Lv. ${item.level} — ${currentShopTab === 'tap' ? 'Удар' : 'Бот'} #${index + 1}</b><br>
+                <small>Бонус: +${item.power.toFixed(1)}</small>
             </div>
-            <button onclick="buyUpgrade('${type}', ${index})">${Math.round(price)}</button>
+            <button onclick="buyUpgrade('${currentShopTab}', ${index})" ${gameState.balance < price ? 'disabled style="opacity:0.5"' : ''}>
+                🪙 ${price}
+            </button>
         `;
         list.appendChild(card);
     });
 }
 
-// Покупка
+// Покупка (исправлен баг с обновлением баланса)
 window.buyUpgrade = (type, index) => {
     const item = gameState.upgrades[type][index];
-    const price = Math.floor(item.basePrice * Math.pow(1.5, item.level));
+    const price = getPrice(item);
 
     if (gameState.balance >= price) {
         gameState.balance -= price;
         item.level++;
-        if (type === 'tap') gameState.tapPower += item.power;
-        else gameState.pps += item.power;
         
-        if (gameState.settings.sound) playSound('buy');
-        renderShop(type);
+        // Пересчитываем общие показатели
+        recalculateStats();
+        renderShop();
         updateUI();
+        saveData();
     }
 };
 
-// Механика клика
-document.getElementById('click-obj').addEventListener('touchstart', (e) => {
-    if (gameState.energy >= 1) {
-        gameState.balance += gameState.tapPower;
-        gameState.energy -= 1;
-        updateUI();
-        createFloatingText(e.touches[0].clientX, e.touches[0].clientY, `+${gameState.tapPower}`);
-    }
-});
-
-// Таймер сезона
-function updateSeasonTimer() {
-    const now = Date.now();
-    const diff = gameState.seasonEnd - now;
-
-    if (diff <= 0) {
-        document.getElementById('season-timer').innerText = "SEASON ENDED";
-        showWinner();
-        return;
-    }
-
-    if (diff > 86400000) { // Больше 24 часов
-        const months = Math.floor(diff / (1000 * 60 * 60 * 24 * 30));
-        const days = Math.floor((diff % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
-        document.getElementById('season-timer').innerText = `${months}m ${days}d`;
-    } else {
-        const seconds = Math.floor(diff / 1000);
-        document.getElementById('season-timer').innerText = `${seconds}s`;
-    }
+function recalculateStats() {
+    // Сбрасываем к базе и суммируем все уровни
+    gameState.tapPower = 1 + gameState.upgrades.tap.reduce((sum, item) => sum + (item.level * item.power), 0);
+    gameState.pps = gameState.upgrades.passive.reduce((sum, item) => sum + (item.level * item.power), 0);
 }
 
-// Основной цикл
+// Механика клика (защита от Ghost Clicks и Zoom)
+const clickObj = document.getElementById('click-obj');
+if (clickObj) {
+    clickObj.addEventListener('pointerdown', (e) => {
+        e.preventDefault(); // Защита от системных жестов
+        if (gameState.energy >= 1) {
+            gameState.balance += gameState.tapPower;
+            gameState.energy -= 1;
+            
+            // Визуальный отклик
+            clickObj.style.transform = 'scale(0.92)';
+            setTimeout(() => clickObj.style.transform = 'scale(1)', 50);
+            
+            createFloatingText(e.clientX, e.clientY, `+${gameState.tapPower.toFixed(0)}`);
+            updateUI();
+        }
+    });
+}
+
+// Основной цикл (10 раз в секунду)
 setInterval(() => {
     // Пассивный доход
-    gameState.balance += gameState.pps / 10;
-    // Регенерация энергии
+    if (gameState.pps > 0) {
+        gameState.balance += gameState.pps / 10;
+    }
+    // Регенерация энергии (2 ед. в секунду)
     if (gameState.energy < gameState.maxEnergy) {
         gameState.energy = Math.min(gameState.maxEnergy, gameState.energy + 0.2);
     }
     updateUI();
-    updateSeasonTimer();
-    saveData();
 }, 100);
 
+// Отдельный цикл для сохранения и таймера (раз в секунду)
+setInterval(() => {
+    saveData();
+    updateSeasonTimer();
+}, 1000);
+
 function updateUI() {
-    document.getElementById('balance').innerText = Math.floor(gameState.balance);
-    document.getElementById('energy-bar').style.width = `${(gameState.energy / gameState.maxEnergy) * 100}%`;
-    document.getElementById('energy-text').innerText = `${Math.floor(gameState.energy)} / ${gameState.maxEnergy}`;
-    document.getElementById('pps-val').innerText = gameState.pps;
+    const balEl = document.getElementById('balance');
+    const enBar = document.getElementById('energy-bar');
+    const enTxt = document.getElementById('energy-text');
+    const ppsEl = document.getElementById('pps-val');
+
+    if (balEl) balEl.innerText = Math.floor(gameState.balance).toLocaleString();
+    if (enBar) enBar.style.width = `${(gameState.energy / gameState.maxEnergy) * 100}%`;
+    if (enTxt) enTxt.innerText = `${Math.floor(gameState.energy)} / ${gameState.maxEnergy}`;
+    if (ppsEl) ppsEl.innerText = gameState.pps.toFixed(1);
 }
 
 function saveData() {
@@ -139,23 +174,21 @@ function saveData() {
 // Навигация
 window.showScreen = (id) => {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    if (id === 'shop-screen') renderShop('tap');
+    const target = document.getElementById(id);
+    if (target) target.classList.add('active');
+    if (id === 'shop-screen') renderShop();
 };
 
 function createFloatingText(x, y, text) {
     const el = document.createElement('div');
     el.innerText = text;
-    el.style.position = 'fixed';
+    el.className = 'floating-text';
     el.style.left = `${x}px`;
     el.style.top = `${y}px`;
-    el.style.color = 'var(--accent)';
-    el.style.fontWeight = 'bold';
-    el.style.pointerEvents = 'none';
-    el.style.animation = 'floatUp 0.5s ease-out forwards';
     document.body.appendChild(el);
-    setTimeout(() => el.remove(), 500);
+    setTimeout(() => el.remove(), 800);
 }
 
-// Запуск
+// Запуск игры
 loadData();
+recalculateStats();
