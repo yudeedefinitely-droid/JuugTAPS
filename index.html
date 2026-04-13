@@ -3,88 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>JuugTAPS Pro</title>
+    <title>JuugTAPS</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
     <div id="app">
         <section id="game-screen" class="screen active">
-            <div class="top-bar">
-                <span class="score-title">SCORE</span>
+            <div class="top-section">
+                <div class="score-label">SCORE</div>
                 <div id="balance">0</div>
             </div>
 
-            <div class="click-section">
-                <div id="character" class="main-button">
+            <div class="mid-section">
+                <div id="character" class="tap-circle">
                     <img src="image_2.png" alt="Juug" id="char-img">
                 </div>
             </div>
 
-            <div class="bottom-section">
-                <div class="energy-text">TAP TO EARN</div>
-                <div class="energy-bar"><div id="energy-fill"></div></div>
-                <div class="energy-num"><span id="energy-current">150</span> / 150</div>
+            <div class="bot-section">
+                <div class="tap-hint">TAP TO EARN</div>
+                <div class="energy-container">
+                    <div class="energy-bar"><div id="energy-fill"></div></div>
+                    <div class="energy-stats"><span id="energy-current">150</span> / 150</div>
+                </div>
             </div>
         </section>
 
         <section id="leaderboard-screen" class="screen">
-            <h2 class="title">TOP JUUGERS</h2>
-            <div id="leader-list" class="scroll-list"></div>
+            <h2 class="screen-title">TOP JUUGERS</h2>
+            <div id="leader-list" class="scrollable"></div>
         </section>
 
         <section id="daily-screen" class="screen">
-            <h2 class="title">DAILY REWARDS</h2>
-            <div class="reward-card">
-                <div class="reward-amount">+100 PTS</div>
-                <p id="daily-timer">Available now!</p>
-                <button id="claim-btn" class="action-btn" onclick="claimDailyReward()">COLLECT</button>
+            <h2 class="screen-title">DAILY BONUS</h2>
+            <div class="reward-box">
+                <div class="reward-icon">🎁</div>
+                <div class="reward-val">+100 PTS</div>
+                <button class="claim-btn" onclick="claimDailyReward()">COLLECT</button>
+                <p id="reward-timer"></p>
             </div>
         </section>
 
         <section id="settings-screen" class="screen">
-            <h2 class="title">GEAR</h2>
-            <div id="admin-panel" style="display:none;" class="admin-zone">
-                <p>ADMIN PANEL</p>
-                <button onclick="startGlobalTimer()">START AIRDROP TIMER</button>
+            <h2 class="screen-title">GEAR</h2>
+            <div id="admin-panel" class="admin-ui" style="display:none;">
+                <p>DEV MODE ACTIVE</p>
+                <button onclick="startGlobalTimer()">START 90-DAY TIMER</button>
             </div>
         </section>
 
-        <nav class="bottom-nav">
-            <button onclick="showScreen('leaderboard-screen')">🏆 <span>LEADERS</span></button>
-            <button onclick="showScreen('game-screen')" class="active-nav">💎 <span>GAME</span></button>
-            <button onclick="showScreen('daily-screen')">🎁 <span>DAILY</span></button>
-            <button onclick="showScreen('settings-screen')">⚙️ <span>GEAR</span></button>
+        <nav class="main-nav">
+            <button class="nav-btn" onclick="showScreen('leaderboard-screen')">🏆<br>LEADERS</button>
+            <button class="nav-btn active" onclick="showScreen('game-screen')">💎<br>GAME</button>
+            <button class="nav-btn" onclick="showScreen('daily-screen')">🎁<br>DAILY</button>
+            <button class="nav-btn" onclick="showScreen('settings-screen')">⚙️<br>GEAR</button>
         </nav>
     </div>
 
     <script type="module">
-        // Инициализация Firebase (оставь свой конфиг здесь)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, set, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
-        
-        const firebaseConfig = { /* ТВОЙ КОНФИГ */ };
+        import { getDatabase, ref, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcUMfQAd9QnoPUVxfM9SWp_lHBc2CaRKY",
+            authDomain: "juugtaaap.firebaseapp.com",
+            databaseURL: "https://juugtaaap-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "juugtaaap",
+            storageBucket: "juugtaaap.firebasestorage.app",
+            messagingSenderId: "230755213175",
+            appId: "1:230755213175:web:60d2bd14da628347284b72"
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        window.updateLeaderboard = function() {
-            const topRef = query(ref(db, 'players'), orderByChild('score'), limitToLast(10));
-            onValue(topRef, (snap) => {
-                const players = [];
-                snap.forEach(child => { players.push(child.val()); });
-                players.reverse();
-                const list = document.getElementById('leader-list');
-                const medals = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣"];
-                list.innerHTML = players.map((p, i) => `
-                    <div class="user-row">
-                        <span>${medals[i] || (i+1)} ${p.username}</span>
+        // Обновление лидеров (вызывается каждую секунду в script.js)
+        window.refreshLeaders = () => {
+            const topQuery = query(ref(db, 'players'), orderByChild('score'), limitToLast(10));
+            onValue(topQuery, (snap) => {
+                const data = [];
+                snap.forEach(c => { data.push(c.val()); });
+                data.reverse();
+                const container = document.getElementById('leader-list');
+                const icons = ["🥇", "🥈", "🥉", "🏅", "🏅"];
+                container.innerHTML = data.map((p, i) => `
+                    <div class="leader-item">
+                        <span>${icons[i] || (i+1 + '.')} ${p.username}</span>
                         <b>${p.score.toLocaleString()} PTS</b>
                     </div>
                 `).join('');
             });
         };
-        // Обновление каждую секунду
-        setInterval(() => { if(document.getElementById('leaderboard-screen').classList.contains('active')) window.updateLeaderboard(); }, 1000);
     </script>
     <script src="script.js"></script>
 </body>
