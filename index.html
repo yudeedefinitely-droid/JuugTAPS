@@ -4,54 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>JuugTAPS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
     <div id="app">
-        <section id="game-screen" class="screen">
-            <div class="header">
-                <span id="username">@malenkiydanik</span>
-                <span id="event-timer">EVENT: 03m 00d</span>
+        <div class="header">
+            <span id="username">@loading...</span>
+            <span id="event-timer">EVENT: 03m 00d</span>
+        </div>
+        
+        <div class="score-container">
+            <div class="score-label">SCORE</div>
+            <div id="score">0</div>
+        </div>
+
+        <div class="tap-area">
+            <div id="tapBtn" class="main-circle"></div>
+        </div>
+
+        <div class="energy-section">
+            <div class="tap-hint">TAP TO EARN</div>
+            <div class="progress-bar">
+                <div id="energy-fill"></div>
             </div>
-            
-            <div class="score-section">
-                <p class="score-label">SCORE</p>
-                <h1 id="score">0</h1>
-            </div>
+            <div id="energy-text">150 / 150</div>
+        </div>
 
-            <div class="tap-area">
-                <div id="tapBtn" class="main-circle"></div>
-            </div>
+        <div class="nav-bar">
+            <div class="nav-item">🏆<br>TOP</div>
+            <div class="nav-item active">💎<br>GAME</div>
+            <div class="nav-item">🎁<br>DAILY</div>
+            <div class="nav-item">⚙️<br>GEAR</div>
+        </div>
+    </div>
 
-            <div class="status-section">
-                <p class="tap-hint">TAP TO EARN</p>
-                <div class="progress-container">
-                    <div id="energy-fill"></div>
-                </div>
-                <p id="energy-text">150 / 150</p>
-            </div>
-        </section>
-
-        <section id="shop-screen" class="screen hidden">
-            <h2 class="page-title">SHOP</h2>
-            <div id="shop-list" class="scroll-content"></div>
-        </section>
-
-        <section id="top-screen" class="screen hidden">
-            <h2 class="page-title">TOP 5</h2>
-            <div id="leaderboard" class="scroll-content"></div>
-        </section>
-
-        <section id="gear-screen" class="screen hidden">
-            <h2 class="page-title">GEAR</h2>
-            <button class="action-btn" onclick="toggleMusic()">MUSIC: ON</button>
-            <div id="admin-panel" class="hidden">
-                <button class="action-btn admin" onclick="startEvent()">START EVENT</button>
-            </div>
-        </section>
-
-        <nav class="nav-bar">
-            <button class="nav-item" onclick="showScreen('top-screen')">
-                <span class="icon">
+    <script src="app.js"></script>
+</body>
+</html>
