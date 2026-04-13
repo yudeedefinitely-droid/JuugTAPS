@@ -109,7 +109,8 @@
         <button class="settings-btn" onclick="toggleSound()">
             <span id="t-sound-label">Sound</span><span id="cur-sound" style="color:#888">ON</span>
         </button>
-        <div id="admin-container"></div> </section>
+        <div id="admin-container"></div>
+    </section>
 
     <nav>
         <div class="nav-item" id="n-top" onclick="show('s-top')"><span>🏆</span><p id="t-nav-top">TOP</p></div>
@@ -137,7 +138,8 @@
 
     const MY_ID = 5291965471;
     const user = tg.initDataUnsafe?.user || { id: 0, username: "Guest" };
-    const myName = user.username || `User_${user.id}`;
+    // Если имя пользователя не определено в Telegram, ставим заглушку
+    const myName = user.username || (user.id !== 0 ? `User_${user.id}` : "Guest");
     
     let isLoaded = false;
     let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), username: myName, lang: 'en', sound: true };
@@ -186,7 +188,7 @@
     });
     window.addEventListener('pointerup', () => tapBtn.classList.remove('is-active'));
 
-    // --- FIREBASE ЗАГРУЗКА ---
+    // --- FIREBASE LOAD ---
     db.ref(`users/${user.id}`).once('value', (snap) => {
         const data = snap.val();
         if (data) {
@@ -197,7 +199,6 @@
         state.username = myName; isLoaded = true;
         document.getElementById('p-name').innerText = "@" + state.username;
         
-        // ДИНАМИЧЕСКИЙ АДМИН (ТОЛЬКО ДЛЯ ТЕБЯ)
         if (Number(user.id) === MY_ID) {
             const adminBox = document.getElementById('admin-container');
             adminBox.innerHTML = `
@@ -206,11 +207,10 @@
                     <button style="width:100%; padding:15px; font-weight:900; background:#fff; border:none; border-radius:8px; color:#000;">EVENT CONTROL</button>
                 </div>`;
         }
-
         updateLangUI(); updateUI();
     });
 
-    function save() { if (isLoaded) { state.lastUpdate = Date.now(); db.ref(`users/${user.id}`).update(state); } }
+    function save() { if (isLoaded && user.id !== 0) { state.lastUpdate = Date.now(); db.ref(`users/${user.id}`).update(state); } }
 
     function updateUI() {
         document.getElementById('score').innerText = format(state.score);
@@ -222,14 +222,17 @@
     function format(n) { return n >= 1e6 ? (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? (n/1e3).toFixed(1) + 'K' : Math.floor(n); }
     function getRank(lvl) { return langData[state.lang].ranks[Math.min(Math.floor((lvl || 1) / 10), 4)]; }
 
-    // --- ТОП С ОФФЛАЙНОМ ---
+    // --- ЛИДЕРБОРД С ФИЛЬТРАЦИЕЙ UNDEFINED ---
     function loadLeaderboard() {
         const list = document.getElementById('leaderboard-list');
         list.innerHTML = "<p style='text-align:center; color:#555;'>Syncing...</p>";
         db.ref('users').once('value', (snap) => {
             const data = snap.val(); if (!data) return;
             const now = Date.now();
-            let players = Object.values(data).map(p => {
+            
+            // Фильтруем игроков: убираем тех, у кого нет username или id равен 0
+            let players = Object.values(data).filter(p => p && p.username && p.username !== "undefined" && p.username !== "Guest")
+            .map(p => {
                 const offTime = Math.floor((now - (p.lastUpdate || now)) / 1000);
                 return { ...p, currentScore: (p.score || 0) + (offTime * (p.passiveLvl || 0)) };
             }).sort((a, b) => b.currentScore - a.currentScore).slice(0, 5);
@@ -246,7 +249,6 @@
         });
     }
 
-    // --- МАГАЗИН ---
     window.show = (id) => { 
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); 
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
@@ -269,7 +271,7 @@
         const cont = document.getElementById('upgrade-items');
         const lvl = type === 'click' ? state.tapLvl : state.passiveLvl;
         const price = Math.floor(100 * Math.pow(1.4, lvl + (type==='click'?0:1))); 
-        const rank = getRank(lvl); // РАНГИ В МАГАЗИНЕ
+        const rank = getRank(lvl);
         
         cont.innerHTML = `<div class="card" style="cursor:default;">
             <div style="flex:1">
@@ -289,7 +291,6 @@
         } 
     };
     
-    // --- ПЕРЕВОДЫ ---
     function updateLangUI() {
         const l = langData[state.lang];
         const map = { 'sync-text':'sync', 't-score-label':'scoreL', 't-tap-label':'tapL', 't-top-title':'topT', 't-shop-title':'shopT', 't-click-up':'clUp', 't-click-desc':'clDe', 't-pass-up':'psUp', 't-pass-desc':'psDe', 't-back':'back', 't-gear-title':'gearT', 't-lang-label':'langL', 't-sound-label':'soundL', 't-nav-top':'navTop', 't-nav-game':'navGame', 't-nav-shop':'navShop', 't-nav-gear':'navGear' };
