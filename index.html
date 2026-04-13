@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JuugTAPS Official</title>
+    <title>JuugTAPS</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -26,7 +26,7 @@
         .bar-bg { height: 10px; background: #1a1a1a; border-radius: 10px; margin: 15px 0; overflow: hidden; }
         #e-fill { height: 100%; width: 100%; background: #fff; transition: width 0.2s; }
 
-        .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 18px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 18px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 900; }
         .buy-btn:disabled { background: #333; color: #555; }
 
@@ -59,13 +59,19 @@
 
     <section id="s-shop" class="screen hidden">
         <h2 style="align-self:flex-start; margin-bottom:20px; font-weight:900;">SHOP</h2>
-        <div id="shop-items" style="width:100%;"></div>
-    </section>
-
-    <section id="s-gear" class="screen hidden">
-        <h2 style="align-self:flex-start; margin-bottom:20px; font-weight:900;">GEAR</h2>
-        <div id="admin-panel" class="hidden" style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:12px;">
-            <button id="eventControl" style="width:100%; padding:15px; font-weight:900; background:#fff; border:none; border-radius:8px;">EVENT CONTROL</button>
+        <div id="shop-main" style="width:100%;">
+            <div class="card" onclick="openUpgrade('click')">
+                <div style="flex:1"><b>CLICK UPGRADES</b><br><span style="font-size:11px; color:#666">Увеличить доход за тап</span></div>
+                <span>➔</span>
+            </div>
+            <div class="card" onclick="openUpgrade('passive')">
+                <div style="flex:1"><b>PASSIVE INCOME</b><br><span style="font-size:11px; color:#666">Автоматический доход</span></div>
+                <span>➔</span>
+            </div>
+        </div>
+        <div id="shop-detail" class="hidden" style="width:100%;">
+            <button onclick="backToShop()" style="background:none; border:none; color:#555; font-weight:800; margin-bottom:15px; cursor:pointer;">← НАЗАД</button>
+            <div id="upgrade-items"></div>
         </div>
     </section>
 
@@ -93,14 +99,17 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    const MY_ID = 5291965471;
     const user = tg.initDataUnsafe?.user || { id: 5291965471, username: "admin_danik" };
     const myName = user.username || `User_${user.id}`;
     
     let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), username: myName };
     const rankNames = ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"];
 
-    function getPrice(lvl) { return Math.floor(100 * Math.pow(1.3, lvl)); }
+    function getRank(p) {
+        const lvl = (p.tapLvl || 1) + (p.passiveLvl || 0);
+        return rankNames[Math.min(Math.floor(lvl / 20), 4)];
+    }
+
     function format(n) {
         if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
         if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
@@ -108,7 +117,6 @@
         return Math.floor(n);
     }
 
-    // Загрузка данных игрока
     db.ref(`users/${user.id}`).once('value', (snap) => {
         if (snap.val()) state = { ...state, ...snap.val() };
         state.username = myName;
@@ -117,31 +125,23 @@
         updateUI();
     });
 
-    // ЖИВОЙ ЛИДЕРБОРД (Слушает изменения 24/7 пока открыт экран)
     function loadLeaderboard() {
         const list = document.getElementById('leaderboard-list');
         db.ref('users').on('value', (snap) => {
             const data = snap.val();
             if (!data) return;
-
             let players = Object.values(data)
                 .filter(p => p.username && typeof p.score === 'number')
-                .sort((a, b) => b.score - a.score)
-                .slice(0, 5);
-
-            list.innerHTML = ""; 
+                .sort((a, b) => b.score - a.score).slice(0, 5);
+            list.innerHTML = "";
             players.forEach((p, i) => {
                 const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-                const totalLvl = (p.tapLvl || 1) + (p.passiveLvl || 0);
-                const rank = rankNames[Math.min(Math.floor(totalLvl / 20), 4)];
-                const isMe = p.username === myName ? 'border: 1px solid #333;' : '';
-
                 list.innerHTML += `
-                    <div class="card" style="${isMe}">
+                    <div class="card" style="${p.username === myName ? 'border: 1px solid #333' : ''}">
                         <div style="font-size:20px; min-width:40px;">${medals[i]}</div>
                         <div style="flex:1">
                             <div style="font-weight:900;">@${p.username}</div>
-                            <div style="font-size:10px; color:#555">${rank} (Lvl ${totalLvl})</div>
+                            <div style="font-size:10px; color:#555">${getRank(p)} (Lvl ${p.tapLvl + p.passiveLvl})</div>
                         </div>
                         <div style="font-weight:900;">${format(p.score)}</div>
                     </div>`;
@@ -149,25 +149,39 @@
         });
     }
 
-    function renderShop() {
-        const cont = document.getElementById('shop-items');
-        cont.innerHTML = "";
-        ['click', 'passive'].forEach(type => {
-            const lvl = type === 'click' ? state.tapLvl : state.passiveLvl;
-            const price = getPrice(lvl + 1);
-            cont.innerHTML += `
-                <div class="card">
-                    <div style="flex:1"><b>UPGRADE ${type.toUpperCase()}</b><br><span style="font-size:11px; color:#666">Level ${lvl}</span></div>
-                    <button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button>
-                </div>`;
-        });
+    // ЛОГИКА МАГАЗИНА
+    window.openUpgrade = (type) => {
+        document.getElementById('shop-main').classList.add('hidden');
+        document.getElementById('shop-detail').classList.remove('hidden');
+        renderUpgradeItems(type);
+    };
+
+    window.backToShop = () => {
+        document.getElementById('shop-main').classList.remove('hidden');
+        document.getElementById('shop-detail').classList.add('hidden');
+    };
+
+    function renderUpgradeItems(type) {
+        const cont = document.getElementById('upgrade-items');
+        const lvl = type === 'click' ? state.tapLvl : state.passiveLvl;
+        const price = Math.floor(100 * Math.pow(1.4, lvl));
+        cont.innerHTML = `
+            <div class="card">
+                <div style="flex:1">
+                    <b>${type === 'click' ? 'MULTI-TAP' : 'AUTO-JUUG'}</b>
+                    <span style="font-size:11px; color:#666">Level ${lvl} → ${lvl+1}</span>
+                </div>
+                <button class="buy-btn" ${state.score < price ? 'disabled' : ''} 
+                    onclick="buy('${type}', ${price})">${format(price)}</button>
+            </div>
+        `;
     }
 
     window.buy = (type, p) => {
         if (state.score >= p) {
             state.score -= p;
             if (type === 'click') state.tapLvl++; else state.passiveLvl++;
-            save(); updateUI(); renderShop();
+            save(); updateUI(); renderUpgradeItems(type);
             tg.HapticFeedback.notificationOccurred('success');
         }
     };
@@ -185,16 +199,13 @@
     }
 
     window.show = (id) => {
-        // Отключаем слушателя ТОПа при уходе с экрана, чтобы не тратить трафик
-        if (id !== 's-top') db.ref('users').off(); 
-
+        if (id !== 's-top') db.ref('users').off();
         document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById(id).classList.remove('hidden');
         document.getElementById('n-' + id.split('-')[1]).classList.add('active');
-        
         if (id === 's-top') loadLeaderboard();
-        if (id === 's-shop') renderShop();
+        if (id === 's-shop') backToShop();
     };
 
     document.getElementById('tapBtn').onclick = () => {
@@ -204,16 +215,12 @@
         }
     };
 
-    // Основной цикл
     setInterval(() => {
         state.score += (state.passiveLvl || 0);
         if (state.energy < 150) state.energy++;
         updateUI();
-        // Сохраняем чаще, если игрок активно тапает, или раз в 7 сек
-        if (Math.random() > 0.85) save(); 
+        if (Math.random() > 0.8) save();
     }, 1000);
-
-    if (user.id === MY_ID) document.getElementById('admin-panel').classList.remove('hidden');
 </script>
 </body>
 </html>
