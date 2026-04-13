@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JuugTAPS Official</title>
+    <title>JuugTAPS</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --b: #000; --w: #fff; --g: #111; --sg: #222; --accent: #00ffff; }
+        :root { --b: #000; --w: #fff; --g: #111; --sg: #222; }
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--b); color: var(--w); font-family: 'Inter', -apple-system, sans-serif; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
+        body { background: var(--b); color: var(--w); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
         
         #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; position: relative; height: 100%; }
         .screen { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
@@ -18,95 +18,84 @@
 
         /* Header */
         .header { width: 100%; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 20px; }
-        #event-timer { color: #555; font-family: monospace; }
         #event-timer.active { color: #fff; text-shadow: 0 0 10px #fff; }
 
-        /* Score & Passive */
-        #score { font-size: 72px; font-weight: 900; margin-top: 10px; letter-spacing: -2px; }
-        #passive-display { color: #888; font-size: 14px; margin-bottom: 30px; font-weight: bold; text-transform: uppercase; }
-
-        /* Central Circle */
+        /* Game UI */
+        #score { font-size: 64px; font-weight: 900; margin-top: 10px; }
+        #passive-display { color: #888; font-size: 14px; margin-bottom: 30px; font-weight: bold; }
         .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 300px; }
         .main-circle { 
-            width: 280px; height: 280px; 
-            border: 4px solid var(--w); border-radius: 50%; 
-            transition: transform 0.05s, box-shadow 0.1s;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 40px; font-weight: 900; letter-spacing: 4px;
+            width: 280px; height: 280px; border: 4px solid var(--w); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 900;
+            transition: transform 0.05s; 
         }
-        .main-circle:active { transform: scale(0.95); background: rgba(255,255,255,0.1); box-shadow: 0 0 30px rgba(255,255,255,0.2); }
+        .main-circle:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
 
-        /* Energy Bar */
+        /* Progress Bar */
         .energy-box { width: 100%; text-align: center; margin-bottom: 20px; }
-        .bar-bg { height: 10px; background: #1a1a1a; border-radius: 10px; margin: 12px 0; overflow: hidden; }
-        #e-fill { height: 100%; width: 100%; background: #fff; transition: width 0.2s; box-shadow: 0 0 10px #fff; }
+        .bar-bg { height: 8px; background: #1a1a1a; border-radius: 10px; margin: 10px 0; overflow: hidden; }
+        #e-fill { height: 100%; width: 100%; background: #fff; transition: width 0.2s; }
 
-        /* Shop System */
+        /* Shop & Leaderboard Cards */
         .shop-tabs { display: flex; width: 100%; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 14px; background: var(--g); border: 1px solid var(--sg); color: #555; font-weight: 900; border-radius: 10px; cursor: pointer; }
-        .tab-btn.active { color: var(--w); border-color: var(--w); background: #1a1a1a; }
+        .tab-btn { flex: 1; padding: 12px; background: var(--g); border: 1px solid var(--sg); color: #555; font-weight: 900; border-radius: 8px; cursor: pointer; }
+        .tab-btn.active { color: var(--w); border-color: var(--w); }
 
-        .upgrade-card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 18px; border-radius: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .up-info b { display: block; font-size: 18px; margin-bottom: 4px; }
+        .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .up-info b { display: block; font-size: 16px; }
         .up-info span { font-size: 12px; color: #666; font-weight: bold; }
-        .buy-btn { background: var(--w); color: var(--b); border: none; padding: 12px 20px; border-radius: 8px; font-weight: 900; font-size: 14px; cursor: pointer; }
-        .buy-btn:disabled { background: #333; color: #555; cursor: default; }
+        .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 15px; border-radius: 6px; font-weight: 900; }
+        .buy-btn:disabled { background: #333; color: #555; }
 
-        /* Admin Controls */
-        .admin-box { width: 100%; border: 2px dashed #ff4444; padding: 15px; border-radius: 12px; margin-top: 20px; background: rgba(255, 68, 68, 0.05); }
-        .admin-btn { width: 100%; padding: 15px; background: #ff4444; color: #fff; border: none; font-weight: 900; border-radius: 8px; cursor: pointer; }
+        /* Leaderboard Specific */
+        .leader-rank { font-size: 20px; font-weight: 900; min-width: 35px; }
+        .leader-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 900; padding-right: 10px; }
 
         /* Navigation */
         nav { position: absolute; bottom: 0; width: 100%; display: flex; background: var(--b); border-top: 1px solid var(--sg); padding: 15px 0 35px; }
-        .nav-item { flex: 1; text-align: center; color: #444; font-size: 11px; font-weight: 800; cursor: pointer; transition: color 0.2s; }
+        .nav-item { flex: 1; text-align: center; color: #444; font-size: 11px; font-weight: 800; cursor: pointer; }
         .nav-item.active { color: var(--w); }
-        .nav-item span { display: block; font-size: 22px; margin-bottom: 4px; }
+        .nav-item span { display: block; font-size: 20px; margin-bottom: 4px; }
     </style>
 </head>
 <body>
 
 <div id="app">
     <section id="s-game" class="screen">
-        <div class="header">
-            <span id="p-name">@malenkiydanik</span>
-            <span id="event-timer">ИВЕНТ ОСТАНОВЛЕН</span>
-        </div>
+        <div class="header"><span id="p-name">@loading</span><span id="event-timer">ИВЕНТ...</span></div>
         <div id="score">0</div>
-        <div id="passive-display">Пассивный доход: 0/сек</div>
-        
-        <div class="tap-area">
-            <div class="main-circle" id="tapBtn">TAP</div>
-        </div>
-
+        <div id="passive-display">Passive: 0/sec</div>
+        <div class="tap-area"><div class="main-circle" id="tapBtn">TAP</div></div>
         <div class="energy-box">
-            <p style="font-size: 11px; font-weight: 900; letter-spacing: 2px;">TAP TO EARN</p>
             <div class="bar-bg"><div id="e-fill"></div></div>
-            <b id="e-text" style="font-size: 18px;">150 / 150</b>
+            <b id="e-text">150 / 150</b>
         </div>
     </section>
 
+    <section id="s-top" class="screen hidden">
+        <h2 style="align-self:flex-start; margin-bottom:20px;">TOP 5 JUUG'ERS</h2>
+        <div id="leaderboard-list" style="width:100%;"></div>
+    </section>
+
     <section id="s-shop" class="screen hidden">
-        <h2 style="align-self:flex-start; margin-bottom:25px; font-size: 32px; font-weight: 900;">SHOP</h2>
+        <h2 style="align-self:flex-start; margin-bottom:20px;">SHOP</h2>
         <div class="shop-tabs">
-            <button class="tab-btn active" id="btn-click" onclick="toggleShop('click')">УЛУЧШЕНИЕ КЛИКА</button>
-            <button class="tab-btn" id="btn-passive" onclick="toggleShop('passive')">ПАССИВНЫЙ ДОХОД</button>
+            <button class="tab-btn active" id="btn-click" onclick="toggleShop('click')">CLICK</button>
+            <button class="tab-btn" id="btn-passive" onclick="toggleShop('passive')">PASSIVE</button>
         </div>
         <div id="shop-items" style="width:100%;"></div>
     </section>
 
     <section id="s-gear" class="screen hidden">
-        <h2 style="align-self:flex-start; margin-bottom:25px; font-size: 32px; font-weight: 900;">GEAR</h2>
-        <div class="upgrade-card"><div class="up-info"><b>ЗВУК</b><span>Эффекты при нажатии</span></div>ВЫКЛ</div>
-        <div class="upgrade-card"><div class="up-info"><b>ЯЗЫК</b><span>Текущий язык приложения</span></div>RU</div>
-        
-        <div id="admin-panel" class="admin-box hidden">
-            <p style="color:#ff4444; font-size:11px; font-weight:900; margin-bottom:12px; text-transform: uppercase;">Панель администратора</p>
-            <button class="admin-btn" id="eventControl">ЗАГРУЗКА...</button>
+        <h2 style="align-self:flex-start; margin-bottom:20px;">GEAR</h2>
+        <div class="card"><div class="up-info"><b>ADMIN PANEL</b><span id="adm-status">Access Denied</span></div></div>
+        <div id="admin-panel" class="hidden" style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:10px;">
+            <button id="eventControl" style="width:100%; padding:10px; font-weight:900;">ЗАПУСТИТЬ ИВЕНТ</button>
         </div>
     </section>
 
     <nav>
-        <div class="nav-item" onclick="show('s-top')"><span>🏆</span>TOP</div>
+        <div class="nav-item" id="n-top" onclick="show('s-top')"><span>🏆</span>TOP</div>
         <div class="nav-item active" id="n-game" onclick="show('s-game')"><span>💎</span>GAME</div>
         <div class="nav-item" id="n-shop" onclick="show('s-shop')"><span>🎁</span>SHOP</div>
         <div class="nav-item" id="n-gear" onclick="show('s-gear')"><span>⚙️</span>GEAR</div>
@@ -114,7 +103,7 @@
 </div>
 
 <script>
-    // КОНФИГУРАЦИЯ FIREBASE (Твои данные)
+    // FIREBASE CONFIG
     const firebaseConfig = {
         apiKey: "AIzaSyDcUMfQAd9QnoPUVxfM9SWp_lHBc2CaRKY",
         authDomain: "juugtaaap.firebaseapp.com",
@@ -122,8 +111,7 @@
         projectId: "juugtaaap",
         storageBucket: "juugtaaap.firebasestorage.app",
         messagingSenderId: "230755213175",
-        appId: "1:230755213175:web:60d2bd14da628347284b72",
-        measurementId: "G-7NH27N7JMQ"
+        appId: "1:230755213175:web:60d2bd14da628347284b72"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -131,147 +119,142 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // ПАРАМЕТРЫ
     const MY_ID = 5291965471;
     const player = tg.initDataUnsafe?.user || { id: 5291965471, username: "malenkiydanik" };
-    const playerPath = `users/${player.id}`;
-
-    let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now() };
+    const names = ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"];
+    
+    let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), username: player.username || "player" };
     let eventEndTime = 0;
     let shopType = 'click';
-    const names = ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"];
 
-    // ЦЕНЫ (1.3 - Мягкая прогрессия)
     function getPrice(lvl) { return Math.floor(100 * Math.pow(1.3, lvl)); }
+    function format(num) {
+        if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
+        if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+        if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+        return Math.floor(num);
+    }
 
-    // ЗАГРУЗКА ДАННЫХ
-    db.ref(playerPath).once('value', (snap) => {
-        const data = snap.val();
-        if (data) {
-            state = { ...state, ...data };
-            const offlineTime = Math.floor((Date.now() - state.lastUpdate) / 1000);
-            state.score += Math.max(0, offlineTime * state.passiveLvl);
+    // LOAD DATA
+    db.ref(`users/${player.id}`).once('value', (snap) => {
+        if (snap.val()) {
+            state = { ...state, ...snap.val() };
+            const offline = Math.floor((Date.now() - state.lastUpdate) / 1000);
+            state.score += Math.max(0, offline * state.passiveLvl);
         }
-        document.getElementById('p-name').innerText = "@" + (player.username || "user");
+        document.getElementById('p-name').innerText = "@" + state.username;
         updateUI();
     });
 
-    // СИНХРОНИЗАЦИЯ ИВЕНТА
+    // EVENT SYNC
     db.ref('event').on('value', (snap) => {
         const data = snap.val();
-        const timerEl = document.getElementById('event-timer');
-        const adminBtn = document.getElementById('eventControl');
-        if (data && data.active) {
-            eventEndTime = data.endTime;
-            timerEl.classList.add('active');
-            adminBtn.innerText = "ОСТАНОВИТЬ ИВЕНТ";
-        } else {
-            eventEndTime = 0;
-            timerEl.innerText = "ИВЕНТ ОСТАНОВЛЕН";
-            timerEl.classList.remove('active');
-            adminBtn.innerText = "ЗАПУСТИТЬ ИВЕНТ (90д)";
-        }
+        eventEndTime = (data && data.active) ? data.endTime : 0;
+        document.getElementById('eventControl').innerText = eventEndTime ? "СТОП ИВЕНТ" : "СТАРТ ИВЕНТ";
     });
 
-    // ПРОВЕРКА АДМИНА
-    if (player.id === MY_ID) document.getElementById('admin-panel').classList.remove('hidden');
-    document.getElementById('eventControl').onclick = () => {
-        if (eventEndTime === 0) {
-            db.ref('event').set({ active: true, endTime: Date.now() + (90 * 24 * 60 * 60 * 1000) });
-        } else {
-            db.ref('event').set({ active: false, endTime: 0 });
-        }
-    };
-
-    // МАГАЗИН
-    function renderShop() {
-        const container = document.getElementById('shop-items');
-        container.innerHTML = '';
-        const currentLvl = shopType === 'click' ? state.tapLvl : state.passiveLvl;
-        const nameIdx = Math.min(Math.floor(currentLvl / 10), 4);
-        const nextPrice = getPrice(currentLvl + 1);
-
-        const card = document.createElement('div');
-        card.className = 'upgrade-card';
-        card.innerHTML = `
-            <div class="up-info">
-                <b>${names[nameIdx]}</b>
-                <span>Ур. ${currentLvl} / 50 (+1 к ${shopType === 'click' ? 'клику' : 'доходу'})</span>
-            </div>
-            <button class="buy-btn" ${state.score < nextPrice || currentLvl >= 50 ? 'disabled' : ''} 
-                onclick="buy(${nextPrice})">${nextPrice.toLocaleString()}</button>
-        `;
-        container.appendChild(card);
+    if (player.id === MY_ID) {
+        document.getElementById('admin-panel').classList.remove('hidden');
+        document.getElementById('adm-status').innerText = "Administrator Mode";
     }
 
-    window.buy = (price) => {
-        if (state.score >= price) {
-            state.score -= price;
+    document.getElementById('eventControl').onclick = () => {
+        db.ref('event').set(eventEndTime ? { active: false, endTime: 0 } : { active: true, endTime: Date.now() + 7776000000 });
+    };
+
+    // LEADERBOARD
+    function loadLeaderboard() {
+        const list = document.getElementById('leaderboard-list');
+        list.innerHTML = "Loading...";
+        db.ref('users').orderByChild('score').limitToLast(5).once('value', (snap) => {
+            list.innerHTML = "";
+            let users = [];
+            snap.forEach(s => users.push(s.val()));
+            users.reverse().forEach((u, i) => {
+                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+                const rank = names[Math.min(Math.floor((u.tapLvl + u.passiveLvl) / 20), 4)];
+                list.innerHTML += `
+                    <div class="card">
+                        <div class="leader-rank">${medals[i]}</div>
+                        <div class="leader-name">@${u.username}<br><span>${rank} (Lvl ${u.tapLvl + u.passiveLvl})</span></div>
+                        <div style="font-weight:900;">${format(u.score)}</div>
+                    </div>`;
+            });
+        });
+    }
+
+    // SHOP
+    function renderShop() {
+        const cont = document.getElementById('shop-items');
+        cont.innerHTML = "";
+        const lvl = shopType === 'click' ? state.tapLvl : state.passiveLvl;
+        const price = getPrice(lvl + 1);
+        const rank = names[Math.min(Math.floor(lvl / 10), 4)];
+        cont.innerHTML = `
+            <div class="card">
+                <div class="up-info"><b>${rank}</b><span>Level ${lvl}/50 (+1 ${shopType})</span></div>
+                <button class="buy-btn" ${state.score < price || lvl >= 50 ? 'disabled' : ''} onclick="buy(${price})">${format(price)}</button>
+            </div>`;
+    }
+
+    window.buy = (p) => {
+        if (state.score >= p) {
+            state.score -= p;
             if (shopType === 'click') state.tapLvl++; else state.passiveLvl++;
-            saveData();
-            updateUI();
-            renderShop();
+            save(); updateUI(); renderShop();
             tg.HapticFeedback.notificationOccurred('success');
         }
     };
 
-    // ИГРОВОЙ ПРОЦЕСС
+    // GAME LOOP
     document.getElementById('tapBtn').onclick = () => {
         if (state.energy > 0) {
-            state.score += state.tapLvl;
-            state.energy--;
-            updateUI();
-            tg.HapticFeedback.impactOccurred('light');
-        } else {
-            tg.HapticFeedback.notificationOccurred('error');
+            state.score += state.tapLvl; state.energy--;
+            updateUI(); tg.HapticFeedback.impactOccurred('light');
         }
     };
 
-    // ТАЙМЕРЫ
     setInterval(() => {
         state.score += state.passiveLvl;
         if (state.energy < 150) state.energy++;
         updateUI();
-        if (Math.random() > 0.8) saveData(); // Автосохранение
-    }, 1000);
-
-    setInterval(() => {
-        if (eventEndTime === 0) return;
-        const diff = eventEndTime - Date.now();
-        if (diff <= 0) { document.getElementById('event-timer').innerText = "ОКОНЧЕН"; return; }
-        const d = Math.floor(diff / 86400000);
-        const h = Math.floor((diff % 86400000) / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
-        document.getElementById('event-timer').innerText = `EVENT: ${d}d ${h}h ${m}m ${s}s`;
+        if (Math.random() > 0.9) save();
     }, 1000);
 
     function updateUI() {
-        document.getElementById('score').innerText = Math.floor(state.score).toLocaleString();
-        document.getElementById('passive-display').innerText = `Пассивный доход: ${state.passiveLvl}/сек`;
+        document.getElementById('score').innerText = format(state.score);
+        document.getElementById('passive-display').innerText = `Passive: ${state.passiveLvl}/sec`;
         document.getElementById('e-text').innerText = `${state.energy} / 150`;
-        document.getElementById('e-fill').style.width = (state.energy/1.5) + '%';
+        document.getElementById('e-fill').style.width = (state.energy / 1.5) + '%';
+        
+        const timerEl = document.getElementById('event-timer');
+        if (eventEndTime > Date.now()) {
+            const d = Math.floor((eventEndTime - Date.now()) / 86400000);
+            timerEl.innerText = `EVENT: ${d}d LEFT`;
+            timerEl.classList.add('active');
+        } else {
+            timerEl.innerText = "NO EVENT";
+            timerEl.classList.remove('active');
+        }
     }
 
-    function saveData() {
+    function save() {
         state.lastUpdate = Date.now();
-        db.ref(playerPath).update(state);
+        db.ref(`users/${player.id}`).set(state);
     }
 
-    window.toggleShop = (t) => {
-        shopType = t;
-        document.getElementById('btn-click').classList.toggle('active', t === 'click');
-        document.getElementById('btn-passive').classList.toggle('active', t === 'passive');
-        renderShop();
-    }
+    window.toggleShop = (t) => { shopType = t; renderShop(); 
+        document.getElementById('btn-click').classList.toggle('active', t==='click');
+        document.getElementById('btn-passive').classList.toggle('active', t==='passive');
+    };
 
     window.show = (id) => {
         document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById(id).classList.remove('hidden');
-        if (id === 's-shop') { document.getElementById('n-shop').classList.add('active'); renderShop(); }
-        else if (id === 's-game') document.getElementById('n-game').classList.add('active');
-        else if (id === 's-gear') document.getElementById('n-gear').classList.add('active');
+        document.getElementById('n-' + id.split('-')[1]).classList.add('active');
+        if (id === 's-top') loadLeaderboard();
+        if (id === 's-shop') renderShop();
     };
 </script>
 </body>
