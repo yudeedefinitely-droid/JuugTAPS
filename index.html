@@ -3,64 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>JuugTAPS Ultra</title>
+    <title>JuugTAPS Pro</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
     <div id="app">
-        <section id="game-screen" class="screen active main-menu-bg">
-            <div class="header-glass">
-                <span class="label">JUUG BALANCE</span>
+        <section id="game-screen" class="screen active">
+            <div class="top-bar">
+                <span class="score-title">SCORE</span>
                 <div id="balance">0</div>
             </div>
 
-            <div class="main-click-area">
-                <div id="character" class="circle-tap-area">
-                    <img id="char-img" src="image_2.png" alt="Juug">
+            <div class="click-section">
+                <div id="character" class="main-button">
+                    <img src="image_2.png" alt="Juug" id="char-img">
                 </div>
             </div>
 
-            <div class="stats-footer">
-                <div class="energy-info">
-                    <span>⚡ <span id="energy-current">150</span> / 150</span>
-                </div>
+            <div class="bottom-section">
+                <div class="energy-text">TAP TO EARN</div>
                 <div class="energy-bar"><div id="energy-fill"></div></div>
+                <div class="energy-num"><span id="energy-current">150</span> / 150</div>
             </div>
         </section>
 
-        <section id="leaderboard-screen" class="screen generic-bg">
-            <h2 class="cry-text">TOP JUUGERS</h2>
-            <div class="airdrop-card">Airdrop in: <span id="airdrop-timer">--</span></div>
-            <div id="leader-list" class="scroll-area"></div>
+        <section id="leaderboard-screen" class="screen">
+            <h2 class="title">TOP JUUGERS</h2>
+            <div id="leader-list" class="scroll-list"></div>
         </section>
 
-        <section id="shop-screen" class="screen generic-bg">
-            <h2 class="cry-text">BLACK MARKET</h2>
-            <div id="shop-list" class="scroll-area"></div>
-        </section>
-
-        <section id="settings-screen" class="screen generic-bg">
-            <h2 class="cry-text">GEAR</h2>
-            <div class="settings-grid">
-                <button class="action-btn" onclick="claimDailyReward()">🎁 DAILY REWARD</button>
-                <button class="action-btn" onclick="toggleMusic()">🎵 AUDIO</button>
+        <section id="daily-screen" class="screen">
+            <h2 class="title">DAILY REWARDS</h2>
+            <div class="reward-card">
+                <div class="reward-amount">+100 PTS</div>
+                <p id="daily-timer">Available now!</p>
+                <button id="claim-btn" class="action-btn" onclick="claimDailyReward()">COLLECT</button>
             </div>
-            
-            <div id="admin-panel" class="admin-block" style="display:none;">
-                <div class="admin-tag">DEVELOPER MODE</div>
-                <button class="admin-btn" onclick="startGlobalTimer()">▶ START 90-DAY TIMER</button>
-                <button class="admin-btn" onclick="addAdminBalance()">💰 ADD 1M CASH</button>
+        </section>
+
+        <section id="settings-screen" class="screen">
+            <h2 class="title">GEAR</h2>
+            <div id="admin-panel" style="display:none;" class="admin-zone">
+                <p>ADMIN PANEL</p>
+                <button onclick="startGlobalTimer()">START AIRDROP TIMER</button>
             </div>
         </section>
 
         <nav class="bottom-nav">
-            <button class="nav-item" onclick="showScreen('leaderboard-screen')">🏆</button>
-            <button class="nav-item active-nav" onclick="showScreen('game-screen')">💎</button>
-            <button class="nav-item" onclick="showScreen('shop-screen')">🛒</button>
-            <button class="nav-item" onclick="showScreen('settings-screen')">⚙️</button>
+            <button onclick="showScreen('leaderboard-screen')">🏆 <span>LEADERS</span></button>
+            <button onclick="showScreen('game-screen')" class="active-nav">💎 <span>GAME</span></button>
+            <button onclick="showScreen('daily-screen')">🎁 <span>DAILY</span></button>
+            <button onclick="showScreen('settings-screen')">⚙️ <span>GEAR</span></button>
         </nav>
     </div>
+
+    <script type="module">
+        // Инициализация Firebase (оставь свой конфиг здесь)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        
+        const firebaseConfig = { /* ТВОЙ КОНФИГ */ };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.updateLeaderboard = function() {
+            const topRef = query(ref(db, 'players'), orderByChild('score'), limitToLast(10));
+            onValue(topRef, (snap) => {
+                const players = [];
+                snap.forEach(child => { players.push(child.val()); });
+                players.reverse();
+                const list = document.getElementById('leader-list');
+                const medals = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣"];
+                list.innerHTML = players.map((p, i) => `
+                    <div class="user-row">
+                        <span>${medals[i] || (i+1)} ${p.username}</span>
+                        <b>${p.score.toLocaleString()} PTS</b>
+                    </div>
+                `).join('');
+            });
+        };
+        // Обновление каждую секунду
+        setInterval(() => { if(document.getElementById('leaderboard-screen').classList.contains('active')) window.updateLeaderboard(); }, 1000);
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
