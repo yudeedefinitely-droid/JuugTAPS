@@ -10,54 +10,19 @@
     <style>
         :root { --b: #000; --w: #fff; --g: #111; --sg: #222; }
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--b); color: var(--w); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
         
-        body { 
-            background: #000; 
-            color: var(--w); 
-            font-family: 'Inter', sans-serif; 
-            height: 100vh; 
-            overflow: hidden; 
-            display: flex; 
-            justify-content: center; 
-        }
+        /* Холст для частиц */
+        #particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 
-        /* Холст для частиц на заднем фоне */
-        #particleCanvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        #app { 
-            width: 100%; 
-            max-width: 500px; 
-            display: flex; 
-            flex-direction: column; 
-            position: relative; 
-            height: 100%; 
-            z-index: 1; /* Чтобы интерфейс был над частицами */
-        }
-
-        .screen { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; padding-bottom: 120px; background: transparent; }
+        #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; position: relative; height: 100%; z-index: 1; }
+        .screen { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
         .hidden { display: none !important; }
 
         .header { width: 100%; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 20px; color: #555; }
         #score { font-size: 72px; font-weight: 900; margin-top: 5px; }
         .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; }
-        
-        .main-circle { 
-            width: 280px; 
-            height: 280px; 
-            border: 4px solid var(--w); 
-            border-radius: 50%; 
-            transition: transform 0.1s; 
-            background: rgba(0,0,0,0.3); /* Немного прозрачности для глубины */
-            box-shadow: 0 0 20px rgba(255,255,255,0.1);
-        }
+        .main-circle { width: 280px; height: 280px; border: 4px solid var(--w); border-radius: 50%; transition: transform 0.1s; background: rgba(255,255,255,0.05); }
         .main-circle:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
 
         .energy-box { width: 100%; text-align: center; margin-bottom: 20px; }
@@ -66,7 +31,8 @@
 
         .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 18px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 900; min-width: 80px; }
-        
+        .buy-btn:disabled { background: #333; color: #555; }
+
         nav { position: absolute; bottom: 0; width: 100%; display: flex; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); border-top: 1px solid var(--sg); padding: 15px 0 35px; }
         .nav-item { flex: 1; text-align: center; color: #444; font-size: 11px; font-weight: 800; cursor: pointer; }
         .nav-item.active { color: var(--w); }
@@ -137,7 +103,7 @@
 </div>
 
 <script>
-    // --- FIREBASE CONFIG ---
+    // --- FIREBASE & TG ---
     const firebaseConfig = {
         apiKey: "AIzaSyDcUMfQAd9QnoPUVxfM9SWp_lHBc2CaRKY",
         authDomain: "juugtaaap.firebaseapp.com",
@@ -147,80 +113,180 @@
         messagingSenderId: "230755213175",
         appId: "1:230755213175:web:60d2bd14da628347284b72"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // --- ЛОГИКА ЧАСТИЦ (ФОН) ---
+    // --- GAME STATE ---
+    let user = { 
+        score: 0, 
+        energy: 150, 
+        maxEnergy: 150, 
+        clickPower: 1, 
+        passive: 0, 
+        lastUpdate: Date.now(),
+        upgrades: { click: 0, passive: 0 }
+    };
+    let userId = tg.initDataUnsafe.user?.id || "test_user";
+    document.getElementById('p-name').innerText = "@" + (tg.initDataUnsafe.user?.username || "Player");
+
+    // --- PARTICLES ---
     const canvas = document.getElementById('particleCanvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
-
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener('resize', resize);
     resize();
-
     class Particle {
         constructor() { this.reset(); }
         reset() {
             this.x = Math.random() * canvas.width;
             this.y = Math.random() * canvas.height;
             this.size = Math.random() * 2 + 0.5;
-            this.speedX = (Math.random() - 0.5) * 0.4;
-            this.speedY = (Math.random() - 0.5) * 0.4;
-            this.opacity = Math.random() * 0.5 + 0.1;
+            this.speedX = (Math.random() - 0.5) * 0.3;
+            this.speedY = (Math.random() - 0.5) * 0.3;
+            this.opacity = Math.random() * 0.4 + 0.1;
         }
         update() {
-            this.x += this.speedX;
-            this.y += this.speedY;
-            if (this.x > canvas.width || this.x < 0 || this.y > canvas.height || this.y < 0) this.reset();
+            this.x += this.speedX; this.y += this.speedY;
+            if(this.x<0||this.x>canvas.width||this.y<0||this.y>canvas.height) this.reset();
         }
         draw() {
-            ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI*2); ctx.fill();
         }
     }
-
-    for (let i = 0; i < 50; i++) particles.push(new Particle());
-
-    function animateParticles() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for(let i=0; i<40; i++) particles.push(new Particle());
+    function animate() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
         particles.forEach(p => { p.update(); p.draw(); });
-        requestAnimationFrame(animateParticles);
+        requestAnimationFrame(animate);
     }
-    animateParticles();
+    animate();
 
-    // --- ЛОГИКА ПЕРЕКЛЮЧЕНИЯ ЭКРАНОВ ---
+    // --- CORE LOGIC ---
+    function updateUI() {
+        document.getElementById('score').innerText = Math.floor(user.score);
+        document.getElementById('passive-display').innerText = `Passive: ${user.passive}/sec`;
+        document.getElementById('e-text').innerText = `${Math.floor(user.energy)} / ${user.maxEnergy}`;
+        document.getElementById('e-fill').style.width = (user.energy / user.maxEnergy * 100) + "%";
+    }
+
+    const tapBtn = document.getElementById('tapBtn');
+    tapBtn.addEventListener('click', () => {
+        if (user.energy >= 1) {
+            user.score += user.clickPower;
+            user.energy -= 1;
+            updateUI();
+            saveData();
+        }
+    });
+
+    // Регенерация энергии и пассивный доход
+    setInterval(() => {
+        if (user.energy < user.maxEnergy) user.energy = Math.min(user.maxEnergy, user.energy + 1);
+        user.score += user.passive;
+        updateUI();
+    }, 1000);
+
+    // --- NAVIGATION ---
     function show(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById('n-' + id.split('-')[1]).classList.add('active');
+        if(id === 's-top') loadLeaderboard();
     }
 
-    // Здесь должна быть твоя остальная логика (Firebase, клики, апгрейды)
-    // Я оставил структуру, чтобы ты мог вставить свои функции покупки и счета.
-    
+    // --- SHOP LOGIC ---
+    const upgradeData = {
+        click: [
+            { name: "Squeegee", price: 50, power: 1 },
+            { name: "High-Rise Kit", price: 500, power: 5 }
+        ],
+        passive: [
+            { name: "Small Team", price: 100, inc: 1 },
+            { name: "Juug Drone", price: 1000, inc: 10 }
+        ]
+    };
+
+    function openUpgrade(type) {
+        document.getElementById('shop-main').classList.add('hidden');
+        document.getElementById('shop-detail').classList.remove('hidden');
+        const container = document.getElementById('upgrade-items');
+        container.innerHTML = '';
+        
+        upgradeData[type].forEach((up, index) => {
+            const level = user.upgrades[type];
+            const price = Math.floor(up.price * Math.pow(1.5, level));
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div><b>${up.name}</b><br><small>Cost: ${price}</small></div>
+                <button class="buy-btn" onclick="buy('${type}', ${index})" ${user.score < price ? 'disabled' : ''}>BUY</button>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function backToShop() {
+        document.getElementById('shop-main').classList.remove('hidden');
+        document.getElementById('shop-detail').classList.add('hidden');
+    }
+
+    function buy(type, index) {
+        const up = upgradeData[type][index];
+        const level = user.upgrades[type];
+        const price = Math.floor(up.price * Math.pow(1.5, level));
+
+        if (user.score >= price) {
+            user.score -= price;
+            user.upgrades[type]++;
+            if (type === 'click') user.clickPower += up.power;
+            if (type === 'passive') user.passive += up.inc;
+            updateUI();
+            saveData();
+            openUpgrade(type);
+        }
+    }
+
+    // --- DATA SYNC ---
+    function saveData() {
+        db.ref('users/' + userId).set(user);
+    }
+
+    db.ref('users/' + userId).once('value').then(snap => {
+        if (snap.exists()) {
+            user = snap.val();
+            // На случай если структуры не было
+            if(!user.upgrades) user.upgrades = {click:0, passive:0};
+        }
+        updateUI();
+        document.getElementById('sync-text').innerText = "SYNCED";
+    });
+
+    function loadLeaderboard() {
+        db.ref('users').orderByChild('score').limitToLast(5).once('value', snap => {
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = '';
+            let items = [];
+            snap.forEach(child => { items.push(child.val()); });
+            items.reverse().forEach((u, i) => {
+                list.innerHTML += `<div class="card"><span>#${i+1} ${u.username || 'User'}</span><b>${Math.floor(u.score)}</b></div>`;
+            });
+        });
+    }
+
+    // --- SETTINGS ---
     function toggleSound() {
-        let s = document.getElementById('cur-sound');
+        const s = document.getElementById('cur-sound');
         s.innerText = s.innerText === "ON" ? "OFF" : "ON";
     }
-
     function toggleLang() {
-        let l = document.getElementById('cur-lang');
+        const l = document.getElementById('cur-lang');
         l.innerText = l.innerText === "English" ? "Russian" : "English";
     }
-
-    // Инициализация имени
-    document.getElementById('p-name').innerText = tg.initDataUnsafe.user?.username || "Player";
-
 </script>
 </body>
 </html>
