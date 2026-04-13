@@ -118,6 +118,20 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
+    // Аудио ассеты
+    const sounds = {
+        tap: new Audio('https://www.soundjay.com/buttons/button-20.mp3'),
+        shop: new Audio('https://www.soundjay.com/buttons/button-3.mp3'),
+        nav: new Audio('https://www.soundjay.com/buttons/button-16.mp3')
+    };
+
+    function playSound(type) {
+        if (state.sound && sounds[type]) {
+            sounds[type].currentTime = 0;
+            sounds[type].play().catch(() => {}); // Игнорим ошибку, если браузер блокирует автоплей
+        }
+    }
+
     const MY_ID = 5291965471;
     const user = tg.initDataUnsafe?.user || { id: 5291965471, username: "admin_danik" };
     const myName = user.username || `User_${user.id}`;
@@ -149,12 +163,14 @@
 
     function toggleLang() {
         state.lang = state.lang === 'en' ? 'ru' : 'en';
+        playSound('nav');
         updateLangUI();
         save();
     }
 
     function toggleSound() {
         state.sound = !state.sound;
+        if(state.sound) playSound('nav');
         document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
         save();
     }
@@ -175,13 +191,10 @@
         document.getElementById('t-lang-label').innerText = l.langL;
         document.getElementById('t-sound-label').innerText = l.soundL;
         document.getElementById('cur-lang').innerText = state.lang === 'en' ? "English" : "Русский";
-        
-        // Обновление меню навигации
         document.getElementById('t-nav-top').innerText = l.navTop;
         document.getElementById('t-nav-game').innerText = l.navGame;
         document.getElementById('t-nav-shop').innerText = l.navShop;
         document.getElementById('t-nav-gear').innerText = l.navGear;
-
         updateUI(); 
     }
 
@@ -234,9 +247,8 @@
             players.forEach((p, i) => {
                 const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
                 const rank = rankNamesGlobal(p.tapLvl, state.lang);
-                const isMe = p.username === myName ? 'border: 1px solid #333' : '';
                 list.innerHTML += `
-                    <div class="card" style="${isMe}">
+                    <div class="card" style="${p.username === myName ? 'border: 1px solid #333' : ''}">
                         <div style="font-size:20px; min-width:40px;">${medals[i]}</div>
                         <div style="flex:1">
                             <div style="font-weight:900;">@${p.username}</div>
@@ -253,12 +265,14 @@
     }
 
     window.openUpgrade = (type) => {
+        playSound('nav');
         document.getElementById('shop-main').classList.add('hidden');
         document.getElementById('shop-detail').classList.remove('hidden');
         renderUpgradeItems(type);
     };
 
     window.backToShop = () => {
+        playSound('nav');
         document.getElementById('shop-main').classList.remove('hidden');
         document.getElementById('shop-detail').classList.add('hidden');
     };
@@ -281,6 +295,7 @@
         if (state.score >= p) {
             state.score -= p;
             if (type === 'click') state.tapLvl++; else state.passiveLvl++;
+            playSound('shop');
             save(); updateUI(); renderUpgradeItems(type);
             if(state.sound) tg.HapticFeedback.notificationOccurred('success');
         }
@@ -294,6 +309,7 @@
     }
 
     window.show = (id) => {
+        playSound('nav');
         if (id !== 's-top') db.ref('users').off();
         document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -306,6 +322,7 @@
     document.getElementById('tapBtn').onclick = () => {
         if (isLoaded && state.energy > 0) {
             state.score += state.tapLvl; state.energy--;
+            playSound('tap');
             updateUI(); 
             if(state.sound) tg.HapticFeedback.impactOccurred('light');
         }
