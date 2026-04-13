@@ -10,11 +10,8 @@
     <style>
         :root { --b: #000; --w: #fff; --g: #111; --sg: #222; }
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        
         body { background: var(--b); color: var(--w); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
-
         #particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-
         #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; position: relative; height: 100%; z-index: 1; }
         .screen { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
         .hidden { display: none !important; }
@@ -145,7 +142,7 @@
         ru: { sync: "В СЕТИ", scoreL: "СЧЕТ", tapL: "ТАПАЙ ЧТОБЫ ЗАРАБОТАТЬ", passL: "Пассив", topT: "ТОП 5 ДЖУГЕРОВ", shopT: "МАГАЗИН", clUp: "ПРОКАЧКА КЛИКА", clDe: "Увеличить доход за тап", psUp: "ПАССИВНЫЙ ДОХОД", psDe: "Автоматический доход", back: "← НАЗАД", gearT: "МЕНЮ", langL: "Язык", soundL: "Звук", navTop: "ТОП", navGame: "ИГРА", navShop: "МАГАЗИН", navGear: "МЕНЮ", ranks: ["Нуб Джугер", "Обычный Джугер", "Про Джугер", "Хакер Джугер", "Бог Джугер"] }
     };
 
-    // --- BACKGROUND ---
+    // --- CANVAS BACKGROUND ---
     const canvas = document.getElementById('particleCanvas');
     const ctx = canvas.getContext('2d');
     let bgParticles = [];
@@ -161,10 +158,11 @@
     function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); bgParticles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
     animate();
 
-    // --- GAME LOGIC ---
+    // --- GAME FUNCTIONS ---
     function format(n) { return n >= 1e6 ? (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? (n/1e3).toFixed(1) + 'K' : Math.floor(n); }
     function getRank(lvl) { return langData[state.lang].ranks[Math.min(Math.floor(lvl / 10), 4)]; }
 
+    // INITIAL LOAD
     db.ref(`users/${user.id}`).once('value', (snap) => {
         const data = snap.val();
         if (data) {
@@ -176,10 +174,11 @@
         state.username = myName; isLoaded = true;
         document.getElementById('p-name').innerText = "@" + state.username;
         if (user.id === MY_ID) document.getElementById('admin-panel').classList.remove('hidden');
-        updateLangUI(); save();
+        updateLangUI(); updateUI(); save();
     });
 
     function save() { if (isLoaded) { state.lastUpdate = Date.now(); db.ref(`users/${user.id}`).set(state); } }
+
     function updateUI() {
         document.getElementById('score').innerText = format(state.score);
         document.getElementById('passive-display').innerText = `${langData[state.lang].passL}: ${state.passiveLvl}/sec`;
@@ -187,6 +186,7 @@
         document.getElementById('e-fill').style.width = (state.energy / 1.5) + '%';
     }
 
+    // CLICK HANDLER
     document.getElementById('tapBtn').onclick = (e) => {
         if (isLoaded && state.energy > 0) {
             state.score += state.tapLvl; state.energy--;
@@ -209,24 +209,30 @@
         }
     };
 
+    // LEADERBOARD (FIXED)
     function loadLeaderboard() {
         const list = document.getElementById('leaderboard-list');
+        list.innerHTML = "<p style='text-align:center; color:#555;'>Loading...</p>";
         db.ref('users').once('value', (snap) => {
             const data = snap.val(); if (!data) return;
-            let players = Object.values(data).sort((a, b) => b.score - a.score).slice(0, 5);
+            let players = Object.values(data)
+                .filter(p => p.username && p.score !== undefined) // Фильтр пустых игроков
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 5);
             list.innerHTML = "";
             players.forEach((p, i) => {
                 const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-                const rankName = langData[state.lang].ranks[Math.min(Math.floor(p.tapLvl / 10), 4)];
-                list.innerHTML += `<div class="card">
+                const pRank = langData[state.lang].ranks[Math.min(Math.floor((p.tapLvl || 1) / 10), 4)];
+                list.innerHTML += `<div class="card" style="${p.username === myName ? 'border-color: #555;' : ''}">
                     <div style="font-size:20px; min-width:40px;">${medals[i]}</div>
-                    <div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${rankName} (Lvl ${p.tapLvl})</div></div>
+                    <div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${pRank} (Lvl ${p.tapLvl || 1})</div></div>
                     <div style="font-weight:900;">${format(p.score)}</div>
                 </div>`;
             });
         });
     }
 
+    // SHOP
     window.openUpgrade = (type) => { document.getElementById('shop-main').classList.add('hidden'); document.getElementById('shop-detail').classList.remove('hidden'); renderUpgradeItems(type); };
     window.backToShop = () => { document.getElementById('shop-main').classList.remove('hidden'); document.getElementById('shop-detail').classList.add('hidden'); };
     
@@ -241,8 +247,16 @@
         </div>`;
     }
 
-    window.buy = (type, p) => { if (state.score >= p) { state.score -= p; if (type === 'click') state.tapLvl++; else state.passiveLvl++; save(); updateUI(); renderUpgradeItems(type); if(state.sound) tg.HapticFeedback.notificationOccurred('success'); } };
+    window.buy = (type, p) => { 
+        if (state.score >= p) { 
+            state.score -= p; 
+            if (type === 'click') state.tapLvl++; else state.passiveLvl++; 
+            save(); updateUI(); renderUpgradeItems(type); 
+            if(state.sound) tg.HapticFeedback.notificationOccurred('success'); 
+        } 
+    };
     
+    // NAVIGATION & UTILS
     function updateLangUI() {
         const l = langData[state.lang];
         const map = { 'sync-text':'sync', 't-score-label':'scoreL', 't-tap-label':'tapL', 't-top-title':'topT', 't-shop-title':'shopT', 't-click-up':'clUp', 't-click-desc':'clDe', 't-pass-up':'psUp', 't-pass-desc':'psDe', 't-back':'back', 't-gear-title':'gearT', 't-lang-label':'langL', 't-sound-label':'soundL', 't-nav-top':'navTop', 't-nav-game':'navGame', 't-nav-shop':'navShop', 't-nav-gear':'navGear' };
@@ -254,8 +268,22 @@
 
     function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); save(); }
     function toggleSound() { state.sound = !state.sound; document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF"; save(); }
-    window.show = (id) => { document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden')); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.getElementById(id).classList.remove('hidden'); document.getElementById('n-' + id.split('-')[1]).classList.add('active'); if (id === 's-top') loadLeaderboard(); };
-    setInterval(() => { if (!isLoaded) return; state.score += (state.passiveLvl || 0); if (state.energy < 150) state.energy++; updateUI(); if (Math.floor(Date.now() / 1000) % 5 === 0) save(); }, 1000);
+    
+    window.show = (id) => { 
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden')); 
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
+        document.getElementById(id).classList.remove('hidden'); 
+        document.getElementById('n-' + id.split('-')[1]).classList.add('active'); 
+        if (id === 's-top') loadLeaderboard(); 
+    };
+
+    setInterval(() => { 
+        if (!isLoaded) return; 
+        state.score += (state.passiveLvl || 0); 
+        if (state.energy < 150) state.energy++; 
+        updateUI(); 
+        if (Math.floor(Date.now() / 1000) % 5 === 0) save(); 
+    }, 1000);
 </script>
 </body>
 </html>
