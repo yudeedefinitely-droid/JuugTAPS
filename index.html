@@ -13,7 +13,7 @@
         
         body { background: var(--b); color: var(--w); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
 
-        /* ФОНОВЫЙ КАНВАС ДЛЯ ЧАСТИЦ */
+        /* ФОНОВЫЕ ЧАСТИЦЫ */
         #particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 
         #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; position: relative; height: 100%; z-index: 1; }
@@ -23,15 +23,17 @@
         .header { width: 100%; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 20px; color: #555; }
         #score { font-size: 72px; font-weight: 900; margin-top: 5px; }
         
+        /* КНОПКА ТАПА */
         .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
         .main-circle { 
-            width: 240px; height: 240px; /* УМЕНЬШЕННЫЙ РАЗМЕР */
+            width: 240px; height: 240px; 
             border: 4px solid var(--w); 
             border-radius: 50%; 
             transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
             box-shadow: 0 0 20px rgba(255,255,255,0.05);
             position: relative;
+            z-index: 2;
         }
         .main-circle:active { 
             transform: scale(0.92); 
@@ -39,15 +41,17 @@
             box-shadow: 0 0 40px rgba(255,255,255,0.1);
         }
 
-        /* Вылетающие при тапе частицы */
+        /* ЭФФЕКТЫ ТАПА (ЦИФРЫ И ЧАСТИЦЫ) */
+        .tap-effect {
+            position: absolute; pointer-events: none; color: #fff; font-weight: 900; font-size: 24px;
+            animation: floatUp 0.6s ease-out forwards; z-index: 10;
+        }
         .tap-particle {
             position: absolute; pointer-events: none; background: #fff; border-radius: 50%;
-            animation: flyOut 0.5s ease-out forwards; z-index: 10;
+            animation: flyOut 0.5s ease-out forwards; z-index: 9;
         }
-        @keyframes flyOut {
-            0% { transform: translate(0, 0) scale(1); opacity: 1; }
-            100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
-        }
+        @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100px); opacity: 0; } }
+        @keyframes flyOut { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; } }
 
         .energy-box { width: 100%; text-align: center; margin-bottom: 20px; }
         .bar-bg { height: 10px; background: #1a1a1a; border-radius: 10px; margin: 15px 0; overflow: hidden; }
@@ -157,7 +161,7 @@
         ru: { sync: "В СЕТИ", scoreL: "СЧЕТ", tapL: "ТАПАЙ ЧТОБЫ ЗАРАБОТАТЬ", passL: "Пассив", topT: "ТОП 5 ДЖУГЕРОВ", shopT: "МАГАЗИН", clUp: "ПРОКАЧКА КЛИКА", clDe: "Увеличить доход за тап", psUp: "ПАССИВНЫЙ ДОХОД", psDe: "Автоматический доход", back: "← НАЗАД", gearT: "НАСТРОЙКИ", langL: "Язык", soundL: "Звук", navTop: "ТОП", navGame: "ИГРА", navShop: "МАГАЗИН", navGear: "МЕНЮ", ranks: ["Нуб Джугер", "Обычный Джугер", "Про Джугер", "Хакер Джугер", "Бог Джугер"] }
     };
 
-    // --- ФОНОВАЯ АНИМАЦИЯ ЧАСТИЦ (ВОССТАНОВЛЕНА) ---
+    // --- ФОНОВЫЕ ЧАСТИЦЫ ---
     const canvas = document.getElementById('particleCanvas');
     const ctx = canvas.getContext('2d');
     let bgParticles = [];
@@ -167,12 +171,9 @@
     class BgParticle {
         constructor() { this.reset(); }
         reset() {
-            this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
-            this.size = Math.random() * 1.5 + 0.5;
-            this.speedX = (Math.random() - 0.5) * 0.3;
-            this.speedY = (Math.random() - 0.5) * 0.3;
-            this.opacity = Math.random() * 0.4 + 0.1;
+            this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 1.5 + 0.5; this.speedX = (Math.random() - 0.5) * 0.3;
+            this.speedY = (Math.random() - 0.5) * 0.3; this.opacity = Math.random() * 0.4 + 0.1;
         }
         update() {
             this.x += this.speedX; this.y += this.speedY;
@@ -191,35 +192,53 @@
     }
     animateBg();
 
-    // --- ЛОГИКА ИГРЫ ---
-    function format(n) {
-        if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
-        if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
-        if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
-        return Math.floor(n);
-    }
+    // --- ЛОГИКА ТАПА И ЭФФЕКТОВ ---
+    document.getElementById('tapBtn').onclick = (e) => {
+        if (isLoaded && state.energy > 0) {
+            state.score += state.tapLvl; state.energy--;
+            updateUI(); 
+            if(state.sound) tg.HapticFeedback.impactOccurred('light');
 
+            // Цифра урона
+            const num = document.createElement('div');
+            num.className = 'tap-effect';
+            num.innerText = `+${state.tapLvl}`;
+            num.style.left = e.clientX + 'px'; num.style.top = e.clientY + 'px';
+            document.body.appendChild(num);
+            setTimeout(() => num.remove(), 600);
+
+            // Частицы клика
+            for (let i = 0; i < 5; i++) {
+                const p = document.createElement('div');
+                p.className = 'tap-particle';
+                p.style.width = p.style.height = (Math.random() * 4 + 2) + 'px';
+                p.style.left = e.clientX + 'px'; p.style.top = e.clientY + 'px';
+                p.style.setProperty('--dx', (Math.random() - 0.5) * 150 + 'px');
+                p.style.setProperty('--dy', (Math.random() - 0.5) * 150 + 'px');
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 500);
+            }
+        }
+    };
+
+    // --- ФУНКЦИИ БАЗЫ И ИНТЕРФЕЙСА ---
+    function format(n) { return n >= 1e6 ? (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? (n/1e3).toFixed(1) + 'K' : Math.floor(n); }
+    
     db.ref(`users/${user.id}`).once('value', (snap) => {
         const data = snap.val();
         if (data) {
             state = { ...state, ...data };
-            const offline = Math.floor((Date.now() - (state.lastUpdate || Date.now())) / 1000);
-            state.score += Math.max(0, offline * (state.passiveLvl || 0));
-            if (state.energy < 150) state.energy = Math.min(150, state.energy + offline);
+            const off = Math.floor((Date.now() - (state.lastUpdate || Date.now())) / 1000);
+            state.score += Math.max(0, off * (state.passiveLvl || 0));
+            if (state.energy < 150) state.energy = Math.min(150, state.energy + off);
         }
-        state.username = myName;
-        isLoaded = true;
+        state.username = myName; isLoaded = true;
         document.getElementById('p-name').innerText = "@" + state.username;
         if (user.id === MY_ID) document.getElementById('admin-panel').classList.remove('hidden');
-        updateLangUI();
-        save();
+        updateLangUI(); save();
     });
 
-    function save() {
-        if (!isLoaded) return;
-        state.lastUpdate = Date.now();
-        db.ref(`users/${user.id}`).set(state);
-    }
+    function save() { if (isLoaded) { state.lastUpdate = Date.now(); db.ref(`users/${user.id}`).set(state); } }
 
     function updateUI() {
         document.getElementById('score').innerText = format(state.score);
@@ -228,41 +247,10 @@
         document.getElementById('e-fill').style.width = (state.energy / 1.5) + '%';
     }
 
-    // ТАП С ЧАСТИЦАМИ
-    document.getElementById('tapBtn').onclick = (e) => {
-        if (isLoaded && state.energy > 0) {
-            state.score += state.tapLvl; state.energy--;
-            updateUI(); 
-            if(state.sound) tg.HapticFeedback.impactOccurred('light');
-            for (let i = 0; i < 6; i++) createTapParticle(e.clientX, e.clientY);
-        }
-    };
-
-    function createTapParticle(x, y) {
-        const p = document.createElement('div');
-        p.className = 'tap-particle';
-        const size = Math.random() * 4 + 2;
-        p.style.width = size + 'px'; p.style.height = size + 'px';
-        p.style.left = x + 'px'; p.style.top = y + 'px';
-        const dx = (Math.random() - 0.5) * 140;
-        const dy = (Math.random() - 0.5) * 140;
-        p.style.setProperty('--dx', dx + 'px');
-        p.style.setProperty('--dy', dy + 'px');
-        document.body.appendChild(p);
-        setTimeout(() => p.remove(), 500);
-    }
-
-    // Вспомогательные функции
-    function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); save(); }
-    function toggleSound() { state.sound = !state.sound; document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF"; save(); }
-    
     function updateLangUI() {
         const l = langData[state.lang];
-        const ids = ['sync-text','t-score-label','t-tap-label','t-top-title','t-shop-title','t-click-up','t-click-desc','t-pass-up','t-pass-desc','t-back','t-gear-title','t-lang-label','t-sound-label','t-nav-top','t-nav-game','t-nav-shop','t-nav-gear'];
-        ids.forEach(id => {
-            let key = id.replace('t-', '').replace('-label', '').replace('-up', 'Up').replace('-desc', 'De').replace('nav-', 'nav').replace('sync-text', 'sync');
-            if(document.getElementById(id)) document.getElementById(id).innerText = l[key];
-        });
+        const map = { 'sync-text':'sync', 't-score-label':'scoreL', 't-tap-label':'tapL', 't-top-title':'topT', 't-shop-title':'shopT', 't-click-up':'clUp', 't-click-desc':'clDe', 't-pass-up':'psUp', 't-pass-desc':'psDe', 't-back':'back', 't-gear-title':'gearT', 't-lang-label':'langL', 't-sound-label':'soundL', 't-nav-top':'navTop', 't-nav-game':'navGame', 't-nav-shop':'navShop', 't-nav-gear':'navGear' };
+        for(let id in map) if(document.getElementById(id)) document.getElementById(id).innerText = l[map[id]];
         document.getElementById('cur-lang').innerText = state.lang === 'en' ? "English" : "Русский";
         document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
         updateUI();
@@ -290,10 +278,7 @@
             const data = snap.val(); if (!data) return;
             let players = Object.values(data).sort((a, b) => b.score - a.score).slice(0, 5);
             list.innerHTML = "";
-            players.forEach((p, i) => {
-                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-                list.innerHTML += `<div class="card"><div>${medals[i]} @${p.username}</div><b>${format(p.score)}</b></div>`;
-            });
+            players.forEach((p, i) => { list.innerHTML += `<div class="card"><div>#${i+1} @${p.username}</div><b>${format(p.score)}</b></div>`; });
         });
     }
 
@@ -306,6 +291,8 @@
         cont.innerHTML = `<div class="card"><div>Lvl ${lvl} → ${lvl+1}</div><button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button></div>`;
     }
     window.buy = (type, p) => { if (state.score >= p) { state.score -= p; if (type === 'click') state.tapLvl++; else state.passiveLvl++; save(); updateUI(); renderUpgradeItems(type); if(state.sound) tg.HapticFeedback.notificationOccurred('success'); } };
+    function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); save(); }
+    function toggleSound() { state.sound = !state.sound; document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF"; save(); }
 </script>
 </body>
 </html>
