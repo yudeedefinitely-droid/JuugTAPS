@@ -17,80 +17,76 @@
         .hidden { display: none !important; }
 
         /* Header */
-        .header { width: 100%; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 20px; }
-        #event-timer.active { color: #fff; text-shadow: 0 0 10px #fff; }
+        .header { width: 100%; display: flex; justify-content: space-between; font-weight: 700; font-size: 13px; margin-bottom: 20px; color: #aaa; }
+        #event-timer.active { color: #fff; }
 
-        /* Game UI */
-        #score { font-size: 64px; font-weight: 900; margin-top: 10px; }
-        #passive-display { color: #888; font-size: 14px; margin-bottom: 30px; font-weight: bold; }
-        .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 300px; }
+        /* Game UI (Matching your mockup) */
+        .score-container { text-align: center; margin-top: 10px; }
+        .score-label { font-size: 12px; letter-spacing: 2px; color: #fff; font-weight: 800; margin-bottom: 5px; }
+        #score { font-size: 64px; font-weight: 900; }
+        
+        .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; }
         .main-circle { 
             width: 280px; height: 280px; border: 4px solid var(--w); border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 900;
             transition: transform 0.05s; 
         }
-        .main-circle:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
+        .main-circle:active { transform: scale(0.96); background: rgba(255,255,255,0.05); }
 
-        /* Progress Bar */
         .energy-box { width: 100%; text-align: center; margin-bottom: 20px; }
-        .bar-bg { height: 8px; background: #1a1a1a; border-radius: 10px; margin: 10px 0; overflow: hidden; }
-        #e-fill { height: 100%; width: 100%; background: #fff; transition: width 0.2s; }
+        .bar-bg { height: 10px; background: #1a1a1a; border-radius: 20px; margin: 15px 0; overflow: hidden; width: 100%; }
+        #e-fill { height: 100%; width: 100%; background: #fff; transition: width 0.2s; border-radius: 20px; }
 
-        /* Shop & Leaderboard Cards */
-        .shop-tabs { display: flex; width: 100%; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 12px; background: var(--g); border: 1px solid var(--sg); color: #555; font-weight: 900; border-radius: 8px; cursor: pointer; }
-        .tab-btn.active { color: var(--w); border-color: var(--w); }
-
+        /* Cards & Shop */
         .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .up-info b { display: block; font-size: 16px; }
-        .up-info span { font-size: 12px; color: #666; font-weight: bold; }
-        .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 15px; border-radius: 6px; font-weight: 900; }
-        .buy-btn:disabled { background: #333; color: #555; }
-
-        /* Leaderboard Specific */
-        .leader-rank { font-size: 20px; font-weight: 900; min-width: 35px; }
-        .leader-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 900; padding-right: 10px; }
+        .leader-name { font-weight: 900; font-size: 15px; }
+        .leader-rank { font-size: 20px; min-width: 35px; }
 
         /* Navigation */
-        nav { position: absolute; bottom: 0; width: 100%; display: flex; background: var(--b); border-top: 1px solid var(--sg); padding: 15px 0 35px; }
-        .nav-item { flex: 1; text-align: center; color: #444; font-size: 11px; font-weight: 800; cursor: pointer; }
+        nav { position: absolute; bottom: 0; width: 100%; display: flex; background: var(--b); border-top: 1px solid var(--sg); padding: 10px 0 30px; }
+        .nav-item { flex: 1; text-align: center; color: #444; font-size: 10px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
         .nav-item.active { color: var(--w); }
-        .nav-item span { display: block; font-size: 20px; margin-bottom: 4px; }
+        .nav-item span { display: block; font-size: 18px; margin-bottom: 4px; }
     </style>
 </head>
 <body>
 
 <div id="app">
     <section id="s-game" class="screen">
-        <div class="header"><span id="p-name">@loading</span><span id="event-timer">ИВЕНТ...</span></div>
-        <div id="score">0</div>
-        <div id="passive-display">Passive: 0/sec</div>
-        <div class="tap-area"><div class="main-circle" id="tapBtn">TAP</div></div>
+        <div class="header"><span id="p-name">@loading</span><span id="event-timer">EVENT: 00h 00m</span></div>
+        <div class="score-container">
+            <div class="score-label">SCORE</div>
+            <div id="score">0</div>
+        </div>
+        <div class="tap-area"><div class="main-circle" id="tapBtn"></div></div>
         <div class="energy-box">
+            <p style="font-size: 12px; font-weight: 800;">TAP TO EARN</p>
             <div class="bar-bg"><div id="e-fill"></div></div>
-            <b id="e-text">150 / 150</b>
+            <b id="e-text" style="font-size: 16px;">150 / 150</b>
         </div>
     </section>
 
     <section id="s-top" class="screen hidden">
-        <h2 style="align-self:flex-start; margin-bottom:20px;">TOP 5 JUUG'ERS</h2>
+        <h2 style="align-self:flex-start; margin-bottom:20px; font-weight: 900;">TOP 5 JUUG'ERS</h2>
         <div id="leaderboard-list" style="width:100%;"></div>
     </section>
 
     <section id="s-shop" class="screen hidden">
         <h2 style="align-self:flex-start; margin-bottom:20px;">SHOP</h2>
-        <div class="shop-tabs">
-            <button class="tab-btn active" id="btn-click" onclick="toggleShop('click')">CLICK</button>
-            <button class="tab-btn" id="btn-passive" onclick="toggleShop('passive')">PASSIVE</button>
+        <div id="shop-items" style="width:100%;">
+            <div class="card" onclick="toggleShop('click')"><b>CLICK UPGRADES</b> <span>➔</span></div>
+            <div class="card" onclick="toggleShop('passive')"><b>PASSIVE INCOME</b> <span>➔</span></div>
         </div>
-        <div id="shop-items" style="width:100%;"></div>
+        <div id="shop-detail" class="hidden" style="width:100%;">
+            <button onclick="backToShop()" style="background:none; border:none; color:#555; font-weight:800; margin-bottom:15px;">← НАЗАД</button>
+            <div id="upgrade-container"></div>
+        </div>
     </section>
 
     <section id="s-gear" class="screen hidden">
         <h2 style="align-self:flex-start; margin-bottom:20px;">GEAR</h2>
-        <div class="card"><div class="up-info"><b>ADMIN PANEL</b><span id="adm-status">Access Denied</span></div></div>
         <div id="admin-panel" class="hidden" style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:10px;">
-            <button id="eventControl" style="width:100%; padding:10px; font-weight:900;">ЗАПУСТИТЬ ИВЕНТ</button>
+            <p style="color:#ff4444; font-size:10px; font-weight:900; margin-bottom:10px;">ADMIN PANEL</p>
+            <button id="eventControl" style="width:100%; padding:12px; font-weight:900; background:#fff; border:none; border-radius:5px;">ЗАПУСТИТЬ ИВЕНТ</button>
         </div>
     </section>
 
@@ -103,7 +99,6 @@
 </div>
 
 <script>
-    // FIREBASE CONFIG
     const firebaseConfig = {
         apiKey: "AIzaSyDcUMfQAd9QnoPUVxfM9SWp_lHBc2CaRKY",
         authDomain: "juugtaaap.firebaseapp.com",
@@ -120,93 +115,79 @@
     tg.expand();
 
     const MY_ID = 5291965471;
-    const player = tg.initDataUnsafe?.user || { id: 5291965471, username: "malenkiydanik" };
-    const names = ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"];
+    const userData = tg.initDataUnsafe?.user || { id: 5291965471, username: "admin_danik" };
     
-    let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), username: player.username || "player" };
-    let eventEndTime = 0;
-    let shopType = 'click';
+    // Исправление username
+    const validUsername = userData.username || `user_${userData.id}`;
+    
+    let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), username: validUsername };
+    const names = ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"];
 
-    function getPrice(lvl) { return Math.floor(100 * Math.pow(1.3, lvl)); }
-    function format(num) {
-        if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
-        if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
-        if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
-        return Math.floor(num);
-    }
-
-    // LOAD DATA
-    db.ref(`users/${player.id}`).once('value', (snap) => {
+    // Загрузка
+    db.ref(`users/${userData.id}`).once('value', (snap) => {
         if (snap.val()) {
-            state = { ...state, ...snap.val() };
+            state = { ...state, ...snap.val(), username: validUsername };
             const offline = Math.floor((Date.now() - state.lastUpdate) / 1000);
             state.score += Math.max(0, offline * state.passiveLvl);
         }
         document.getElementById('p-name').innerText = "@" + state.username;
+        save(); // Сразу обновляем имя в базе
         updateUI();
     });
 
-    // EVENT SYNC
-    db.ref('event').on('value', (snap) => {
-        const data = snap.val();
-        eventEndTime = (data && data.active) ? data.endTime : 0;
-        document.getElementById('eventControl').innerText = eventEndTime ? "СТОП ИВЕНТ" : "СТАРТ ИВЕНТ";
-    });
-
-    if (player.id === MY_ID) {
-        document.getElementById('admin-panel').classList.remove('hidden');
-        document.getElementById('adm-status').innerText = "Administrator Mode";
-    }
-
-    document.getElementById('eventControl').onclick = () => {
-        db.ref('event').set(eventEndTime ? { active: false, endTime: 0 } : { active: true, endTime: Date.now() + 7776000000 });
-    };
-
-    // LEADERBOARD
+    // Лидерборд
     function loadLeaderboard() {
         const list = document.getElementById('leaderboard-list');
-        list.innerHTML = "Loading...";
+        list.innerHTML = "<p style='color:#333'>Loading...</p>";
         db.ref('users').orderByChild('score').limitToLast(5).once('value', (snap) => {
             list.innerHTML = "";
-            let users = [];
-            snap.forEach(s => users.push(s.val()));
-            users.reverse().forEach((u, i) => {
+            let players = [];
+            snap.forEach(s => players.push(s.val()));
+            players.reverse().forEach((p, i) => {
                 const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-                const rank = names[Math.min(Math.floor((u.tapLvl + u.passiveLvl) / 20), 4)];
+                const rank = names[Math.min(Math.floor((p.tapLvl + p.passiveLvl) / 20), 4)];
                 list.innerHTML += `
                     <div class="card">
                         <div class="leader-rank">${medals[i]}</div>
-                        <div class="leader-name">@${u.username}<br><span>${rank} (Lvl ${u.tapLvl + u.passiveLvl})</span></div>
-                        <div style="font-weight:900;">${format(u.score)}</div>
+                        <div style="flex:1">
+                            <div class="leader-name">@${p.username || 'unknown'}</div>
+                            <div style="font-size:10px; color:#555">${rank} (Lvl ${p.tapLvl + (p.passiveLvl || 0)})</div>
+                        </div>
+                        <div style="font-weight:900">${format(p.score)}</div>
                     </div>`;
             });
         });
     }
 
-    // SHOP
-    function renderShop() {
-        const cont = document.getElementById('shop-items');
-        cont.innerHTML = "";
-        const lvl = shopType === 'click' ? state.tapLvl : state.passiveLvl;
-        const price = getPrice(lvl + 1);
-        const rank = names[Math.min(Math.floor(lvl / 10), 4)];
-        cont.innerHTML = `
-            <div class="card">
-                <div class="up-info"><b>${rank}</b><span>Level ${lvl}/50 (+1 ${shopType})</span></div>
-                <button class="buy-btn" ${state.score < price || lvl >= 50 ? 'disabled' : ''} onclick="buy(${price})">${format(price)}</button>
-            </div>`;
+    // Вспомогательные функции
+    function format(n) {
+        if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
+        if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+        if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+        return Math.floor(n);
     }
 
-    window.buy = (p) => {
-        if (state.score >= p) {
-            state.score -= p;
-            if (shopType === 'click') state.tapLvl++; else state.passiveLvl++;
-            save(); updateUI(); renderShop();
-            tg.HapticFeedback.notificationOccurred('success');
-        }
+    function save() {
+        state.lastUpdate = Date.now();
+        db.ref(`users/${userData.id}`).set(state);
+    }
+
+    function updateUI() {
+        document.getElementById('score').innerText = format(state.score);
+        document.getElementById('e-text').innerText = `${state.energy} / 150`;
+        document.getElementById('e-fill').style.width = (state.energy / 1.5) + '%';
+    }
+
+    // Навигация
+    window.show = (id) => {
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(id).classList.remove('hidden');
+        document.getElementById('n-' + id.split('-')[1]).classList.add('active');
+        if (id === 's-top') loadLeaderboard();
     };
 
-    // GAME LOOP
+    // Тап
     document.getElementById('tapBtn').onclick = () => {
         if (state.energy > 0) {
             state.score += state.tapLvl; state.energy--;
@@ -214,48 +195,17 @@
         }
     };
 
+    // Пассив и реген
     setInterval(() => {
-        state.score += state.passiveLvl;
+        state.score += (state.passiveLvl / 1);
         if (state.energy < 150) state.energy++;
         updateUI();
         if (Math.random() > 0.9) save();
     }, 1000);
 
-    function updateUI() {
-        document.getElementById('score').innerText = format(state.score);
-        document.getElementById('passive-display').innerText = `Passive: ${state.passiveLvl}/sec`;
-        document.getElementById('e-text').innerText = `${state.energy} / 150`;
-        document.getElementById('e-fill').style.width = (state.energy / 1.5) + '%';
-        
-        const timerEl = document.getElementById('event-timer');
-        if (eventEndTime > Date.now()) {
-            const d = Math.floor((eventEndTime - Date.now()) / 86400000);
-            timerEl.innerText = `EVENT: ${d}d LEFT`;
-            timerEl.classList.add('active');
-        } else {
-            timerEl.innerText = "NO EVENT";
-            timerEl.classList.remove('active');
-        }
-    }
+    // Админка
+    if (userData.id === MY_ID) document.getElementById('admin-panel').classList.remove('hidden');
 
-    function save() {
-        state.lastUpdate = Date.now();
-        db.ref(`users/${player.id}`).set(state);
-    }
-
-    window.toggleShop = (t) => { shopType = t; renderShop(); 
-        document.getElementById('btn-click').classList.toggle('active', t==='click');
-        document.getElementById('btn-passive').classList.toggle('active', t==='passive');
-    };
-
-    window.show = (id) => {
-        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(id).classList.remove('hidden');
-        document.getElementById('n-' + id.split('-')[1]).classList.add('active');
-        if (id === 's-top') loadLeaderboard();
-        if (id === 's-shop') renderShop();
-    };
 </script>
 </body>
 </html>
