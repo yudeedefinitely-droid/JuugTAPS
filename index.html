@@ -15,8 +15,10 @@
         .screen { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
         .hidden { display: none !important; }
 
-        /* UI */
+        /* Header */
         .header { width: 100%; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 20px; color: #555; }
+
+        /* Game UI */
         #score { font-size: 72px; font-weight: 900; margin-top: 5px; }
         .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; }
         .main-circle { width: 280px; height: 280px; border: 4px solid var(--w); border-radius: 50%; transition: transform 0.05s; }
@@ -26,10 +28,12 @@
         .bar-bg { height: 10px; background: #1a1a1a; border-radius: 10px; margin: 15px 0; overflow: hidden; }
         #e-fill { height: 100%; width: 100%; background: #fff; transition: width 0.2s; }
 
-        .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 18px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 900; }
+        /* Cards */
+        .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 18px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 900; min-width: 80px; text-align: center; }
         .buy-btn:disabled { background: #333; color: #555; }
 
+        /* Navigation */
         nav { position: absolute; bottom: 0; width: 100%; display: flex; background: var(--b); border-top: 1px solid var(--sg); padding: 15px 0 35px; }
         .nav-item { flex: 1; text-align: center; color: #444; font-size: 11px; font-weight: 800; cursor: pointer; }
         .nav-item.active { color: var(--w); }
@@ -75,6 +79,14 @@
         </div>
     </section>
 
+    <section id="s-gear" class="screen hidden">
+        <h2 style="align-self:flex-start; margin-bottom:20px; font-weight:900;">GEAR</h2>
+        <div id="admin-panel" class="hidden" style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:12px;">
+            <p style="color:#ff4444; font-size:10px; font-weight:900; margin-bottom:10px;">ADMIN PANEL</p>
+            <button style="width:100%; padding:15px; font-weight:900; background:#fff; border:none; border-radius:8px;">EVENT CONTROL</button>
+        </div>
+    </section>
+
     <nav>
         <div class="nav-item" id="n-top" onclick="show('s-top')"><span>🏆</span>TOP</div>
         <div class="nav-item active" id="n-game" onclick="show('s-game')"><span>💎</span>GAME</div>
@@ -99,15 +111,16 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
+    const MY_ID = 5291965471;
     const user = tg.initDataUnsafe?.user || { id: 5291965471, username: "admin_danik" };
     const myName = user.username || `User_${user.id}`;
     
     let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), username: myName };
     const rankNames = ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"];
 
-    function getRank(p) {
-        const lvl = (p.tapLvl || 1) + (p.passiveLvl || 0);
-        return rankNames[Math.min(Math.floor(lvl / 20), 4)];
+    // Логика рангов
+    function getRankByLevel(level) {
+        return rankNames[Math.min(Math.floor(level / 10), 4)];
     }
 
     function format(n) {
@@ -117,6 +130,7 @@
         return Math.floor(n);
     }
 
+    // Инициализация
     db.ref(`users/${user.id}`).once('value', (snap) => {
         if (snap.val()) state = { ...state, ...snap.val() };
         state.username = myName;
@@ -125,6 +139,7 @@
         updateUI();
     });
 
+    // Живой Топ
     function loadLeaderboard() {
         const list = document.getElementById('leaderboard-list');
         db.ref('users').on('value', (snap) => {
@@ -136,12 +151,13 @@
             list.innerHTML = "";
             players.forEach((p, i) => {
                 const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+                const rank = getRankByLevel(p.tapLvl + (p.passiveLvl || 0));
                 list.innerHTML += `
                     <div class="card" style="${p.username === myName ? 'border: 1px solid #333' : ''}">
                         <div style="font-size:20px; min-width:40px;">${medals[i]}</div>
                         <div style="flex:1">
                             <div style="font-weight:900;">@${p.username}</div>
-                            <div style="font-size:10px; color:#555">${getRank(p)} (Lvl ${p.tapLvl + p.passiveLvl})</div>
+                            <div style="font-size:10px; color:#555">${rank} (Lvl ${p.tapLvl + p.passiveLvl})</div>
                         </div>
                         <div style="font-weight:900;">${format(p.score)}</div>
                     </div>`;
@@ -149,7 +165,7 @@
         });
     }
 
-    // ЛОГИКА МАГАЗИНА
+    // Магазин
     window.openUpgrade = (type) => {
         document.getElementById('shop-main').classList.add('hidden');
         document.getElementById('shop-detail').classList.remove('hidden');
@@ -165,10 +181,12 @@
         const cont = document.getElementById('upgrade-items');
         const lvl = type === 'click' ? state.tapLvl : state.passiveLvl;
         const price = Math.floor(100 * Math.pow(1.4, lvl));
+        const currentRankName = getRankByLevel(lvl);
+
         cont.innerHTML = `
             <div class="card">
                 <div style="flex:1">
-                    <b>${type === 'click' ? 'MULTI-TAP' : 'AUTO-JUUG'}</b>
+                    <b>${currentRankName}</b>
                     <span style="font-size:11px; color:#666">Level ${lvl} → ${lvl+1}</span>
                 </div>
                 <button class="buy-btn" ${state.score < price ? 'disabled' : ''} 
@@ -221,6 +239,8 @@
         updateUI();
         if (Math.random() > 0.8) save();
     }, 1000);
+
+    if (user.id === MY_ID) document.getElementById('admin-panel').classList.remove('hidden');
 </script>
 </body>
 </html>
