@@ -1,33 +1,46 @@
-:root { --accent: #00f2ff; --bg: #000; }
-body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; overflow: hidden; }
+:root { --cyan: #00f2ff; --dark: #000; --glass: rgba(255,255,255,0.05); }
 
-#app { display: flex; flex-direction: column; height: 100vh; }
-.screen { display: none; flex-direction: column; height: calc(100vh - 70px); padding: 20px; box-sizing: border-box; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { margin: 0; background: var(--dark); color: #fff; font-family: -apple-system, sans-serif; overflow: hidden; }
+
+#app { height: 100vh; display: flex; flex-direction: column; }
+
+.screen { display: none; flex-direction: column; height: calc(100vh - 80px); padding: 20px; }
 .active { display: flex; }
 
-/* Центрирование игрового экрана */
-.top-bar { flex: 0 0 100px; text-align: center; }
-.click-section { flex: 1; display: flex; align-items: center; justify-content: center; }
-.bottom-section { flex: 0 0 120px; text-align: center; }
+/* Вертикальное распределение на игровом экране */
+.top-section { flex: 0 0 15%; text-align: center; }
+.mid-section { flex: 1; display: flex; align-items: center; justify-content: center; }
+.bot-section { flex: 0 0 20%; text-align: center; }
 
 /* КРУГЛАЯ КНОПКА */
-.main-button {
-    width: 220px; height: 220px; border-radius: 50%;
-    border: 4px solid var(--accent); box-shadow: 0 0 20px var(--accent);
-    overflow: hidden; display: flex; align-items: center; justify-content: center;
+.tap-circle {
+    width: 240px; height: 240px; border-radius: 50%;
+    border: 4px solid var(--cyan); box-shadow: 0 0 25px var(--cyan);
     background: radial-gradient(circle, rgba(0,242,255,0.1) 0%, transparent 70%);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; transition: transform 0.05s;
 }
+.tap-circle:active { transform: scale(0.95); }
 #char-img { width: 140%; pointer-events: none; }
 
-/* Элементы */
-#balance { font-size: 2.8rem; font-weight: bold; text-shadow: 0 0 10px var(--accent); }
-.energy-bar { width: 200px; height: 10px; background: #333; margin: 10px auto; border-radius: 5px; overflow: hidden; }
-#energy-fill { height: 100%; background: var(--accent); width: 100%; transition: 0.2s; }
+#balance { font-size: 3rem; font-weight: 900; color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
+.score-label { font-size: 0.8rem; letter-spacing: 2px; opacity: 0.7; }
 
-.user-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #222; }
+/* Энергия */
+.energy-bar { width: 100%; height: 10px; background: #222; border-radius: 10px; margin: 10px 0; overflow: hidden; }
+#energy-fill { height: 100%; background: var(--cyan); width: 100%; transition: width 0.3s; }
+.energy-stats { font-size: 0.9rem; opacity: 0.8; }
 
-/* Навигация */
-.bottom-nav { position: fixed; bottom: 0; width: 100%; height: 70px; display: flex; background: #080808; border-top: 1px solid #222; }
-.bottom-nav button { flex: 1; background: none; border: none; color: #555; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.2rem; }
-.bottom-nav button span { font-size: 0.6rem; margin-top: 4px; }
-.bottom-nav button.active-nav { color: var(--accent); }
+/* Лидеры */
+.leader-item { display: flex; justify-content: space-between; padding: 15px; background: var(--glass); border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.1); }
+
+/* Меню */
+.main-nav { height: 80px; display: flex; background: #0a0a0a; border-top: 1px solid #222; padding-bottom: env(safe-area-inset-bottom); }
+.nav-btn { flex: 1; background: none; border: none; color: #555; font-size: 0.7rem; font-weight: bold; cursor: pointer; }
+.nav-btn.active { color: var(--cyan); border-top: 2px solid var(--cyan); }
+
+/* Награды */
+.reward-box { text-align: center; padding: 40px; background: var(--glass); border-radius: 20px; border: 1px solid var(--cyan); }
+.reward-val { font-size: 2rem; color: var(--cyan); margin: 20px 0; }
+.claim-btn { background: var(--cyan); color: #000; border: none; padding: 15px 40px; border-radius: 10px; font-weight: bold; }
