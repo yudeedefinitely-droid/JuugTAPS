@@ -12,8 +12,8 @@
     <div id="app">
         <section id="game-screen" class="screen">
             <div class="header">
-                <span id="username">@user</span>
-                <span id="event-timer">Ивент: —</span>
+                <span id="username">@loading...</span>
+                <span id="event-timer">EVENT: 03m 00d</span>
             </div>
             
             <div class="main-content">
@@ -27,7 +27,7 @@
                 </div>
 
                 <div class="energy-container">
-                    <p>TAP TO EARN</p>
+                    <p class="tap-to-earn">TAP TO EARN</p>
                     <div class="progress-bar"><div id="energy-fill"></div></div>
                     <p id="energy-text">150 / 150</p>
                 </div>
@@ -35,37 +35,31 @@
         </section>
 
         <section id="shop-screen" class="screen hidden">
-            <h2>SHOP</h2>
-            <div class="shop-tabs">
-                <button onclick="showShopTab('tap')">КЛИК</button>
-                <button onclick="showShopTab('passive')">ПАССИВ</button>
-            </div>
+            <h2 class="title">SHOP</h2>
             <div id="shop-items" class="scroll-area"></div>
         </section>
 
         <section id="top-screen" class="screen hidden">
-            <h2>TOP 5</h2>
+            <h2 class="title">TOP 5</h2>
             <div id="leaderboard" class="scroll-area"></div>
         </section>
 
         <section id="gear-screen" class="screen hidden">
-            <h2>GEAR</h2>
+            <h2 class="title">GEAR</h2>
             <div class="settings-list">
-                <button id="musicToggle">MUSIC: ON</button>
-                <button id="adminBtn" class="hidden red">ADMIN PANEL</button>
-            </div>
-            
-            <div id="admin-panel" class="hidden">
-                <h3>ADMIN</h3>
-                <button onclick="startGlobalEvent()">START 3 MONTH EVENT</button>
+                <button class="menu-btn" onclick="toggleMusic()">MUSIC: <span id="musicStatus">ON</span></button>
+                <div id="admin-section" class="hidden">
+                    <hr>
+                    <button class="menu-btn admin-btn" onclick="startEvent()">START 3 MONTH EVENT</button>
+                </div>
             </div>
         </section>
 
         <nav class="bottom-nav">
-            <button onclick="showScreen('top-screen')">🏆<br>TOP</button>
-            <button onclick="showScreen('game-screen')" class="active">💎<br>GAME</button>
-            <button onclick="showScreen('shop-screen')">🎁<br>SHOP</button>
-            <button onclick="showScreen('gear-screen')">⚙️<br>GEAR</button>
+            <button onclick="changeScreen('top-screen')">🏆<br>TOP</button>
+            <button onclick="changeScreen('game-screen')" id="nav-game" class="active">💎<br>GAME</button>
+            <button onclick="changeScreen('shop-screen')">🎁<br>DAILY</button>
+            <button onclick="changeScreen('gear-screen')">⚙️<br>GEAR</button>
         </nav>
     </div>
 
