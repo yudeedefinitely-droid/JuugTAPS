@@ -3,119 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>JuugTAPS</title>
+    <title>JuugTAPS Ultra</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <div class="tg-safe-area"></div>
-
     <div id="app">
-        <audio id="bg-music" loop><source src="music.mp3" type="audio/mpeg"></audio>
-
         <section id="game-screen" class="screen active main-menu-bg">
-            <div class="header">
-                <div class="score-container">
-                    <span id="score-label" class="cry-text">SCORE</span>
-                    <div id="balance" class="cry-text">0</div>
-                </div>
+            <div class="header-glass">
+                <span class="label">JUUG BALANCE</span>
+                <div id="balance">0</div>
             </div>
 
             <div class="main-click-area">
-                <div id="character" class="tap-target">
-                    <img id="char-img" src="image_2.png" alt="Juug Character">
+                <div id="character" class="circle-tap-area">
+                    <img id="char-img" src="image_2.png" alt="Juug">
                 </div>
-                <div class="tap-hint cry-text">TAP TO EARN</div>
             </div>
 
-            <div class="energy-container footer-content">
+            <div class="stats-footer">
+                <div class="energy-info">
+                    <span>⚡ <span id="energy-current">150</span> / 150</span>
+                </div>
                 <div class="energy-bar"><div id="energy-fill"></div></div>
-                <div class="energy-text"><span id="energy-current">150</span> / 150</div>
             </div>
         </section>
 
         <section id="leaderboard-screen" class="screen generic-bg">
-            <h2 class="cry-text sub-header">TOP JUUGERS</h2>
-            <div id="timer-container" class="cry-text">Airdrop in: <span id="airdrop-timer">--</span></div>
-            <div id="leader-list" class="scroll-area cry-frame-v"></div>
+            <h2 class="cry-text">TOP JUUGERS</h2>
+            <div class="airdrop-card">Airdrop in: <span id="airdrop-timer">--</span></div>
+            <div id="leader-list" class="scroll-area"></div>
         </section>
 
         <section id="shop-screen" class="screen generic-bg">
-            <h2 class="cry-text sub-header">BLACK MARKET</h2>
-            <div class="shop-tabs">
-                <button class="menu-btn shop-tab active-tab" onclick="switchShopTab('tap')">Tap Power</button>
-                <button class="menu-btn shop-tab" onclick="switchShopTab('passive')">Passive</button>
-            </div>
-            <div id="shop-list" class="scroll-area cry-frame-v"></div>
+            <h2 class="cry-text">BLACK MARKET</h2>
+            <div id="shop-list" class="scroll-area"></div>
         </section>
 
         <section id="settings-screen" class="screen generic-bg">
-            <h2 class="cry-text sub-header">GEAR</h2>
-            <div class="settings-content">
-                <button class="menu-btn full-width" onclick="toggleMusic()">🎵 Music On/Off</button>
-                
-                <button id="daily-reward-btn" class="menu-btn full-width" style="margin-top: 15px;" onclick="claimDailyReward()">🎁 Daily Reward</button>
-
-                <div id="admin-panel" class="cry-frame-v" style="display:none; margin-top:30px; padding:15px; border: 1px solid var(--accent);">
-                    <p class="cry-text" style="color:red; font-size: 0.8rem; margin-bottom: 10px;">ADMIN ACCESS</p>
-                    <button class="menu-btn full-width" onclick="startGlobalTimer()">START 3-MONTH TIMER</button>
-                    <button class="menu-btn full-width" style="margin-top:10px" onclick="addAdminBalance()">+1M CASH</button>
-                </div>
+            <h2 class="cry-text">GEAR</h2>
+            <div class="settings-grid">
+                <button class="action-btn" onclick="claimDailyReward()">🎁 DAILY REWARD</button>
+                <button class="action-btn" onclick="toggleMusic()">🎵 AUDIO</button>
+            </div>
+            
+            <div id="admin-panel" class="admin-block" style="display:none;">
+                <div class="admin-tag">DEVELOPER MODE</div>
+                <button class="admin-btn" onclick="startGlobalTimer()">▶ START 90-DAY TIMER</button>
+                <button class="admin-btn" onclick="addAdminBalance()">💰 ADD 1M CASH</button>
             </div>
         </section>
 
         <nav class="bottom-nav">
-            <button class="nav-btn" onclick="showScreen('leaderboard-screen')">
-                <div class="icon crown-icon"></div>LEADERS
-            </button>
-            <button class="nav-btn nav-active" onclick="showScreen('game-screen')">
-                <div class="icon gear-icon"></div>GAME
-            </button>
-            <button class="nav-btn" onclick="showScreen('shop-screen')">
-                <div class="icon gem-icon"></div>SHOP
-            </button>
-            <button class="nav-btn" onclick="showScreen('settings-screen')">
-                <div class="icon gear-icon"></div>GEAR
-            </button>
+            <button class="nav-item" onclick="showScreen('leaderboard-screen')">🏆</button>
+            <button class="nav-item active-nav" onclick="showScreen('game-screen')">💎</button>
+            <button class="nav-item" onclick="showScreen('shop-screen')">🛒</button>
+            <button class="nav-item" onclick="showScreen('settings-screen')">⚙️</button>
         </nav>
     </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, set, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDcUMfQAd9QnoPUVxfM9SWp_lHBc2CaRKY",
-            authDomain: "juugtaaap.firebaseapp.com",
-            databaseURL: "https://juugtaaap-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "juugtaaap",
-            storageBucket: "juugtaaap.firebasestorage.app",
-            messagingSenderId: "230755213175",
-            appId: "1:230755213175:web:60d2bd14da628347284b72",
-            measurementId: "G-7NH27N7JMQ"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const username = window.Telegram.WebApp.initDataUnsafe?.user?.username || "Guest_" + Math.floor(Math.random()*999);
-
-        window.sendScoreToCloud = function(score) {
-            set(ref(db, 'players/' + username), { username, score: Math.floor(score) });
-        };
-
-        const topRef = query(ref(db, 'players'), orderByChild('score'), limitToLast(10));
-        onValue(topRef, (snap) => {
-            const players = [];
-            snap.forEach(child => { players.push(child.val()); });
-            players.reverse();
-            const list = document.getElementById('leader-list');
-            if(list) {
-                list.innerHTML = players.map((p, i) => `
-                    <div class="shop-item cry-frame-h"><span>#${i+1} ${p.username}</span><b>${p.score.toLocaleString()} PTS</b></div>
-                `).join('');
-            }
-        });
-    </script>
     <script src="script.js"></script>
 </body>
 </html>
