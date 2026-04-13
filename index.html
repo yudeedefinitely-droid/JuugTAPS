@@ -9,42 +9,64 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <header>
-        <div id="userInfo">@username</div>
-        <div class="settings">
-            <button id="musicToggle">🔊</button>
-            <button id="adminBtn" class="hidden">Admin</button>
-        </div>
-    </header>
+    <div id="app">
+        <section id="game-screen" class="screen">
+            <div class="header">
+                <span id="username">@user</span>
+                <span id="event-timer">Ивент: —</span>
+            </div>
+            
+            <div class="main-content">
+                <div class="score-container">
+                    <p class="label">SCORE</p>
+                    <h1 id="score">0</h1>
+                </div>
 
-    <main>
-        <div class="balance-container">
-            <h1><span id="score">0</span></h1>
-            <p>Пассивный доход: <span id="passiveIncome">0</span>/сек</p>
-        </div>
-        
-        <div class="tap-area">
-            <button id="tapBtn" class="tap-button">TAP</button>
-        </div>
-    </main>
+                <div class="tap-zone">
+                    <div id="tapBtn" class="circle-btn"></div>
+                </div>
 
-    <nav>
-        <button id="shopBtn">Магазин</button>
-        <button id="leaderboardBtn">Топ 5</button>
-        <button id="dailyBtn">Награда</button>
-    </nav>
+                <div class="energy-container">
+                    <p>TAP TO EARN</p>
+                    <div class="progress-bar"><div id="energy-fill"></div></div>
+                    <p id="energy-text">150 / 150</p>
+                </div>
+            </div>
+        </section>
 
-    <div id="leaderboardModal" class="modal hidden">
-        <h2>Топ 5 игроков</h2>
-        <ul id="leaderboardList"></ul>
-        <button class="close-modal">Закрыть</button>
-    </div>
+        <section id="shop-screen" class="screen hidden">
+            <h2>SHOP</h2>
+            <div class="shop-tabs">
+                <button onclick="showShopTab('tap')">КЛИК</button>
+                <button onclick="showShopTab('passive')">ПАССИВ</button>
+            </div>
+            <div id="shop-items" class="scroll-area"></div>
+        </section>
 
-    <div id="adminModal" class="modal hidden">
-        <h2>Админ Панель</h2>
-        <button id="startEventBtn">Запустить ивент (3 мес)</button>
-        <div id="eventTimer">Таймер: Ожидание...</div>
-        <button class="close-modal">Закрыть</button>
+        <section id="top-screen" class="screen hidden">
+            <h2>TOP 5</h2>
+            <div id="leaderboard" class="scroll-area"></div>
+        </section>
+
+        <section id="gear-screen" class="screen hidden">
+            <h2>GEAR</h2>
+            <div class="settings-list">
+                <button id="musicToggle">MUSIC: ON</button>
+                <button id="adminBtn" class="hidden red">ADMIN PANEL</button>
+            </div>
+            
+            <div id="admin-panel" class="hidden">
+                <h3>ADMIN</h3>
+                <button onclick="startGlobalEvent()">START 3 MONTH EVENT</button>
+            </div>
+        </section>
+
+        <nav class="bottom-nav">
+            <button onclick="showScreen('top-screen')">🏆<br>TOP</button>
+            <button onclick="showScreen('game-screen')" class="active">💎<br>GAME</button>
+            <button onclick="showScreen('shop-screen')">🎁<br>SHOP</button>
+            <button onclick="showScreen('gear-screen')">⚙️<br>GEAR</button>
+        </nav>
     </div>
 
     <script type="module" src="app.js"></script>
