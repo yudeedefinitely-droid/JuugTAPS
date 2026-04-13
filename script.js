@@ -1,5 +1,5 @@
 // --- НАСТРОЙКИ АДМИНА (ЗАМЕНИ НА СВОЙ НИК, БЕЗ СОБАЧКИ) ---
-const ADMIN_USERNAME = "ТВОЙ_НИК_БЕЗ_СОБАЧКИ";
+const ADMIN_USERNAME = "malenkiydanik";
 
 // Переменные состояния
 let gameState = {
