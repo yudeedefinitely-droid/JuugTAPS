@@ -51,12 +51,15 @@
 
         <section id="settings-screen" class="screen generic-bg">
             <h2 class="cry-text sub-header">GEAR</h2>
-            <div class="cry-frame-v settings-content">
-                <button class="menu-btn" onclick="toggleMusic()">🎵 Music On/Off</button>
+            <div class="settings-content">
+                <button class="menu-btn full-width" onclick="toggleMusic()">🎵 Music On/Off</button>
                 
-                <div id="admin-panel" style="display:none; margin-top:30px; border:1px solid red; padding:10px;">
-                    <p style="color:red; font-weight:bold;">ADMIN ACCESS</p>
-                    <button class="menu-btn" onclick="startGlobalTimer()">START 3-MONTH TIMER</button>
+                <button id="daily-reward-btn" class="menu-btn full-width" style="margin-top: 15px;" onclick="claimDailyReward()">🎁 Daily Reward</button>
+
+                <div id="admin-panel" class="cry-frame-v" style="display:none; margin-top:30px; padding:15px; border: 1px solid var(--accent);">
+                    <p class="cry-text" style="color:red; font-size: 0.8rem; margin-bottom: 10px;">ADMIN ACCESS</p>
+                    <button class="menu-btn full-width" onclick="startGlobalTimer()">START 3-MONTH TIMER</button>
+                    <button class="menu-btn full-width" style="margin-top:10px" onclick="addAdminBalance()">+1M CASH</button>
                 </div>
             </div>
         </section>
@@ -81,27 +84,25 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, set, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // === ВСТАВЬ СВОИ ДАННЫЕ ИЗ FIREBASE КОНСОЛИ СЮДА ===
-       const firebaseConfig = {
-  apiKey: "AIzaSyDcUMfQAd9QnoPUVxfM9SWp_lHBc2CaRKY",
-  authDomain: "juugtaaap.firebaseapp.com",
-  databaseURL: "https://juugtaaap-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "juugtaaap",
-  storageBucket: "juugtaaap.firebasestorage.app",
-  messagingSenderId: "230755213175",
-  appId: "1:230755213175:web:60d2bd14da628347284b72",
-  measurementId: "G-7NH27N7JMQ"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcUMfQAd9QnoPUVxfM9SWp_lHBc2CaRKY",
+            authDomain: "juugtaaap.firebaseapp.com",
+            databaseURL: "https://juugtaaap-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "juugtaaap",
+            storageBucket: "juugtaaap.firebasestorage.app",
+            messagingSenderId: "230755213175",
+            appId: "1:230755213175:web:60d2bd14da628347284b72",
+            measurementId: "G-7NH27N7JMQ"
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const username = window.Telegram.WebApp.initDataUnsafe?.user?.username || "Guest_" + Math.floor(Math.random()*999);
 
-        // Функция отправки счета (публичная для script.js)
         window.sendScoreToCloud = function(score) {
             set(ref(db, 'players/' + username), { username, score: Math.floor(score) });
         };
 
-        // Слушатель таблицы лидеров
         const topRef = query(ref(db, 'players'), orderByChild('score'), limitToLast(10));
         onValue(topRef, (snap) => {
             const players = [];
