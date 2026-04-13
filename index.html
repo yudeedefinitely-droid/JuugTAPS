@@ -138,11 +138,9 @@
 
     const MY_ID = 5291965471;
     const user = tg.initDataUnsafe?.user || { id: 0, username: "Guest" };
-    // Если имя пользователя не определено в Telegram, ставим заглушку
-    const myName = user.username || (user.id !== 0 ? `User_${user.id}` : "Guest");
     
     let isLoaded = false;
-    let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), username: myName, lang: 'en', sound: true };
+    let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), username: "Guest", lang: 'en', sound: true };
 
     const langData = {
         en: { sync: "LIVE", scoreL: "SCORE", tapL: "TAP TO EARN", passL: "Passive", topT: "TOP 5 JUUG'ERS", shopT: "SHOP", clUp: "CLICK UPGRADES", clDe: "Increase tap income", psUp: "PASSIVE INCOME", psDe: "Automatic income", back: "BACK", gearT: "GEAR", langL: "Language", soundL: "Sound", navTop: "TOP", navGame: "GAME", navShop: "SHOP", navGear: "GEAR", ranks: ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"] },
@@ -188,29 +186,40 @@
     });
     window.addEventListener('pointerup', () => tapBtn.classList.remove('is-active'));
 
-    // --- FIREBASE LOAD ---
-    db.ref(`users/${user.id}`).once('value', (snap) => {
+    // --- ОБРАБОТКА ID И ЗАГРУЗКА ---
+    const fallbackId = 999999;
+    const currentId = (user && user.id) ? user.id : fallbackId;
+
+    db.ref(`users/${currentId}`).once('value', (snap) => {
         const data = snap.val();
         if (data) {
             const now = Date.now();
             const offTime = Math.floor((now - (data.lastUpdate || now)) / 1000);
-            state = { ...state, ...data, score: (data.score || 0) + (offTime * (data.passiveLvl || 0)), energy: Math.min(150, (data.energy || 150) + offTime) };
+            state = { 
+                ...state, 
+                ...data, 
+                score: (data.score || 0) + (offTime * (data.passiveLvl || 0)), 
+                energy: Math.min(150, (data.energy || 150) + offTime) 
+            };
         }
-        state.username = myName; isLoaded = true;
+        
+        state.username = user.username || data?.username || (currentId !== fallbackId ? `User_${currentId}` : "PC_Guest");
+        isLoaded = true;
         document.getElementById('p-name').innerText = "@" + state.username;
         
-        if (Number(user.id) === MY_ID) {
+        // Админка
+        if (Number(currentId) === MY_ID) {
             const adminBox = document.getElementById('admin-container');
-            adminBox.innerHTML = `
-                <div style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:12px;">
-                    <p style="color:#ff4444; font-size:10px; margin-bottom:10px; font-weight:900;">ADMIN PANEL</p>
-                    <button style="width:100%; padding:15px; font-weight:900; background:#fff; border:none; border-radius:8px; color:#000;">EVENT CONTROL</button>
-                </div>`;
+            adminBox.innerHTML = `<div style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:12px;"><p style="color:#ff4444; font-size:10px; margin-bottom:10px; font-weight:900;">ADMIN PANEL</p><button style="width:100%; padding:15px; font-weight:900; background:#fff; border:none; border-radius:8px; color:#000;">EVENT CONTROL</button></div>`;
         }
+
         updateLangUI(); updateUI();
+    }).catch(() => {
+        isLoaded = true;
+        document.getElementById('p-name').innerText = "@Local_Mode";
     });
 
-    function save() { if (isLoaded && user.id !== 0) { state.lastUpdate = Date.now(); db.ref(`users/${user.id}`).update(state); } }
+    function save() { if (isLoaded && currentId !== 0) { state.lastUpdate = Date.now(); db.ref(`users/${currentId}`).update(state); } }
 
     function updateUI() {
         document.getElementById('score').innerText = format(state.score);
@@ -222,15 +231,13 @@
     function format(n) { return n >= 1e6 ? (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? (n/1e3).toFixed(1) + 'K' : Math.floor(n); }
     function getRank(lvl) { return langData[state.lang].ranks[Math.min(Math.floor((lvl || 1) / 10), 4)]; }
 
-    // --- ЛИДЕРБОРД С ФИЛЬТРАЦИЕЙ UNDEFINED ---
+    // --- ЛИДЕРБОРД ---
     function loadLeaderboard() {
         const list = document.getElementById('leaderboard-list');
         list.innerHTML = "<p style='text-align:center; color:#555;'>Syncing...</p>";
         db.ref('users').once('value', (snap) => {
             const data = snap.val(); if (!data) return;
             const now = Date.now();
-            
-            // Фильтруем игроков: убираем тех, у кого нет username или id равен 0
             let players = Object.values(data).filter(p => p && p.username && p.username !== "undefined" && p.username !== "Guest")
             .map(p => {
                 const offTime = Math.floor((now - (p.lastUpdate || now)) / 1000);
@@ -240,7 +247,7 @@
             list.innerHTML = "";
             players.forEach((p, i) => {
                 const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-                list.innerHTML += `<div class="card" style="${p.username === myName ? 'border-color: #777;' : ''}">
+                list.innerHTML += `<div class="card" style="${p.username === state.username ? 'border-color: #777;' : ''}">
                     <div style="font-size:20px; min-width:40px;">${medals[i]}</div>
                     <div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${getRank(p.tapLvl)} (Lvl ${p.tapLvl || 1})</div></div>
                     <div style="font-weight:900;">${format(p.currentScore)}</div>
@@ -272,14 +279,7 @@
         const lvl = type === 'click' ? state.tapLvl : state.passiveLvl;
         const price = Math.floor(100 * Math.pow(1.4, lvl + (type==='click'?0:1))); 
         const rank = getRank(lvl);
-        
-        cont.innerHTML = `<div class="card" style="cursor:default;">
-            <div style="flex:1">
-                <b style="font-size:18px;">${rank}</b><br>
-                <span style="color:#888; font-size:12px;">Level ${lvl} → ${lvl+1}</span>
-            </div>
-            <button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button>
-        </div>`;
+        cont.innerHTML = `<div class="card" style="cursor:default;"><div style="flex:1"><b style="font-size:18px;">${rank}</b><br><span style="color:#888; font-size:12px;">Level ${lvl} → ${lvl+1}</span></div><button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button></div>`;
     }
 
     window.buy = (type, p) => { 
