@@ -10,19 +10,52 @@
     <style>
         :root { --b: #000; --w: #fff; --g: #111; --sg: #222; }
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--b); color: var(--w); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
         
-        /* Холст для частиц */
-        #particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        body { 
+            background: var(--b); 
+            color: var(--w); 
+            font-family: 'Inter', sans-serif; 
+            height: 100vh; 
+            overflow: hidden; 
+            display: flex; 
+            justify-content: center; 
+        }
 
-        #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; position: relative; height: 100%; z-index: 1; }
+        /* Контейнер для анимации */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none; /* Чтобы не мешал кликам по кнопкам */
+        }
+
+        #app { 
+            width: 100%; 
+            max-width: 500px; 
+            display: flex; 
+            flex-direction: column; 
+            position: relative; 
+            height: 100%; 
+            z-index: 1; /* Интерфейс поверх холста */
+        }
+
         .screen { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
         .hidden { display: none !important; }
 
         .header { width: 100%; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 20px; color: #555; }
         #score { font-size: 72px; font-weight: 900; margin-top: 5px; }
         .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; }
-        .main-circle { width: 280px; height: 280px; border: 4px solid var(--w); border-radius: 50%; transition: transform 0.1s; background: rgba(255,255,255,0.05); }
+        .main-circle { 
+            width: 280px; 
+            height: 280px; 
+            border: 4px solid var(--w); 
+            border-radius: 50%; 
+            transition: transform 0.1s; 
+            background: rgba(255,255,255,0.03); /* Легкий блик для видимости на фоне частиц */
+        }
         .main-circle:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
 
         .energy-box { width: 100%; text-align: center; margin-bottom: 20px; }
@@ -92,6 +125,9 @@
             <span id="t-sound-label">Sound</span>
             <span id="cur-sound" style="color:#888">ON</span>
         </button>
+        <div id="admin-panel" class="hidden" style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:12px; margin-top:20px;">
+            <button style="width:100%; padding:15px; font-weight:900; background:#fff; border:none; border-radius:8px;">EVENT CONTROL</button>
+        </div>
     </section>
 
     <nav>
@@ -103,7 +139,7 @@
 </div>
 
 <script>
-    // --- FIREBASE & TG ---
+    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyDcUMfQAd9QnoPUVxfM9SWp_lHBc2CaRKY",
         authDomain: "juugtaaap.firebaseapp.com",
@@ -113,180 +149,247 @@
         messagingSenderId: "230755213175",
         appId: "1:230755213175:web:60d2bd14da628347284b72"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // --- GAME STATE ---
-    let user = { 
-        score: 0, 
-        energy: 150, 
-        maxEnergy: 150, 
-        clickPower: 1, 
-        passive: 0, 
-        lastUpdate: Date.now(),
-        upgrades: { click: 0, passive: 0 }
-    };
-    let userId = tg.initDataUnsafe.user?.id || "test_user";
-    document.getElementById('p-name').innerText = "@" + (tg.initDataUnsafe.user?.username || "Player");
+    const MY_ID = 5291965471;
+    const user = tg.initDataUnsafe?.user || { id: 5291965471, username: "admin_danik" };
+    const myName = user.username || `User_${user.id}`;
+    
+    let isLoaded = false;
+    let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), username: myName, lang: 'en', sound: true };
 
-    // --- PARTICLES ---
+    const langData = {
+        en: {
+            sync: "LIVE", scoreL: "SCORE", tapL: "TAP TO EARN", passL: "Passive", topT: "TOP 5 JUUG'ERS",
+            shopT: "SHOP", clUp: "CLICK UPGRADES", clDe: "Increase tap income", psUp: "PASSIVE INCOME", 
+            psDe: "Automatic income", back: "← BACK", gearT: "GEAR", langL: "Language", soundL: "Sound",
+            navTop: "TOP", navGame: "GAME", navShop: "SHOP", navGear: "GEAR",
+            ranks: ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"]
+        },
+        ru: {
+            sync: "В СЕТИ", scoreL: "СЧЕТ", tapL: "ТАПАЙ ЧТОБЫ ЗАРАБОТАТЬ", passL: "Пассив", topT: "ТОП 5 ДЖУГЕРОВ",
+            shopT: "МАГАЗИН", clUp: "ПРОКАЧКА КЛИКА", clDe: "Увеличить доход за тап", psUp: "ПАССИВНЫЙ ДОХОД", 
+            psDe: "Автоматический доход", back: "← НАЗАД", gearT: "НАСТРОЙКИ", langL: "Язык", soundL: "Звук",
+            navTop: "ТОП", navGame: "ИГРА", navShop: "МАГАЗИН", navGear: "МЕНЮ",
+            ranks: ["Нуб Джугер", "Обычный Джугер", "Про Джугер", "Хакер Джугер", "Бог Джугер"]
+        }
+    };
+
+    // --- ANIMATION SYSTEM ---
     const canvas = document.getElementById('particleCanvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
     function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener('resize', resize);
     resize();
+
     class Particle {
         constructor() { this.reset(); }
         reset() {
             this.x = Math.random() * canvas.width;
             this.y = Math.random() * canvas.height;
-            this.size = Math.random() * 2 + 0.5;
+            this.size = Math.random() * 1.5 + 0.5;
             this.speedX = (Math.random() - 0.5) * 0.3;
             this.speedY = (Math.random() - 0.5) * 0.3;
             this.opacity = Math.random() * 0.4 + 0.1;
         }
         update() {
             this.x += this.speedX; this.y += this.speedY;
-            if(this.x<0||this.x>canvas.width||this.y<0||this.y>canvas.height) this.reset();
+            if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
         }
         draw() {
-            ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
-            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
         }
     }
-    for(let i=0; i<40; i++) particles.push(new Particle());
+    for (let i = 0; i < 40; i++) particles.push(new Particle());
     function animate() {
-        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         particles.forEach(p => { p.update(); p.draw(); });
         requestAnimationFrame(animate);
     }
     animate();
 
-    // --- CORE LOGIC ---
-    function updateUI() {
-        document.getElementById('score').innerText = Math.floor(user.score);
-        document.getElementById('passive-display').innerText = `Passive: ${user.passive}/sec`;
-        document.getElementById('e-text').innerText = `${Math.floor(user.energy)} / ${user.maxEnergy}`;
-        document.getElementById('e-fill').style.width = (user.energy / user.maxEnergy * 100) + "%";
+    // --- LOGIC FUNCTIONS ---
+    function getRankByLevel(level) {
+        const list = langData[state.lang].ranks;
+        return list[Math.min(Math.floor(level / 10), 4)];
     }
 
-    const tapBtn = document.getElementById('tapBtn');
-    tapBtn.addEventListener('click', () => {
-        if (user.energy >= 1) {
-            user.score += user.clickPower;
-            user.energy -= 1;
-            updateUI();
-            saveData();
+    function toggleLang() {
+        state.lang = state.lang === 'en' ? 'ru' : 'en';
+        updateLangUI();
+        save();
+    }
+
+    function toggleSound() {
+        state.sound = !state.sound;
+        document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
+        save();
+    }
+
+    function updateLangUI() {
+        const l = langData[state.lang];
+        document.getElementById('sync-text').innerText = l.sync;
+        document.getElementById('t-score-label').innerText = l.scoreL;
+        document.getElementById('t-tap-label').innerText = l.tapL;
+        document.getElementById('t-top-title').innerText = l.topT;
+        document.getElementById('t-shop-title').innerText = l.shopT;
+        document.getElementById('t-click-up').innerText = l.clUp;
+        document.getElementById('t-click-desc').innerText = l.clDe;
+        document.getElementById('t-pass-up').innerText = l.psUp;
+        document.getElementById('t-pass-desc').innerText = l.psDe;
+        document.getElementById('t-back').innerText = l.back;
+        document.getElementById('t-gear-title').innerText = l.gearT;
+        document.getElementById('t-lang-label').innerText = l.langL;
+        document.getElementById('t-sound-label').innerText = l.soundL;
+        document.getElementById('cur-lang').innerText = state.lang === 'en' ? "English" : "Русский";
+        document.getElementById('t-nav-top').innerText = l.navTop;
+        document.getElementById('t-nav-game').innerText = l.navGame;
+        document.getElementById('t-nav-shop').innerText = l.navShop;
+        document.getElementById('t-nav-gear').innerText = l.navGear;
+        updateUI(); 
+    }
+
+    function format(n) {
+        if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
+        if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+        if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+        return Math.floor(n);
+    }
+
+    db.ref(`users/${user.id}`).once('value', (snap) => {
+        const data = snap.val();
+        if (data) {
+            state = { ...state, ...data };
+            const offline = Math.floor((Date.now() - (state.lastUpdate || Date.now())) / 1000);
+            state.score += Math.max(0, offline * (state.passiveLvl || 0));
         }
+        state.username = myName;
+        isLoaded = true;
+        document.getElementById('p-name').innerText = "@" + state.username;
+        document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
+        updateLangUI();
+        save();
     });
 
-    // Регенерация энергии и пассивный доход
-    setInterval(() => {
-        if (user.energy < user.maxEnergy) user.energy = Math.min(user.maxEnergy, user.energy + 1);
-        user.score += user.passive;
-        updateUI();
-    }, 1000);
-
-    // --- NAVIGATION ---
-    function show(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById('n-' + id.split('-')[1]).classList.add('active');
-        if(id === 's-top') loadLeaderboard();
+    function save() {
+        if (!isLoaded) return;
+        state.lastUpdate = Date.now();
+        db.ref(`users/${user.id}`).set(state);
     }
 
-    // --- SHOP LOGIC ---
-    const upgradeData = {
-        click: [
-            { name: "Squeegee", price: 50, power: 1 },
-            { name: "High-Rise Kit", price: 500, power: 5 }
-        ],
-        passive: [
-            { name: "Small Team", price: 100, inc: 1 },
-            { name: "Juug Drone", price: 1000, inc: 10 }
-        ]
-    };
-
-    function openUpgrade(type) {
-        document.getElementById('shop-main').classList.add('hidden');
-        document.getElementById('shop-detail').classList.remove('hidden');
-        const container = document.getElementById('upgrade-items');
-        container.innerHTML = '';
-        
-        upgradeData[type].forEach((up, index) => {
-            const level = user.upgrades[type];
-            const price = Math.floor(up.price * Math.pow(1.5, level));
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-                <div><b>${up.name}</b><br><small>Cost: ${price}</small></div>
-                <button class="buy-btn" onclick="buy('${type}', ${index})" ${user.score < price ? 'disabled' : ''}>BUY</button>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    function backToShop() {
-        document.getElementById('shop-main').classList.remove('hidden');
-        document.getElementById('shop-detail').classList.add('hidden');
-    }
-
-    function buy(type, index) {
-        const up = upgradeData[type][index];
-        const level = user.upgrades[type];
-        const price = Math.floor(up.price * Math.pow(1.5, level));
-
-        if (user.score >= price) {
-            user.score -= price;
-            user.upgrades[type]++;
-            if (type === 'click') user.clickPower += up.power;
-            if (type === 'passive') user.passive += up.inc;
-            updateUI();
-            saveData();
-            openUpgrade(type);
-        }
-    }
-
-    // --- DATA SYNC ---
-    function saveData() {
-        db.ref('users/' + userId).set(user);
-    }
-
-    db.ref('users/' + userId).once('value').then(snap => {
-        if (snap.exists()) {
-            user = snap.val();
-            // На случай если структуры не было
-            if(!user.upgrades) user.upgrades = {click:0, passive:0};
-        }
-        updateUI();
-        document.getElementById('sync-text').innerText = "SYNCED";
-    });
+    window.addEventListener('beforeunload', () => save());
 
     function loadLeaderboard() {
-        db.ref('users').orderByChild('score').limitToLast(5).once('value', snap => {
-            const list = document.getElementById('leaderboard-list');
-            list.innerHTML = '';
-            let items = [];
-            snap.forEach(child => { items.push(child.val()); });
-            items.reverse().forEach((u, i) => {
-                list.innerHTML += `<div class="card"><span>#${i+1} ${u.username || 'User'}</span><b>${Math.floor(u.score)}</b></div>`;
+        const list = document.getElementById('leaderboard-list');
+        db.ref('users').on('value', (snap) => {
+            const data = snap.val();
+            if (!data) return;
+            const now = Date.now();
+            let players = Object.values(data)
+                .filter(p => p.username && typeof p.score === 'number')
+                .map(p => {
+                    const offlineSec = Math.max(0, (now - (p.lastUpdate || now)) / 1000);
+                    return { ...p, liveScore: p.score + (offlineSec * (p.passiveLvl || 0)) };
+                })
+                .sort((a, b) => b.liveScore - a.liveScore).slice(0, 5);
+
+            list.innerHTML = "";
+            players.forEach((p, i) => {
+                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+                const rank = rankNamesGlobal(p.tapLvl, state.lang);
+                const isMe = p.username === myName ? 'border: 1px solid #333' : '';
+                list.innerHTML += `
+                    <div class="card" style="${isMe}">
+                        <div style="font-size:20px; min-width:40px;">${medals[i]}</div>
+                        <div style="flex:1">
+                            <div style="font-weight:900;">@${p.username}</div>
+                            <div style="font-size:10px; color:#555">${rank} (Lvl ${p.tapLvl + p.passiveLvl})</div>
+                        </div>
+                        <div style="font-weight:900;">${format(p.liveScore)}</div>
+                    </div>`;
             });
         });
     }
 
-    // --- SETTINGS ---
-    function toggleSound() {
-        const s = document.getElementById('cur-sound');
-        s.innerText = s.innerText === "ON" ? "OFF" : "ON";
+    function rankNamesGlobal(lvl, l) {
+        return langData[l].ranks[Math.min(Math.floor(lvl / 10), 4)];
     }
-    function toggleLang() {
-        const l = document.getElementById('cur-lang');
-        l.innerText = l.innerText === "English" ? "Russian" : "English";
+
+    window.openUpgrade = (type) => {
+        document.getElementById('shop-main').classList.add('hidden');
+        document.getElementById('shop-detail').classList.remove('hidden');
+        renderUpgradeItems(type);
+    };
+
+    window.backToShop = () => {
+        document.getElementById('shop-main').classList.remove('hidden');
+        document.getElementById('shop-detail').classList.add('hidden');
+    };
+
+    function renderUpgradeItems(type) {
+        const cont = document.getElementById('upgrade-items');
+        const lvl = type === 'click' ? state.tapLvl : state.passiveLvl;
+        const price = Math.floor(100 * Math.pow(1.4, lvl));
+        const rank = getRankByLevel(lvl);
+
+        cont.innerHTML = `
+            <div class="card">
+                <div style="flex:1"><b>${rank}</b><br><span style="font-size:11px; color:#666">Level ${lvl} → ${lvl+1}</span></div>
+                <button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button>
+            </div>`;
     }
+
+    window.buy = (type, p) => {
+        if (!isLoaded) return;
+        if (state.score >= p) {
+            state.score -= p;
+            if (type === 'click') state.tapLvl++; else state.passiveLvl++;
+            save(); updateUI(); renderUpgradeItems(type);
+            if(state.sound) tg.HapticFeedback.notificationOccurred('success');
+        }
+    };
+
+    function updateUI() {
+        document.getElementById('score').innerText = format(state.score);
+        document.getElementById('passive-display').innerText = `${langData[state.lang].passL}: ${state.passiveLvl}/sec`;
+        document.getElementById('e-text').innerText = `${state.energy} / 150`;
+        document.getElementById('e-fill').style.width = (state.energy / 1.5) + '%';
+    }
+
+    window.show = (id) => {
+        if (id !== 's-top') db.ref('users').off();
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(id).classList.remove('hidden');
+        document.getElementById('n-' + id.split('-')[1]).classList.add('active');
+        if (id === 's-top') loadLeaderboard();
+        if (id === 's-shop') backToShop();
+    };
+
+    document.getElementById('tapBtn').onclick = () => {
+        if (isLoaded && state.energy > 0) {
+            state.score += state.tapLvl; state.energy--;
+            updateUI(); 
+            if(state.sound) tg.HapticFeedback.impactOccurred('light');
+        }
+    };
+
+    setInterval(() => {
+        if (!isLoaded) return;
+        state.score += (state.passiveLvl || 0);
+        if (state.energy < 150) state.energy++;
+        updateUI();
+        const nowSec = Math.floor(Date.now() / 1000);
+        if (nowSec % 5 === 0) save(); 
+    }, 1000);
+
+    if (user.id === MY_ID) document.getElementById('admin-panel').classList.remove('hidden');
 </script>
 </body>
 </html>
