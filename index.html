@@ -10,60 +10,60 @@
 <body>
     <div id="app">
         <section id="game-screen" class="screen active">
-            <div class="top-section">
+            <div class="header">
                 <div class="score-label">SCORE</div>
                 <div id="balance">0</div>
             </div>
 
-            <div class="mid-section">
-                <div id="character" class="tap-circle">
+            <div class="tap-area">
+                <div id="character" class="click-circle">
                     <img src="image_2.png" alt="Juug" id="char-img">
                 </div>
             </div>
 
-            <div class="bot-section">
-                <div class="tap-hint">TAP TO EARN</div>
-                <div class="energy-container">
+            <div class="footer">
+                <div class="hint">TAP TO EARN</div>
+                <div class="energy-box">
                     <div class="energy-bar"><div id="energy-fill"></div></div>
-                    <div class="energy-stats"><span id="energy-current">150</span> / 150</div>
+                    <div class="energy-info"><span id="energy-current">150</span> / 150</div>
                 </div>
             </div>
         </section>
 
         <section id="leaderboard-screen" class="screen">
-            <h2 class="screen-title">TOP JUUGERS</h2>
-            <div id="leader-list" class="scrollable"></div>
+            <h2 class="title">TOP JUUGERS</h2>
+            <div id="leader-list" class="list-container">
+                </div>
         </section>
 
         <section id="daily-screen" class="screen">
-            <h2 class="screen-title">DAILY BONUS</h2>
-            <div class="reward-box">
-                <div class="reward-icon">🎁</div>
-                <div class="reward-val">+100 PTS</div>
-                <button class="claim-btn" onclick="claimDailyReward()">COLLECT</button>
-                <p id="reward-timer"></p>
+            <h2 class="title">DAILY REWARD</h2>
+            <div class="reward-card">
+                <div class="gift-icon">🎁</div>
+                <div class="gift-val">+100 PTS</div>
+                <button class="btn-main" onclick="claimDailyReward()">COLLECT</button>
             </div>
         </section>
 
         <section id="settings-screen" class="screen">
-            <h2 class="screen-title">GEAR</h2>
-            <div id="admin-panel" class="admin-ui" style="display:none;">
-                <p>DEV MODE ACTIVE</p>
-                <button onclick="startGlobalTimer()">START 90-DAY TIMER</button>
+            <h2 class="title">GEAR</h2>
+            <div id="admin-panel" class="admin-box" style="display:none;">
+                <p style="color:red">ADMIN ACCESS</p>
+                <button class="btn-main" onclick="startGlobalTimer()">START 3-MONTH TIMER</button>
             </div>
         </section>
 
-        <nav class="main-nav">
-            <button class="nav-btn" onclick="showScreen('leaderboard-screen')">🏆<br>LEADERS</button>
-            <button class="nav-btn active" onclick="showScreen('game-screen')">💎<br>GAME</button>
-            <button class="nav-btn" onclick="showScreen('daily-screen')">🎁<br>DAILY</button>
-            <button class="nav-btn" onclick="showScreen('settings-screen')">⚙️<br>GEAR</button>
+        <nav class="navbar">
+            <button class="nav-item" onclick="showScreen('leaderboard-screen')">🏆<br>TOP</button>
+            <button class="nav-item active" onclick="showScreen('game-screen')">💎<br>PLAY</button>
+            <button class="nav-item" onclick="showScreen('daily-screen')">🎁<br>DAILY</button>
+            <button class="nav-item" onclick="showScreen('settings-screen')">⚙️<br>GEAR</button>
         </nav>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, onValue, query, orderByChild, limitToLast, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDcUMfQAd9QnoPUVxfM9SWp_lHBc2CaRKY",
@@ -78,19 +78,23 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Обновление лидеров (вызывается каждую секунду в script.js)
-        window.refreshLeaders = () => {
-            const topQuery = query(ref(db, 'players'), orderByChild('score'), limitToLast(10));
-            onValue(topQuery, (snap) => {
-                const data = [];
-                snap.forEach(c => { data.push(c.val()); });
-                data.reverse();
+        window.dbRef = db;
+        window.saveToCloud = (user, score) => {
+            set(ref(db, 'players/' + user), { username: user, score: score });
+        };
+
+        window.loadLeaders = () => {
+            const q = query(ref(db, 'players'), orderByChild('score'), limitToLast(10));
+            onValue(q, (snap) => {
+                const list = [];
+                snap.forEach(c => list.push(c.val()));
+                list.reverse();
                 const container = document.getElementById('leader-list');
-                const icons = ["🥇", "🥈", "🥉", "🏅", "🏅"];
-                container.innerHTML = data.map((p, i) => `
-                    <div class="leader-item">
-                        <span>${icons[i] || (i+1 + '.')} ${p.username}</span>
-                        <b>${p.score.toLocaleString()} PTS</b>
+                const medals = ["🥇", "🥈", "🥉", "🏅", "🏅"];
+                container.innerHTML = list.map((p, i) => `
+                    <div class="row">
+                        <span>${medals[i] || (i+1)+'.'} ${p.username}</span>
+                        <b>${p.score.toLocaleString()}</b>
                     </div>
                 `).join('');
             });
