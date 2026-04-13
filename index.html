@@ -95,10 +95,10 @@
     </section>
 
     <nav>
-        <div class="nav-item" id="n-top" onclick="show('s-top')"><span>🏆</span>TOP</div>
-        <div class="nav-item active" id="n-game" onclick="show('s-game')"><span>💎</span>GAME</div>
-        <div class="nav-item" id="n-shop" onclick="show('s-shop')"><span>🎁</span>SHOP</div>
-        <div class="nav-item" id="n-gear" onclick="show('s-gear')"><span>⚙️</span>GEAR</div>
+        <div class="nav-item" id="n-top" onclick="show('s-top')"><span>🏆</span><p id="t-nav-top">TOP</p></div>
+        <div class="nav-item active" id="n-game" onclick="show('s-game')"><span>💎</span><p id="t-nav-game">GAME</p></div>
+        <div class="nav-item" id="n-shop" onclick="show('s-shop')"><span>🎁</span><p id="t-nav-shop">SHOP</p></div>
+        <div class="nav-item" id="n-gear" onclick="show('s-gear')"><span>⚙️</span><p id="t-nav-gear">GEAR</p></div>
     </nav>
 </div>
 
@@ -130,12 +130,14 @@
             sync: "LIVE", scoreL: "SCORE", tapL: "TAP TO EARN", passL: "Passive", topT: "TOP 5 JUUG'ERS",
             shopT: "SHOP", clUp: "CLICK UPGRADES", clDe: "Increase tap income", psUp: "PASSIVE INCOME", 
             psDe: "Automatic income", back: "← BACK", gearT: "GEAR", langL: "Language", soundL: "Sound",
+            navTop: "TOP", navGame: "GAME", navShop: "SHOP", navGear: "GEAR",
             ranks: ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"]
         },
         ru: {
             sync: "В СЕТИ", scoreL: "СЧЕТ", tapL: "ТАПАЙ ЧТОБЫ ЗАРАБОТАТЬ", passL: "Пассив", topT: "ТОП 5 ДЖУГЕРОВ",
             shopT: "МАГАЗИН", clUp: "ПРОКАЧКА КЛИКА", clDe: "Увеличить доход за тап", psUp: "ПАССИВНЫЙ ДОХОД", 
             psDe: "Автоматический доход", back: "← НАЗАД", gearT: "НАСТРОЙКИ", langL: "Язык", soundL: "Звук",
+            navTop: "ТОП", navGame: "ИГРА", navShop: "МАГАЗИН", navGear: "МЕНЮ",
             ranks: ["Нуб Джугер", "Обычный Джугер", "Про Джугер", "Хакер Джугер", "Бог Джугер"]
         }
     };
@@ -173,6 +175,13 @@
         document.getElementById('t-lang-label').innerText = l.langL;
         document.getElementById('t-sound-label').innerText = l.soundL;
         document.getElementById('cur-lang').innerText = state.lang === 'en' ? "English" : "Русский";
+        
+        // Обновление меню навигации
+        document.getElementById('t-nav-top').innerText = l.navTop;
+        document.getElementById('t-nav-game').innerText = l.navGame;
+        document.getElementById('t-nav-shop').innerText = l.navShop;
+        document.getElementById('t-nav-gear').innerText = l.navGear;
+
         updateUI(); 
     }
 
@@ -224,7 +233,6 @@
             list.innerHTML = "";
             players.forEach((p, i) => {
                 const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-                // Для топа берем ранг игрока в зависимости от ЕГО выбранного языка или системного
                 const rank = rankNamesGlobal(p.tapLvl, state.lang);
                 const isMe = p.username === myName ? 'border: 1px solid #333' : '';
                 list.innerHTML += `
