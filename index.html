@@ -10,7 +10,12 @@
     <style>
         :root { --b: #000; --w: #fff; --g: #111; --sg: #222; }
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
         body { background: var(--b); color: var(--w); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
+
+        /* ФОНОВЫЙ КАНВАС ДЛЯ ЧАСТИЦ */
+        #particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+
         #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; position: relative; height: 100%; z-index: 1; }
         .screen { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
         .hidden { display: none !important; }
@@ -18,10 +23,9 @@
         .header { width: 100%; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 20px; color: #555; }
         #score { font-size: 72px; font-weight: 900; margin-top: 5px; }
         
-        /* АНИМАЦИЯ КНОПКИ ТАПА */
         .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
         .main-circle { 
-            width: 280px; height: 280px; 
+            width: 240px; height: 240px; /* УМЕНЬШЕННЫЙ РАЗМЕР */
             border: 4px solid var(--w); 
             border-radius: 50%; 
             transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
@@ -30,15 +34,15 @@
             position: relative;
         }
         .main-circle:active { 
-            transform: scale(0.90); 
+            transform: scale(0.92); 
             background: rgba(255,255,255,0.15); 
             box-shadow: 0 0 40px rgba(255,255,255,0.1);
         }
 
-        /* Вылетающие частицы */
-        .particle {
+        /* Вылетающие при тапе частицы */
+        .tap-particle {
             position: absolute; pointer-events: none; background: #fff; border-radius: 50%;
-            animation: flyOut 0.5s ease-out forwards;
+            animation: flyOut 0.5s ease-out forwards; z-index: 10;
         }
         @keyframes flyOut {
             0% { transform: translate(0, 0) scale(1); opacity: 1; }
@@ -53,15 +57,17 @@
         .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 900; min-width: 80px; }
         .buy-btn:disabled { background: #333; color: #555; }
 
-        nav { position: absolute; bottom: 0; width: 100%; display: flex; background: var(--b); border-top: 1px solid var(--sg); padding: 15px 0 35px; }
+        nav { position: absolute; bottom: 0; width: 100%; display: flex; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); border-top: 1px solid var(--sg); padding: 15px 0 35px; }
         .nav-item { flex: 1; text-align: center; color: #444; font-size: 11px; font-weight: 800; cursor: pointer; }
         .nav-item.active { color: var(--w); }
         .nav-item span { display: block; font-size: 22px; margin-bottom: 4px; }
         
-        .settings-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 12px; border: 1px solid var(--sg); background: var(--g); color: #fff; font-weight: 800; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+        .settings-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 12px; border: 1px solid var(--sg); background: var(--g); color: #fff; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
+
+<canvas id="particleCanvas"></canvas>
 
 <div id="app">
     <section id="s-game" class="screen">
@@ -151,45 +157,41 @@
         ru: { sync: "В СЕТИ", scoreL: "СЧЕТ", tapL: "ТАПАЙ ЧТОБЫ ЗАРАБОТАТЬ", passL: "Пассив", topT: "ТОП 5 ДЖУГЕРОВ", shopT: "МАГАЗИН", clUp: "ПРОКАЧКА КЛИКА", clDe: "Увеличить доход за тап", psUp: "ПАССИВНЫЙ ДОХОД", psDe: "Автоматический доход", back: "← НАЗАД", gearT: "НАСТРОЙКИ", langL: "Язык", soundL: "Звук", navTop: "ТОП", navGame: "ИГРА", navShop: "МАГАЗИН", navGear: "МЕНЮ", ranks: ["Нуб Джугер", "Обычный Джугер", "Про Джугер", "Хакер Джугер", "Бог Джугер"] }
     };
 
-    function getRankByLevel(level) {
-        return langData[state.lang].ranks[Math.min(Math.floor(level / 10), 4)];
-    }
+    // --- ФОНОВАЯ АНИМАЦИЯ ЧАСТИЦ (ВОССТАНОВЛЕНА) ---
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    let bgParticles = [];
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resize); resize();
 
-    function toggleLang() {
-        state.lang = state.lang === 'en' ? 'ru' : 'en';
-        updateLangUI();
-        save();
+    class BgParticle {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 1.5 + 0.5;
+            this.speedX = (Math.random() - 0.5) * 0.3;
+            this.speedY = (Math.random() - 0.5) * 0.3;
+            this.opacity = Math.random() * 0.4 + 0.1;
+        }
+        update() {
+            this.x += this.speedX; this.y += this.speedY;
+            if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+        }
+        draw() {
+            ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+        }
     }
-
-    function toggleSound() {
-        state.sound = !state.sound;
-        document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
-        save();
+    for (let i = 0; i < 40; i++) bgParticles.push(new BgParticle());
+    function animateBg() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        bgParticles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animateBg);
     }
+    animateBg();
 
-    function updateLangUI() {
-        const l = langData[state.lang];
-        document.getElementById('sync-text').innerText = l.sync;
-        document.getElementById('t-score-label').innerText = l.scoreL;
-        document.getElementById('t-tap-label').innerText = l.tapL;
-        document.getElementById('t-top-title').innerText = l.topT;
-        document.getElementById('t-shop-title').innerText = l.shopT;
-        document.getElementById('t-click-up').innerText = l.clUp;
-        document.getElementById('t-click-desc').innerText = l.clDe;
-        document.getElementById('t-pass-up').innerText = l.psUp;
-        document.getElementById('t-pass-desc').innerText = l.psDe;
-        document.getElementById('t-back').innerText = l.back;
-        document.getElementById('t-gear-title').innerText = l.gearT;
-        document.getElementById('t-lang-label').innerText = l.langL;
-        document.getElementById('t-sound-label').innerText = l.soundL;
-        document.getElementById('cur-lang').innerText = state.lang === 'en' ? "English" : "Русский";
-        document.getElementById('t-nav-top').innerText = l.navTop;
-        document.getElementById('t-nav-game').innerText = l.navGame;
-        document.getElementById('t-nav-shop').innerText = l.navShop;
-        document.getElementById('t-nav-gear').innerText = l.navGear;
-        updateUI(); 
-    }
-
+    // --- ЛОГИКА ИГРЫ ---
     function format(n) {
         if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
         if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
@@ -208,7 +210,7 @@
         state.username = myName;
         isLoaded = true;
         document.getElementById('p-name').innerText = "@" + state.username;
-        document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
+        if (user.id === MY_ID) document.getElementById('admin-panel').classList.remove('hidden');
         updateLangUI();
         save();
     });
@@ -219,53 +221,6 @@
         db.ref(`users/${user.id}`).set(state);
     }
 
-    function loadLeaderboard() {
-        const list = document.getElementById('leaderboard-list');
-        db.ref('users').on('value', (snap) => {
-            const data = snap.val();
-            if (!data) return;
-            let players = Object.values(data)
-                .filter(p => p.username)
-                .sort((a, b) => b.score - a.score).slice(0, 5);
-            list.innerHTML = "";
-            players.forEach((p, i) => {
-                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-                const rankName = langData[state.lang].ranks[Math.min(Math.floor(p.tapLvl / 10), 4)];
-                const isMe = p.username === myName ? 'border: 1px solid #333' : '';
-                list.innerHTML += `<div class="card" style="${isMe}"><div style="font-size:20px; min-width:40px;">${medals[i]}</div><div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${rankName} (Lvl ${p.tapLvl})</div></div><div style="font-weight:900;">${format(p.score)}</div></div>`;
-            });
-        });
-    }
-
-    window.openUpgrade = (type) => {
-        document.getElementById('shop-main').classList.add('hidden');
-        document.getElementById('shop-detail').classList.remove('hidden');
-        renderUpgradeItems(type);
-    };
-
-    window.backToShop = () => {
-        document.getElementById('shop-main').classList.remove('hidden');
-        document.getElementById('shop-detail').classList.add('hidden');
-    };
-
-    function renderUpgradeItems(type) {
-        const cont = document.getElementById('upgrade-items');
-        const lvl = type === 'click' ? state.tapLvl : state.passiveLvl;
-        const price = Math.floor(100 * Math.pow(1.4, lvl));
-        const rank = getRankByLevel(lvl);
-        cont.innerHTML = `<div class="card"><div style="flex:1"><b>${rank}</b><br><span style="font-size:11px; color:#666">Level ${lvl} → ${lvl+1}</span></div><button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button></div>`;
-    }
-
-    window.buy = (type, p) => {
-        if (!isLoaded) return;
-        if (state.score >= p) {
-            state.score -= p;
-            if (type === 'click') state.tapLvl++; else state.passiveLvl++;
-            save(); updateUI(); renderUpgradeItems(type);
-            if(state.sound) tg.HapticFeedback.notificationOccurred('success');
-        }
-    };
-
     function updateUI() {
         document.getElementById('score').innerText = format(state.score);
         document.getElementById('passive-display').innerText = `${langData[state.lang].passL}: ${state.passiveLvl}/sec`;
@@ -273,44 +228,44 @@
         document.getElementById('e-fill').style.width = (state.energy / 1.5) + '%';
     }
 
-    window.show = (id) => {
-        if (id !== 's-top') db.ref('users').off();
-        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(id).classList.remove('hidden');
-        document.getElementById('n-' + id.split('-')[1]).classList.add('active');
-        if (id === 's-top') loadLeaderboard();
-        if (id === 's-shop') backToShop();
-    };
-
-    // ТАП И АНИМАЦИЯ
+    // ТАП С ЧАСТИЦАМИ
     document.getElementById('tapBtn').onclick = (e) => {
         if (isLoaded && state.energy > 0) {
             state.score += state.tapLvl; state.energy--;
             updateUI(); 
             if(state.sound) tg.HapticFeedback.impactOccurred('light');
-            
-            // Анимация частиц
-            for (let i = 0; i < 5; i++) createParticle(e.clientX, e.clientY);
+            for (let i = 0; i < 6; i++) createTapParticle(e.clientX, e.clientY);
         }
     };
 
-    function createParticle(x, y) {
+    function createTapParticle(x, y) {
         const p = document.createElement('div');
-        p.className = 'particle';
-        const size = Math.random() * 5 + 2;
-        p.style.width = size + 'px';
-        p.style.height = size + 'px';
-        p.style.left = x + 'px';
-        p.style.top = y + 'px';
-        
-        const dx = (Math.random() - 0.5) * 150;
-        const dy = (Math.random() - 0.5) * 150;
+        p.className = 'tap-particle';
+        const size = Math.random() * 4 + 2;
+        p.style.width = size + 'px'; p.style.height = size + 'px';
+        p.style.left = x + 'px'; p.style.top = y + 'px';
+        const dx = (Math.random() - 0.5) * 140;
+        const dy = (Math.random() - 0.5) * 140;
         p.style.setProperty('--dx', dx + 'px');
         p.style.setProperty('--dy', dy + 'px');
-        
         document.body.appendChild(p);
         setTimeout(() => p.remove(), 500);
+    }
+
+    // Вспомогательные функции
+    function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); save(); }
+    function toggleSound() { state.sound = !state.sound; document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF"; save(); }
+    
+    function updateLangUI() {
+        const l = langData[state.lang];
+        const ids = ['sync-text','t-score-label','t-tap-label','t-top-title','t-shop-title','t-click-up','t-click-desc','t-pass-up','t-pass-desc','t-back','t-gear-title','t-lang-label','t-sound-label','t-nav-top','t-nav-game','t-nav-shop','t-nav-gear'];
+        ids.forEach(id => {
+            let key = id.replace('t-', '').replace('-label', '').replace('-up', 'Up').replace('-desc', 'De').replace('nav-', 'nav').replace('sync-text', 'sync');
+            if(document.getElementById(id)) document.getElementById(id).innerText = l[key];
+        });
+        document.getElementById('cur-lang').innerText = state.lang === 'en' ? "English" : "Русский";
+        document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
+        updateUI();
     }
 
     setInterval(() => {
@@ -321,8 +276,36 @@
         if (Math.floor(Date.now() / 1000) % 5 === 0) save(); 
     }, 1000);
 
-    if (user.id === MY_ID) document.getElementById('admin-panel').classList.remove('hidden');
-    window.addEventListener('beforeunload', () => save());
+    window.show = (id) => {
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(id).classList.remove('hidden');
+        document.getElementById('n-' + id.split('-')[1]).classList.add('active');
+        if (id === 's-top') loadLeaderboard();
+    };
+
+    function loadLeaderboard() {
+        const list = document.getElementById('leaderboard-list');
+        db.ref('users').once('value', (snap) => {
+            const data = snap.val(); if (!data) return;
+            let players = Object.values(data).sort((a, b) => b.score - a.score).slice(0, 5);
+            list.innerHTML = "";
+            players.forEach((p, i) => {
+                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+                list.innerHTML += `<div class="card"><div>${medals[i]} @${p.username}</div><b>${format(p.score)}</b></div>`;
+            });
+        });
+    }
+
+    window.openUpgrade = (type) => { document.getElementById('shop-main').classList.add('hidden'); document.getElementById('shop-detail').classList.remove('hidden'); renderUpgradeItems(type); };
+    window.backToShop = () => { document.getElementById('shop-main').classList.remove('hidden'); document.getElementById('shop-detail').classList.add('hidden'); };
+    function renderUpgradeItems(type) {
+        const cont = document.getElementById('upgrade-items');
+        const lvl = type === 'click' ? state.tapLvl : state.passiveLvl;
+        const price = Math.floor(100 * Math.pow(1.4, lvl));
+        cont.innerHTML = `<div class="card"><div>Lvl ${lvl} → ${lvl+1}</div><button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button></div>`;
+    }
+    window.buy = (type, p) => { if (state.score >= p) { state.score -= p; if (type === 'click') state.tapLvl++; else state.passiveLvl++; save(); updateUI(); renderUpgradeItems(type); if(state.sound) tg.HapticFeedback.notificationOccurred('success'); } };
 </script>
 </body>
 </html>
