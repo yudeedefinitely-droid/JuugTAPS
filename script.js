@@ -1,73 +1,89 @@
 const ADMIN_USERNAME = "malenkiydanik";
-let gameState = { balance: 0, energy: 150, lastDaily: 0 };
+let state = {
+    balance: 0,
+    energy: 150,
+    lastDaily: 0,
+    lastSave: Date.now()
+};
 
 const tg = window.Telegram.WebApp;
 tg.expand();
 
 function init() {
-    const saved = localStorage.getItem('juug_save');
-    if (saved) gameState = JSON.parse(saved);
+    const saved = localStorage.getItem('juug_pro_data');
+    if (saved) state = JSON.parse(saved);
     
-    // Проверка админа
+    // Принудительная проверка админа
     if (tg.initDataUnsafe?.user?.username === ADMIN_USERNAME) {
         document.getElementById('admin-panel').style.display = 'block';
     }
+    
     updateUI();
-    startEnergyRegen();
+    loop();
 }
 
 function updateUI() {
-    document.getElementById('balance').innerText = Math.floor(gameState.balance).toLocaleString();
-    document.getElementById('energy-current').innerText = Math.floor(gameState.energy);
-    document.getElementById('energy-fill').style.width = (gameState.energy / 150 * 100) + "%";
+    document.getElementById('balance').innerText = Math.floor(state.balance).toLocaleString();
+    document.getElementById('energy-current').innerText = Math.floor(state.energy);
+    document.getElementById('energy-fill').style.width = (state.energy / 150 * 100) + "%";
 }
 
-// КЛИК
+// ТАП (Touchstart для скорости)
 document.getElementById('character').addEventListener('touchstart', (e) => {
     e.preventDefault();
-    if (gameState.energy >= 1) {
-        gameState.balance += 1;
-        gameState.energy -= 1;
+    if (state.energy >= 1) {
+        state.balance += 1;
+        state.energy -= 1;
+        tg.HapticFeedback.impactOccurred('light');
         updateUI();
-        save();
     }
 });
 
-// ЕЖЕДНЕВНАЯ НАГРАДА (10 часов)
-function claimDailyReward() {
+// ЕЖЕДНЕВНАЯ НАГРАДА (раз в 10 часов)
+window.claimDailyReward = () => {
     const now = Date.now();
-    const cooldown = 10 * 60 * 60 * 1000; // 10 часов в мс
+    const cooldown = 10 * 60 * 60 * 1000; 
 
-    if (now - gameState.lastDaily >= cooldown) {
-        gameState.balance += 100;
-        gameState.lastDaily = now;
-        save();
+    if (now - state.lastDaily >= cooldown) {
+        state.balance += 100;
+        state.lastDaily = now;
+        tg.showAlert("🎁 +100 PTS ADDED!");
         updateUI();
-        alert("Success! +100 PTS");
+        save();
     } else {
-        const remaining = cooldown - (now - gameState.lastDaily);
-        const hours = Math.floor(remaining / 3600000);
-        const mins = Math.floor((remaining % 3600000) / 60000);
-        alert(`Next reward in ${hours}h ${mins}m`);
+        const diff = cooldown - (now - state.lastDaily);
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        tg.showAlert(`Wait ${h}h ${m}m more.`);
     }
-}
+};
 
 function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
-    document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active-nav'));
-    event.currentTarget.classList.add('active-nav');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
 }
 
-function save() { localStorage.setItem('juug_save', JSON.stringify(gameState)); }
-
-function startEnergyRegen() {
+// Цикл: автосохранение, энергия и обновление лидеров
+function loop() {
     setInterval(() => {
-        if (gameState.energy < 150) {
-            gameState.energy++;
-            updateUI();
+        // Реген энергии
+        if (state.energy < 150) state.energy += 0.5;
+        
+        // Автообновление лидеров, если экран открыт
+        if (document.getElementById('leaderboard-screen').classList.contains('active')) {
+            if (window.refreshLeaders) window.refreshLeaders();
         }
-    }, 3000);
+        
+        updateUI();
+        save();
+    }, 1000);
+}
+
+function save() {
+    localStorage.setItem('juug_pro_data', JSON.stringify(state));
+    // Тут можно добавить вызов Firebase set(), если нужно сохранять в облако чаще
 }
 
 init();
