@@ -109,7 +109,6 @@
     const user = tg.initDataUnsafe?.user || { id: 5291965471, username: "admin_danik" };
     const myName = user.username || `User_${user.id}`;
     
-    // ПЕРЕМЕННАЯ ЗАЩИТЫ
     let isLoaded = false;
     let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), username: myName };
     const rankNames = ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"];
@@ -125,7 +124,6 @@
         return Math.floor(n);
     }
 
-    // Загрузка с защитой
     db.ref(`users/${user.id}`).once('value', (snap) => {
         const data = snap.val();
         if (data) {
@@ -134,7 +132,7 @@
             state.score += Math.max(0, offline * (state.passiveLvl || 0));
         }
         state.username = myName;
-        isLoaded = true; // РАЗРЕШАЕМ СОХРАНЕНИЯ
+        isLoaded = true;
         document.getElementById('p-name').innerText = "@" + state.username;
         document.getElementById('event-timer').innerText = "LIVE";
         save();
@@ -142,10 +140,14 @@
     });
 
     function save() {
-        if (!isLoaded) return; // БЛОКИРОВКА, если данные еще не пришли
+        if (!isLoaded) return;
         state.lastUpdate = Date.now();
         db.ref(`users/${user.id}`).set(state);
     }
+
+    // СОХРАНЕНИЕ ПРИ ВЫХОДЕ
+    window.addEventListener('beforeunload', () => save());
+    tg.onEvent('viewportChanged', () => save()); // Защита для мобильного TG
 
     function loadLeaderboard() {
         const list = document.getElementById('leaderboard-list');
@@ -236,12 +238,15 @@
         }
     };
 
+    // ОБНОВЛЕННЫЙ ТАЙМЕР (Автосохранение каждые 5 сек)
     setInterval(() => {
         if (!isLoaded) return;
         state.score += (state.passiveLvl || 0);
         if (state.energy < 150) state.energy++;
         updateUI();
-        if (Math.random() > 0.9) save();
+
+        const nowSec = Math.floor(Date.now() / 1000);
+        if (nowSec % 5 === 0) save(); 
     }, 1000);
 
     if (user.id === MY_ID) document.getElementById('admin-panel').classList.remove('hidden');
