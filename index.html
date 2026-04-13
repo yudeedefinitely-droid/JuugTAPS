@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -33,50 +33,63 @@
         .nav-item { flex: 1; text-align: center; color: #444; font-size: 11px; font-weight: 800; cursor: pointer; }
         .nav-item.active { color: var(--w); }
         .nav-item span { display: block; font-size: 22px; margin-bottom: 4px; }
+        
+        .settings-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 12px; border: 1px solid var(--sg); background: var(--g); color: #fff; font-weight: 800; text-align: left; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
 
 <div id="app">
     <section id="s-game" class="screen">
-        <div class="header"><span id="p-name">@loading</span><span id="event-timer">SYNCING...</span></div>
-        <p style="font-size:12px; font-weight:800; letter-spacing:2px;">SCORE</p>
+        <div class="header"><span id="p-name">@loading</span><span id="sync-text">SYNCING...</span></div>
+        <p id="t-score-label" style="font-size:12px; font-weight:800; letter-spacing:2px;">SCORE</p>
         <div id="score">0</div>
         <div id="passive-display" style="color:#888; font-size:12px; font-weight:800;">Passive: 0/sec</div>
         <div class="tap-area"><div class="main-circle" id="tapBtn"></div></div>
         <div class="energy-box">
-            <p style="font-size:12px; font-weight:800;">TAP TO EARN</p>
+            <p id="t-tap-label" style="font-size:12px; font-weight:800;">TAP TO EARN</p>
             <div class="bar-bg"><div id="e-fill"></div></div>
             <b id="e-text">150 / 150</b>
         </div>
     </section>
 
     <section id="s-top" class="screen hidden">
-        <h2 style="align-self:flex-start; margin-bottom:20px; font-weight:900;">TOP 5 JUUG'ERS</h2>
+        <h2 id="t-top-title" style="align-self:flex-start; margin-bottom:20px; font-weight:900;">TOP 5 JUUG'ERS</h2>
         <div id="leaderboard-list" style="width:100%;"></div>
     </section>
 
     <section id="s-shop" class="screen hidden">
-        <h2 style="align-self:flex-start; margin-bottom:20px; font-weight:900;">SHOP</h2>
+        <h2 id="t-shop-title" style="align-self:flex-start; margin-bottom:20px; font-weight:900;">SHOP</h2>
         <div id="shop-main" style="width:100%;">
             <div class="card" onclick="openUpgrade('click')">
-                <div style="flex:1"><b>CLICK UPGRADES</b><br><span style="font-size:11px; color:#666">Увеличить доход за тап</span></div>
+                <div style="flex:1"><b id="t-click-up">CLICK UPGRADES</b><br><span id="t-click-desc" style="font-size:11px; color:#666">Increase tap income</span></div>
                 <span>➔</span>
             </div>
             <div class="card" onclick="openUpgrade('passive')">
-                <div style="flex:1"><b>PASSIVE INCOME</b><br><span style="font-size:11px; color:#666">Автоматический доход</span></div>
+                <div style="flex:1"><b id="t-pass-up">PASSIVE INCOME</b><br><span id="t-pass-desc" style="font-size:11px; color:#666">Automatic income</span></div>
                 <span>➔</span>
             </div>
         </div>
         <div id="shop-detail" class="hidden" style="width:100%;">
-            <button onclick="backToShop()" style="background:none; border:none; color:#555; font-weight:800; margin-bottom:15px; cursor:pointer;">← НАЗАД</button>
+            <button id="t-back" onclick="backToShop()" style="background:none; border:none; color:#555; font-weight:800; margin-bottom:15px; cursor:pointer;">← BACK</button>
             <div id="upgrade-items"></div>
         </div>
     </section>
 
     <section id="s-gear" class="screen hidden">
-        <h2 style="align-self:flex-start; margin-bottom:20px; font-weight:900;">GEAR</h2>
-        <div id="admin-panel" class="hidden" style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:12px;">
+        <h2 id="t-gear-title" style="align-self:flex-start; margin-bottom:20px; font-weight:900;">GEAR</h2>
+        
+        <button class="settings-btn" onclick="toggleLang()">
+            <span id="t-lang-label">Language</span>
+            <span id="cur-lang" style="color:#888">English</span>
+        </button>
+
+        <button class="settings-btn" onclick="toggleSound()">
+            <span id="t-sound-label">Sound</span>
+            <span id="cur-sound" style="color:#888">ON</span>
+        </button>
+
+        <div id="admin-panel" class="hidden" style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:12px; margin-top:20px;">
             <button style="width:100%; padding:15px; font-weight:900; background:#fff; border:none; border-radius:8px;">EVENT CONTROL</button>
         </div>
     </section>
@@ -110,11 +123,57 @@
     const myName = user.username || `User_${user.id}`;
     
     let isLoaded = false;
-    let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), username: myName };
-    const rankNames = ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"];
+    let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), username: myName, lang: 'en', sound: true };
+
+    const langData = {
+        en: {
+            sync: "LIVE", scoreL: "SCORE", tapL: "TAP TO EARN", passL: "Passive", topT: "TOP 5 JUUG'ERS",
+            shopT: "SHOP", clUp: "CLICK UPGRADES", clDe: "Increase tap income", psUp: "PASSIVE INCOME", 
+            psDe: "Automatic income", back: "← BACK", gearT: "GEAR", langL: "Language", soundL: "Sound",
+            ranks: ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"]
+        },
+        ru: {
+            sync: "В СЕТИ", scoreL: "СЧЕТ", tapL: "ТАПАЙ ЧТОБЫ ЗАРАБОТАТЬ", passL: "Пассив", topT: "ТОП 5 ДЖУГЕРОВ",
+            shopT: "МАГАЗИН", clUp: "ПРОКАЧКА КЛИКА", clDe: "Увеличить доход за тап", psUp: "ПАССИВНЫЙ ДОХОД", 
+            psDe: "Автоматический доход", back: "← НАЗАД", gearT: "НАСТРОЙКИ", langL: "Язык", soundL: "Звук",
+            ranks: ["Нуб Джугер", "Обычный Джугер", "Про Джугер", "Хакер Джугер", "Бог Джугер"]
+        }
+    };
 
     function getRankByLevel(level) {
-        return rankNames[Math.min(Math.floor(level / 10), 4)];
+        const list = langData[state.lang].ranks;
+        return list[Math.min(Math.floor(level / 10), 4)];
+    }
+
+    function toggleLang() {
+        state.lang = state.lang === 'en' ? 'ru' : 'en';
+        updateLangUI();
+        save();
+    }
+
+    function toggleSound() {
+        state.sound = !state.sound;
+        document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
+        save();
+    }
+
+    function updateLangUI() {
+        const l = langData[state.lang];
+        document.getElementById('sync-text').innerText = l.sync;
+        document.getElementById('t-score-label').innerText = l.scoreL;
+        document.getElementById('t-tap-label').innerText = l.tapL;
+        document.getElementById('t-top-title').innerText = l.topT;
+        document.getElementById('t-shop-title').innerText = l.shopT;
+        document.getElementById('t-click-up').innerText = l.clUp;
+        document.getElementById('t-click-desc').innerText = l.clDe;
+        document.getElementById('t-pass-up').innerText = l.psUp;
+        document.getElementById('t-pass-desc').innerText = l.psDe;
+        document.getElementById('t-back').innerText = l.back;
+        document.getElementById('t-gear-title').innerText = l.gearT;
+        document.getElementById('t-lang-label').innerText = l.langL;
+        document.getElementById('t-sound-label').innerText = l.soundL;
+        document.getElementById('cur-lang').innerText = state.lang === 'en' ? "English" : "Русский";
+        updateUI(); 
     }
 
     function format(n) {
@@ -134,9 +193,9 @@
         state.username = myName;
         isLoaded = true;
         document.getElementById('p-name').innerText = "@" + state.username;
-        document.getElementById('event-timer').innerText = "LIVE";
+        document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
+        updateLangUI();
         save();
-        updateUI();
     });
 
     function save() {
@@ -145,9 +204,8 @@
         db.ref(`users/${user.id}`).set(state);
     }
 
-    // СОХРАНЕНИЕ ПРИ ВЫХОДЕ
     window.addEventListener('beforeunload', () => save());
-    tg.onEvent('viewportChanged', () => save()); // Защита для мобильного TG
+    tg.onEvent('viewportChanged', () => save());
 
     function loadLeaderboard() {
         const list = document.getElementById('leaderboard-list');
@@ -166,9 +224,11 @@
             list.innerHTML = "";
             players.forEach((p, i) => {
                 const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-                const rank = getRankByLevel(p.tapLvl);
+                // Для топа берем ранг игрока в зависимости от ЕГО выбранного языка или системного
+                const rank = rankNamesGlobal(p.tapLvl, state.lang);
+                const isMe = p.username === myName ? 'border: 1px solid #333' : '';
                 list.innerHTML += `
-                    <div class="card" style="${p.username === myName ? 'border: 1px solid #333' : ''}">
+                    <div class="card" style="${isMe}">
                         <div style="font-size:20px; min-width:40px;">${medals[i]}</div>
                         <div style="flex:1">
                             <div style="font-weight:900;">@${p.username}</div>
@@ -178,6 +238,10 @@
                     </div>`;
             });
         });
+    }
+
+    function rankNamesGlobal(lvl, l) {
+        return langData[l].ranks[Math.min(Math.floor(lvl / 10), 4)];
     }
 
     window.openUpgrade = (type) => {
@@ -210,13 +274,13 @@
             state.score -= p;
             if (type === 'click') state.tapLvl++; else state.passiveLvl++;
             save(); updateUI(); renderUpgradeItems(type);
-            tg.HapticFeedback.notificationOccurred('success');
+            if(state.sound) tg.HapticFeedback.notificationOccurred('success');
         }
     };
 
     function updateUI() {
         document.getElementById('score').innerText = format(state.score);
-        document.getElementById('passive-display').innerText = `Passive: ${state.passiveLvl}/sec`;
+        document.getElementById('passive-display').innerText = `${langData[state.lang].passL}: ${state.passiveLvl}/sec`;
         document.getElementById('e-text').innerText = `${state.energy} / 150`;
         document.getElementById('e-fill').style.width = (state.energy / 1.5) + '%';
     }
@@ -234,17 +298,16 @@
     document.getElementById('tapBtn').onclick = () => {
         if (isLoaded && state.energy > 0) {
             state.score += state.tapLvl; state.energy--;
-            updateUI(); tg.HapticFeedback.impactOccurred('light');
+            updateUI(); 
+            if(state.sound) tg.HapticFeedback.impactOccurred('light');
         }
     };
 
-    // ОБНОВЛЕННЫЙ ТАЙМЕР (Автосохранение каждые 5 сек)
     setInterval(() => {
         if (!isLoaded) return;
         state.score += (state.passiveLvl || 0);
         if (state.energy < 150) state.energy++;
         updateUI();
-
         const nowSec = Math.floor(Date.now() / 1000);
         if (nowSec % 5 === 0) save(); 
     }, 1000);
