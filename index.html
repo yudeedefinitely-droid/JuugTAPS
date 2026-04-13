@@ -10,77 +10,93 @@
     <style>
         :root { --b: #000; --w: #fff; --g: #111; }
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--b); color: var(--w); font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
+        body { background: var(--b); color: var(--w); font-family: 'Inter', -apple-system, sans-serif; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
         
         #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; padding: 20px; position: relative; }
-        .screen { flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .screen { flex: 1; display: flex; flex-direction: column; align-items: center; width: 100%; }
         .hidden { display: none !important; }
 
-        /* Таймер */
-        .header { width: 100%; display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; }
-        #event-timer { color: #555; transition: color 0.3s; }
+        /* Шапка */
+        .header { width: 100%; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 40px; }
+        #event-timer { color: #555; }
         #event-timer.active { color: var(--w); }
 
-        /* Контент */
-        .score-section { margin-top: 50px; text-align: center; }
-        #score { font-size: 80px; font-weight: 800; }
+        /* Игровой экран */
+        .score-section { text-align: center; }
+        .score-label { font-size: 12px; letter-spacing: 4px; color: #666; margin-bottom: 5px; }
+        #score { font-size: 72px; font-weight: 900; }
         
-        /* Кнопка */
         .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; }
-        .main-circle { width: 280px; height: 280px; border: 4px solid var(--w); border-radius: 50%; transition: transform 0.05s; }
+        .main-circle { 
+            width: 280px; height: 280px; 
+            border: 4px solid var(--w); border-radius: 50%; 
+            transition: transform 0.05s; cursor: pointer;
+        }
         .main-circle:active { transform: scale(0.96); background: rgba(255,255,255,0.05); }
 
-        /* Настройки (Gear) */
-        .title { align-self: flex-start; font-size: 32px; font-weight: 900; margin-bottom: 20px; }
-        .menu-item { width: 100%; padding: 20px; background: var(--g); border: 1px solid #222; margin-bottom: 10px; font-weight: bold; }
+        .energy-section { width: 100%; text-align: center; margin-bottom: 120px; }
+        .progress-bar { width: 100%; height: 8px; background: #1a1a1a; border-radius: 10px; margin: 15px 0 10px; overflow: hidden; }
+        #energy-fill { height: 100%; width: 100%; background: var(--w); transition: width 0.2s; }
+        #energy-text { font-weight: 900; font-size: 16px; }
+
+        /* Экран Gear */
+        .title { align-self: flex-start; font-size: 32px; font-weight: 900; margin-bottom: 30px; }
+        .menu-item { width: 100%; padding: 20px; background: var(--g); border: 1px solid #222; margin-bottom: 10px; font-weight: bold; border-radius: 8px; }
         
-        /* Админка */
-        .admin-box { width: 100%; border: 1px solid #ff4444; padding: 15px; border-radius: 10px; margin-top: 20px; }
-        .admin-btn { width: 100%; padding: 15px; background: #fff; color: #000; border: none; font-weight: 900; cursor: pointer; }
+        .admin-box { width: 100%; border: 1px solid #ff4444; padding: 20px; border-radius: 12px; margin-top: 20px; }
+        .admin-btn { width: 100%; padding: 15px; background: #fff; color: #000; border: none; font-weight: 900; cursor: pointer; border-radius: 6px; }
 
         /* Навигация */
-        nav { position: absolute; bottom: 0; left: 0; width: 100%; display: flex; border-top: 1px solid #222; padding: 15px 0 30px; background: #000; }
-        .nav-item { flex: 1; text-align: center; color: #444; font-size: 11px; font-weight: bold; cursor: pointer; }
+        nav { position: absolute; bottom: 0; left: 0; width: 100%; display: flex; border-top: 1px solid #222; padding: 15px 0 35px; background: #000; }
+        .nav-item { flex: 1; text-align: center; color: #444; font-size: 11px; font-weight: 800; cursor: pointer; }
         .nav-item.active { color: #fff; }
+        .nav-item span { display: block; font-size: 20px; margin-bottom: 4px; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <section id="game-screen" class="screen">
+    <section id="screen-game" class="screen">
         <div class="header">
-            <span id="display-username">@malenkiydanik</span>
-            <span id="event-timer">ПРОВЕРКА ИВЕНТА...</span>
+            <span id="player-username">@loading</span>
+            <span id="event-timer">ИВЕНТ ОСТАНОВЛЕН</span>
         </div>
         <div class="score-section">
+            <p class="score-label">SCORE</p>
             <div id="score">0</div>
         </div>
         <div class="tap-area">
-            <div class="main-circle"></div>
+            <div class="main-circle" id="tapBtn"></div>
+        </div>
+        <div class="energy-section">
+            <p style="font-size: 12px; font-weight: 700;">TAP TO EARN</p>
+            <div class="progress-bar"><div id="energy-fill"></div></div>
+            <div id="energy-text">150 / 150</div>
         </div>
     </section>
 
-    <section id="gear-screen" class="screen hidden">
+    <section id="screen-gear" class="screen hidden">
         <h2 class="title">GEAR</h2>
         <div class="menu-item">MUSIC: ON</div>
+        <div class="menu-item">LANGUAGE: RU</div>
         
         <div id="admin-panel" class="admin-box hidden">
-            <p style="color:#ff4444; font-size:10px; margin-bottom:10px; font-weight:bold;">ADMIN PANEL</p>
-            <button class="admin-btn" id="eventToggleBtn">ЗАГРУЗКА...</button>
+            <p style="color:#ff4444; font-size:11px; margin-bottom:12px; font-weight:bold; letter-spacing: 1px;">ADMIN CONTROL</p>
+            <button class="admin-btn" id="eventToggleBtn">ЗАПУСТИТЬ ИВЕНТ</button>
         </div>
     </section>
 
     <nav>
-        <div class="nav-item" onclick="show('top')">🏆<br>TOP</div>
-        <div class="nav-item active" onclick="show('game')">💎<br>GAME</div>
-        <div class="nav-item" onclick="show('shop')">🎁<br>DAILY</div>
-        <div class="nav-item" onclick="show('gear')">⚙️<br>GEAR</div>
+        <div class="nav-item" onclick="changeTab('top')"><span>🏆</span>TOP</div>
+        <div class="nav-item active" id="nav-game" onclick="changeTab('game')"><span>💎</span>GAME</div>
+        <div class="nav-item" onclick="changeTab('shop')"><span>🎁</span>DAILY</div>
+        <div class="nav-item" id="nav-gear" onclick="changeTab('gear')"><span>⚙️</span>GEAR</div>
     </nav>
 </div>
 
 <script>
-    // ВСТАВЬ СВОЙ КОНФИГ НИЖЕ
-   const firebaseConfig = {
+    // КОНФИГ FIREBASE
+    const firebaseConfig = {
   apiKey: "AIzaSyDcUMfQAd9QnoPUVxfM9SWp_lHBc2CaRKY",
   authDomain: "juugtaaap.firebaseapp.com",
   databaseURL: "https://juugtaaap-default-rtdb.europe-west1.firebasedatabase.app",
@@ -90,27 +106,28 @@
   appId: "1:230755213175:web:60d2bd14da628347284b72",
   measurementId: "G-7NH27N7JMQ"
 };
-
-    // Инициализация
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    const MY_ID = 5291965471; 
-    let eventEndTime = 0;
+    // ДАННЫЕ ИГРОКА И АДМИНА
+    const MY_ID = 5291965471;
+    const player = tg.initDataUnsafe?.user || { id: 0, username: "malenkiydanik" };
+    
+    // Отображаем username конкретного игрока
+    document.getElementById('player-username').innerText = "@" + (player.username || "player");
 
-    // Проверка доступа
-    const user = tg.initDataUnsafe?.user || { id: 0, username: "malenkiydanik" }; 
-    if (user.id === MY_ID || user.username === "malenkiydanik") {
+    // Показываем админку только тебе
+    if (player.id === MY_ID) {
         document.getElementById('admin-panel').classList.remove('hidden');
     }
 
-    // Элементы
+    // ЛОГИКА ТАЙМЕРА И БАЗЫ
+    let eventEndTime = 0;
     const timerEl = document.getElementById('event-timer');
     const adminBtn = document.getElementById('eventToggleBtn');
 
-    // Синхронизация с Firebase
     db.ref('event').on('value', (snap) => {
         const data = snap.val();
         if (data && data.active) {
@@ -125,24 +142,19 @@
         }
     });
 
-    // Кнопка Админа
     adminBtn.onclick = () => {
         if (eventEndTime === 0) {
-            const time = Date.now() + (90 * 24 * 60 * 60 * 1000);
+            const time = Date.now() + (90 * 24 * 60 * 60 * 1000); // 3 месяца
             db.ref('event').set({ active: true, endTime: time });
         } else {
             db.ref('event').set({ active: false, endTime: 0 });
         }
     };
 
-    // Логика таймера
     setInterval(() => {
         if (eventEndTime === 0) return;
         const diff = eventEndTime - Date.now();
-        if (diff <= 0) {
-            timerEl.innerText = "ИВЕНТ ЗАВЕРШЕН";
-            return;
-        }
+        if (diff <= 0) { timerEl.innerText = "ИВЕНТ ЗАВЕРШЕН"; return; }
         const d = Math.floor(diff / 86400000);
         const h = Math.floor((diff % 86400000) / 3600000);
         const m = Math.floor((diff % 3600000) / 60000);
@@ -150,13 +162,33 @@
         timerEl.innerText = `EVENT: ${d}d ${h}h ${m}m ${s}s`;
     }, 1000);
 
-    // Навигация
-    window.show = (screen) => {
+    // НАВИГАЦИЯ
+    window.changeTab = (tab) => {
         document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        if (screen === 'game') document.getElementById('game-screen').classList.remove('hidden');
-        if (screen === 'gear') document.getElementById('gear-screen').classList.remove('hidden');
-        event.currentTarget.classList.add('active');
+
+        if (tab === 'game') {
+            document.getElementById('screen-game').classList.remove('hidden');
+            document.getElementById('nav-game').classList.add('active');
+        } else if (tab === 'gear') {
+            document.getElementById('screen-gear').classList.remove('hidden');
+            document.getElementById('nav-gear').classList.add('active');
+        }
+        // Для кнопок TOP и DAILY можно добавить аналогичные условия позже
+    };
+
+    // БАЗОВАЯ ИГРА
+    let score = 0;
+    let energy = 150;
+    document.getElementById('tapBtn').onclick = () => {
+        if (energy > 0) {
+            score++;
+            energy--;
+            document.getElementById('score').innerText = score;
+            document.getElementById('energy-text').innerText = `${energy} / 150`;
+            document.getElementById('energy-fill').style.width = (energy/150*100) + '%';
+            tg.HapticFeedback.impactOccurred('medium');
+        }
     };
 </script>
 </body>
