@@ -47,7 +47,7 @@
         .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 900; min-width: 80px; }
         .buy-btn:disabled { background: #333; color: #555; }
         
-        .winners-btn { width: 100%; padding: 15px; border-radius: 14px; background: #fff; color: #000; font-weight: 900; margin-bottom: 15px; border: none; display: none; text-transform: uppercase; }
+        .winners-btn { width: 100%; padding: 18px; border-radius: 14px; background: #fff; color: #000; font-weight: 900; margin-bottom: 15px; border: none; display: none; text-transform: uppercase; }
 
         nav { position: absolute; bottom: 0; width: 100%; display: flex; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); border-top: 1px solid var(--sg); padding: 15px 0 35px; z-index: 100; }
         .nav-item { flex: 1; text-align: center; color: #444; font-size: 10px; font-weight: 800; cursor: pointer; transition: 0.3s; }
@@ -63,7 +63,7 @@
         .btn-danger { background: var(--red); }
         .btn-neutral { background: #222; }
 
-        #winners-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 15000; display: none; flex-direction: column; align-items: center; padding: 40px 20px; text-align: center; overflow-y: auto; }
+        #winners-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 15000; display: none; flex-direction: column; align-items: center; padding: 40px 20px; text-align: center; overflow-y: auto; backdrop-filter: blur(10px); }
     </style>
 </head>
 <body>
@@ -80,10 +80,10 @@
 </div>
 
 <div id="winners-popup">
-    <h1 style="font-size: 40px; margin-bottom: 10px;">🏆</h1>
-    <h2 id="t-winners-title" style="margin-bottom: 30px; letter-spacing: 2px;">LAST WINNERS</h2>
+    <h1 style="font-size: 50px; margin-bottom: 10px;">🏆</h1>
+    <h2 id="t-winners-title" style="margin-bottom: 30px; letter-spacing: 2px; font-weight: 900;">LAST WINNERS</h2>
     <div id="winners-list" style="width: 100%; max-width: 400px;"></div>
-    <button class="admin-btn btn-neutral" style="margin-top: 40px;" onclick="document.getElementById('winners-popup').style.display='none'">CLOSE</button>
+    <button class="admin-btn btn-neutral" style="margin-top: 40px; border: 1px solid #333;" onclick="document.getElementById('winners-popup').style.display='none'">CLOSE</button>
 </div>
 
 <div id="admin-modal">
@@ -171,6 +171,7 @@
     const currentId = user.id || 999999;
     
     let isLoaded = false;
+    let autoShown = false; // Флаг для авто-показа таблицы
     let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), lastCaseTime: 0, username: "Guest", lang: 'en', sound: true };
     let globalData = { eventEnd: 0, isMaint: false, winners: null };
 
@@ -192,9 +193,8 @@
             const now = Date.now();
             const players = Object.values(snap.val() || {}).filter(p => p.username && p.username !== "Guest")
                 .map(p => { const off = Math.floor((now - (p.lastUpdate || now)) / 1000); return { username: p.username, score: (p.score || 0) + (off * (p.passiveLvl || 0)), tapLvl: p.tapLvl }; })
-                .sort((a,b) => b.score - a.score).slice(0, 5);
-            // Устанавливаем конец через 10 секунд
-            db.ref('global').update({ eventEnd: now + 10000, winners: players });
+                .sort((a,b) => b.score - a.score).slice(0, 3); // Только ТОП-3
+            db.ref('global').update({ eventEnd: now + 10000, winners: players }); // Конец через 10 сек
         });
     }
 
@@ -218,9 +218,14 @@
         if (globalData.winners) {
             winBtn.style.display = 'block';
             const list = document.getElementById('winners-list'); list.innerHTML = "";
-            globalData.winners.forEach((p, i) => { 
-                list.innerHTML += `<div class="card" style="cursor:default"><b>${i+1}. @${p.username}</b> <span>${format(p.score)}</span></div>`; 
+            globalData.winners.slice(0,3).forEach((p, i) => { 
+                list.innerHTML += `<div class="card" style="cursor:default"><b>${['🥇','🥈','🥉'][i]} @${p.username}</b> <b>${format(p.score)}</b></div>`; 
             });
+            // Авто-показ при загрузке или завершении ивента
+            if (isLoaded && !autoShown && globalData.eventEnd <= Date.now()) {
+                document.getElementById('winners-popup').style.display = 'flex';
+                autoShown = true;
+            }
         } else {
             winBtn.style.display = 'none';
             document.getElementById('winners-popup').style.display = 'none';
@@ -239,7 +244,7 @@
     function updateEventTimer() {
         const sync = document.getElementById('sync-text');
         const now = Date.now();
-        sync.style.color = "#555"; // Всегда темно-серый цвет по запросу
+        sync.style.color = "#555";
         if (globalData.eventEnd > now) {
             const diff = globalData.eventEnd - now;
             const daysTotal = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -255,6 +260,11 @@
             }
         } else {
             sync.innerText = langData[state.lang].closed;
+            // Если ивент только что кончился (таймер дошел до 0) и мы в игре
+            if (globalData.winners && !autoShown) {
+                document.getElementById('winners-popup').style.display = 'flex';
+                autoShown = true;
+            }
         }
     }
     setInterval(updateEventTimer, 1000);
@@ -356,12 +366,14 @@
 
     window.openUpgrade = (t) => { document.getElementById('shop-main').classList.add('hidden'); document.getElementById('shop-detail').classList.remove('hidden'); renderUp(t); };
     window.backToShop = () => { document.getElementById('shop-main').classList.remove('hidden'); document.getElementById('shop-detail').classList.add('hidden'); };
+    
     function renderUp(t) {
         const cont = document.getElementById('upgrade-items');
         const lvl = t === 'click' ? state.tapLvl : state.passiveLvl;
         const price = Math.floor(100 * Math.pow(1.4, lvl + (t==='click'?0:1)));
         cont.innerHTML = `<div class="card" style="cursor:default"><div><b>Lvl ${lvl} → ${lvl+1}</b><br><small>${getRank(lvl)}</small></div><button class="buy-btn" onclick="buy('${t}',${price})" ${state.score<price?'disabled':''}>${format(price)}</button></div>`;
     }
+    
     window.buy = (t, p) => { if(state.score>=p){ state.score-=p; if(t==='click')state.tapLvl++; else state.passiveLvl++; updateUI(); renderUp(t); save(); if(state.sound) tg.HapticFeedback.notificationOccurred('success'); } };
 
     function updateLangUI() {
@@ -371,6 +383,7 @@
         document.getElementById('cur-lang').innerText = state.lang.toUpperCase();
         document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
     }
+    
     function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); updateUI(); save(); }
     function toggleSound() { state.sound = !state.sound; updateLangUI(); save(); }
 
