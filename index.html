@@ -165,12 +165,16 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
+    // Включаем подтверждение при закрытии, чтобы успеть сохранить данные
+    tg.enableClosingConfirmation();
+
     const MY_ID = 5291965471;
     const user = tg.initDataUnsafe?.user || { id: 0, username: "Guest" };
     
     let isLoaded = false;
-    let leaderboardInterval = null; // Интервал для живого лидерборда
+    let leaderboardInterval = null;
     let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), lastCaseTime: 0, username: "Guest", lang: 'en', sound: true };
+    
     const langData = {
         en: { sync: "LIVE", scoreL: "SCORE", tapL: "TAP TO EARN", passL: "Passive", topT: "TOP 5 JUUG'ERS", shopT: "SHOP", clUp: "CLICK UPGRADES", clDe: "Increase tap income", psUp: "PASSIVE INCOME", psDe: "Automatic income", back: "BACK", gearT: "GEAR", langL: "Language", soundL: "Sound", navTop: "TOP", navGame: "GAME", navShop: "SHOP", navGear: "GEAR", ranks: ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"], caseName: "DAILY CASE", caseOpen: "OPEN", caseReady: "Ready to open!" },
         ru: { sync: "В СЕТИ", scoreL: "СЧЕТ", tapL: "ТАПАЙ ЧТОБЫ ЗАРАБОТАТЬ", passL: "Пассив", topT: "ТОП 5 ДЖУГЕРОВ", shopT: "МАГАЗИН", clUp: "ПРОКАЧКА КЛИКА", clDe: "Увеличить доход за тап", psUp: "ПАССИВНЫЙ ДОХОД", psDe: "Автоматический доход", back: "НАЗАД", gearT: "МЕНЮ", langL: "Язык", soundL: "Звук", navTop: "ТОП", navGame: "ИГРА", navShop: "МАГАЗИН", navGear: "МЕНЮ", ranks: ["Нуб Джугер", "Обычный Джугер", "Про Джугер", "Хакер Джугер", "Бог Джугер"], caseName: "ДНЕВНОЙ КЕЙС", caseOpen: "ОТКРЫТЬ", caseReady: "Можно открыть!" }
@@ -227,22 +231,48 @@
 
     const fallbackId = 999999;
     const currentId = (user && user.id) ? user.id : fallbackId;
+    
+    // ИНИЦИАЛИЗАЦИЯ
     db.ref(`users/${currentId}`).once('value', (snap) => {
         const data = snap.val();
         if (data) {
-            const now = Date.now(); const offTime = Math.floor((now - (data.lastUpdate || now)) / 1000);
-            state = { ...state, ...data, score: (data.score || 0) + (offTime * (data.passiveLvl || 0)), energy: Math.min(150, (data.energy || 150) + offTime) };
+            const now = Date.now(); 
+            // Считаем время отсутствия (в секундах)
+            const offTime = Math.floor((now - (data.lastUpdate || now)) / 1000);
+            
+            // Начисляем пассивный доход
+            const offlinePassive = offTime * (data.passiveLvl || 0);
+            
+            // Начисляем энергию (1 энергия в секунду, максимум до 150)
+            const currentEnergy = Math.min(150, (data.energy || 150) + offTime);
+
+            state = { 
+                ...state, 
+                ...data, 
+                score: (data.score || 0) + offlinePassive, 
+                energy: currentEnergy 
+            };
         }
         state.username = user.username || data?.username || (currentId !== fallbackId ? `User_${currentId}` : "PC_Guest");
         isLoaded = true;
         const loader = document.getElementById('loading-screen');
         if (loader) { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 500); }
         document.getElementById('p-name').innerText = "@" + state.username;
-        if (Number(currentId) === MY_ID) { document.getElementById('admin-container').innerHTML = `<div style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:12px;"><p style="color:#ff4444; font-size:10px; margin-bottom:10px; font-weight:900;">ADMIN PANEL</p><button style="width:100%; padding:15px; font-weight:900; background:#fff; border:none; border-radius:8px; color:#000;">EVENT CONTROL</button></div>`; }
         updateLangUI(); updateUI(); updateCaseUI(); setInterval(updateCaseUI, 1000);
     });
 
-    function save() { if (isLoaded && currentId !== 0) { state.lastUpdate = Date.now(); db.ref(`users/${currentId}`).update(state); } }
+    // Функция сохранения
+    function save() { 
+        if (isLoaded && currentId !== 0) { 
+            state.lastUpdate = Date.now(); 
+            db.ref(`users/${currentId}`).update(state); 
+        } 
+    }
+
+    // МГНОВЕННОЕ СОХРАНЕНИЕ ПРИ ЗАКРЫТИИ (Telegram Web App)
+    tg.onEvent('viewportChanged', save); // На случай сворачивания
+    window.addEventListener('beforeunload', save);
+    window.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') save(); });
 
     function updateUI() {
         document.getElementById('score').innerText = format(state.score);
@@ -257,9 +287,7 @@
 
     function loadLeaderboard() {
         const list = document.getElementById('leaderboard-list');
-        // Показываем прелоадер только в первый раз, чтобы список не моргал при обновлении
         if (list.innerHTML === "") list.innerHTML = "<p style='text-align:center; color:#555;'>Syncing...</p>";
-        
         db.ref('users').once('value', (snap) => {
             const data = snap.val(); if (!data) return;
             const now = Date.now();
@@ -268,12 +296,8 @@
                 const offTime = Math.floor((now - (p.lastUpdate || now)) / 1000); 
                 return { ...p, currentScore: (p.score || 0) + (offTime * (p.passiveLvl || 0)) }; 
             }).sort((a, b) => b.currentScore - a.currentScore).slice(0, 5);
-            
             list.innerHTML = "";
-            players.forEach((p, i) => { 
-                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']; 
-                list.innerHTML += `<div class="card" style="${p.username === state.username ? 'border-color: #777;' : ''}"><div style="font-size:20px; min-width:40px;">${medals[i]}</div><div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${getRank(p.tapLvl)} (Lvl ${p.tapLvl || 1})</div></div><div style="font-weight:900;">${format(p.currentScore)}</div></div>`; 
-            });
+            players.forEach((p, i) => { const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']; list.innerHTML += `<div class="card" style="${p.username === state.username ? 'border-color: #777;' : ''}"><div style="font-size:20px; min-width:40px;">${medals[i]}</div><div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${getRank(p.tapLvl)} (Lvl ${p.tapLvl || 1})</div></div><div style="font-weight:900;">${format(p.currentScore)}</div></div>`; });
         });
     }
 
@@ -282,21 +306,15 @@
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
         document.getElementById(id).classList.add('active'); 
         document.getElementById('n-' + id.split('-')[1]).classList.add('active'); 
-        
-        // Очищаем старый интервал лидерборда, если он был
         if (leaderboardInterval) clearInterval(leaderboardInterval);
-        
-        if (id === 's-top') { 
-            loadLeaderboard(); 
-            // Запускаем живое обновление каждые 5 секунд
-            leaderboardInterval = setInterval(loadLeaderboard, 5000);
-        } 
+        if (id === 's-top') { loadLeaderboard(); leaderboardInterval = setInterval(loadLeaderboard, 5000); } 
     };
 
     window.openUpgrade = (type) => { document.getElementById('shop-main').classList.add('hidden'); document.getElementById('shop-detail').classList.remove('hidden'); renderUpgradeItems(type); };
     window.backToShop = () => { document.getElementById('shop-main').classList.remove('hidden'); document.getElementById('shop-detail').classList.add('hidden'); };
     function renderUpgradeItems(type) { const cont = document.getElementById('upgrade-items'); const lvl = type === 'click' ? state.tapLvl : state.passiveLvl; const price = Math.floor(100 * Math.pow(1.4, lvl + (type==='click'?0:1))); cont.innerHTML = `<div class="card" style="cursor:default;"><div style="flex:1"><b style="font-size:18px;">${getRank(lvl)}</b><br><span style="color:#888; font-size:12px;">Level ${lvl} → ${lvl+1}</span></div><button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button></div>`; }
     window.buy = (type, p) => { if (state.score >= p) { state.score -= p; if (type === 'click') state.tapLvl++; else state.passiveLvl++; updateUI(); renderUpgradeItems(type); save(); if(state.sound) tg.HapticFeedback.notificationOccurred('success'); } };
+    
     function updateLangUI() {
         const l = langData[state.lang];
         const map = { 'sync-text':'sync', 't-score-label':'scoreL', 't-tap-label':'tapL', 't-top-title':'topT', 't-shop-title':'shopT', 't-click-up':'clUp', 't-click-desc':'clDe', 't-pass-up':'psUp', 't-pass-desc':'psDe', 't-back':'back', 't-gear-title':'gearT', 't-lang-label':'langL', 't-sound-label':'soundL', 't-nav-top':'navTop', 't-nav-game':'navGame', 't-nav-shop':'navShop', 't-nav-gear':'navGear', 't-case-name':'caseName', 'case-btn':'caseOpen' };
@@ -307,7 +325,16 @@
     }
     function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); updateUI(); save(); }
     function toggleSound() { state.sound = !state.sound; document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF"; save(); }
-    setInterval(() => { if (!isLoaded) return; state.score += (state.passiveLvl || 0); if (state.energy < 150) state.energy++; updateUI(); }, 1000);
+    
+    // Ежесекундное обновление
+    setInterval(() => { 
+        if (!isLoaded) return; 
+        state.score += (state.passiveLvl || 0); 
+        if (state.energy < 150) state.energy++; 
+        updateUI(); 
+    }, 1000);
+
+    // Фоновое сохранение раз в 10 секунд
     setInterval(() => { if(isLoaded) save(); }, 10000);
 </script>
 </body>
