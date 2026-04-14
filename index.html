@@ -44,7 +44,8 @@
         #e-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #fff 0%, rgba(200,200,200,0.8) 100%); transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 0 15px rgba(255,255,255,0.2); position: relative; }
         #e-text { position: absolute; width: 100%; left: 0; top: 50%; transform: translateY(-50%); font-size: 10px; font-weight: 900; letter-spacing: 1px; color: var(--w); text-shadow: 0 0 5px #000; z-index: 10; mix-blend-mode: difference; }
 
-        .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 20px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        /* Стили карточек магазина */
+        .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 20px; border-radius: 8px; font-weight: 900; font-size: 14px; }
         .buy-btn:disabled { background: #333; color: #555; }
 
@@ -155,14 +156,15 @@
         ru: { scoreL: 'СЧЕТ', tapL: 'СИЛА КЛИКА', topT: 'ЛИДЕРЫ', shopT: 'МАГАЗИН', clUp: 'Сила клика', clDe: 'Улучшить клик', psUp: 'Пассив', psDe: 'Доход в сек', gearT: 'ОПЦИИ', langL: 'ЯЗЫК', soundL: 'ВИБРО', navTop: 'ТОП', navGame: 'ИГРА', navShop: 'МАГАЗИН', navGear: 'МЕНЮ', caseName: 'КЕЙС', caseOpen: 'ОТКРЫТЬ', winTitle: 'ПОБЕДИТЕЛИ', showWin: 'СПИСОК ПОБЕДИТЕЛЕЙ' }
     };
 
+    // Система рангов
     const ranks = ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"];
-
     function getRank(lvl) {
         let index = Math.floor((lvl - 1) / 10);
         if (index > 4) index = 4;
         return ranks[index];
     }
 
+    // --- Функции Админки (Оригинал) ---
     function adminStartEvent() { db.ref('settings/event').set({ active: true, startTime: Date.now() }); }
     function adminStopEvent() {
         db.ref('users').once('value', s => {
@@ -189,6 +191,7 @@
         if(id === 'shop') { renderUp('click'); renderUp('pass'); updateCaseUI(); }
     }
 
+    // --- Обновленный Магазин ---
     function renderUp(t) {
         const cont = document.getElementById(t === 'click' ? 'up-click-cont' : 'up-pass-cont');
         const lvl = t === 'click' ? state.tapLvl : state.passiveLvl;
@@ -198,7 +201,7 @@
         const currentRank = getRank(lvl);
 
         cont.innerHTML = `
-            <div class="card" style="flex-direction: column; align-items: flex-start; gap: 8px; padding: 15px; background: linear-gradient(145deg, #111, #080808);">
+            <div class="card" style="flex-direction: column; align-items: flex-start; gap: 8px; padding: 15px; background: linear-gradient(145deg, #111, #080808); border: 1px solid var(--sg);">
                 <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start;">
                     <div>
                         <div style="font-size: 9px; color: #666; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">${currentRank}</div>
@@ -209,15 +212,23 @@
                         ${price > 1000000 ? (price/1000000).toFixed(1) + 'M' : price.toLocaleString()}
                     </button>
                 </div>
-                <div style="width: 100%; height: 2px; background: #222; border-radius: 2px; overflow: hidden;">
+                <div style="width: 100%; height: 2px; background: #222; border-radius: 2px; overflow: hidden; margin-top: 4px;">
                     <div style="width: ${(lvl % 10 || 10) * 10}%; height: 100%; background: var(--w); opacity: 0.2;"></div>
                 </div>
             </div>
         `;
     }
 
-    function buy(t, p) { if(state.score >= p) { state.score -= p; if(t === 'click') state.tapLvl++; else state.passiveLvl++; updateUI(); renderUp(t); save(); if(state.sound) tg.HapticFeedback.notificationOccurred('success'); } }
+    function buy(t, p) { 
+        if(state.score >= p) { 
+            state.score -= p; 
+            if(t === 'click') state.tapLvl++; else state.passiveLvl++; 
+            updateUI(); renderUp(t); save(); 
+            if(state.sound) tg.HapticFeedback.notificationOccurred('success'); 
+        } 
+    }
 
+    // --- Остальная Логика (Оригинал) ---
     function updateUI() {
         document.getElementById('score').innerText = Math.floor(state.score).toLocaleString();
         document.getElementById('tap-val').innerText = state.tapLvl;
@@ -286,12 +297,17 @@
         }
     });
 
-    function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); if(document.getElementById('s-shop').classList.contains('active')) { renderUp('click'); renderUp('pass'); } }
+    function toggleLang() { 
+        state.lang = state.lang === 'en' ? 'ru' : 'en'; 
+        updateLangUI(); 
+        if(document.getElementById('s-shop').classList.contains('active')) { renderUp('click'); renderUp('pass'); } 
+    }
+    
     function toggleSound() { state.sound = !state.sound; document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF"; }
 
     function updateLangUI() {
         const l = langData[state.lang];
-        const ids = { 't-score-label':'scoreL', 't-tap-label':'tapL', 't-top-title':'topT', 't-shop-title':'shopT', 't-gear-title':'gearT', 't-lang-label':'langL', 't-sound-label':'soundL', 't-nav-top':'navTop', 't-nav-game':'navGame', 't-nav-shop':'navShop', 't-nav-gear':'navGear', 't-case-name':'caseName', 'case-btn':'caseOpen', 't-winners-title':'winTitle' };
+        const ids = { 't-score-label':'scoreL', 't-tap-label':'tapL', 't-top-title':'topT', 't-shop-title':'shopT', 't-gear-title':'gearT', 't-lang-label':'langL', 't-sound-label':'soundL', 't-nav-top':'navTop', 't-nav-game':'navTop', 't-nav-shop':'navShop', 't-nav-gear':'navGear', 't-case-name':'caseName', 'case-btn':'caseOpen', 't-winners-title':'winTitle' };
         for(let id in ids) { const e = document.getElementById(id); if(e) e.innerText = l[ids[id]]; }
         document.getElementById('cur-lang').innerText = state.lang.toUpperCase();
         document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
@@ -306,6 +322,7 @@
         if(m?.active) { document.getElementById('maint-screen').style.display = 'flex'; document.getElementById('maint-msg').innerText = m.msg; }
         else document.getElementById('maint-screen').style.display = 'none';
     });
+    
     db.ref('settings/event').on('value', s => { if(s.val()?.active) document.getElementById('show-winners-btn').style.display = 'none'; else document.getElementById('show-winners-btn').style.display = 'block'; });
 
     function showWinners() {
