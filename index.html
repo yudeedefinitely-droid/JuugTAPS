@@ -44,7 +44,7 @@
         #e-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #fff 0%, rgba(200,200,200,0.8) 100%); transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 0 15px rgba(255,255,255,0.2); position: relative; }
         #e-text { position: absolute; width: 100%; left: 0; top: 50%; transform: translateY(-50%); font-size: 10px; font-weight: 900; letter-spacing: 1px; color: var(--w); text-shadow: 0 0 5px #000; z-index: 10; mix-blend-mode: difference; }
 
-        .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 20px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s ease; }
+        .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 20px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 20px; border-radius: 8px; font-weight: 900; font-size: 14px; }
         .buy-btn:disabled { background: #333; color: #555; }
 
@@ -104,8 +104,9 @@
             <div><b id="t-case-name">DAILY CASE</b><p id="case-timer" style="font-size:10px; color:var(--green); font-weight:800;"></p></div>
             <button class="buy-btn" id="case-btn">OPEN</button>
         </div>
+        
         <div id="up-click-cont" style="width: 100%;"></div>
-        <div id="up-pass-cont" style="width: 100%;"></div>
+        <div id="up-pass-cont" style="width: 100%; margin-top: 10px;"></div>
     </div>
 
     <div id="s-gear" class="screen">
@@ -197,19 +198,19 @@
         const currentRank = getRank(lvl);
 
         cont.innerHTML = `
-            <div class="card" style="flex-direction: column; align-items: flex-start; gap: 10px; padding: 15px; background: linear-gradient(145deg, #161616, #0c0c0c);">
+            <div class="card" style="flex-direction: column; align-items: flex-start; gap: 8px; padding: 15px; background: linear-gradient(145deg, #111, #080808);">
                 <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start;">
                     <div>
-                        <div style="font-size: 10px; color: #888; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">${currentRank}</div>
-                        <div style="font-size: 18px; font-weight: 900;">${title} <span style="color: var(--green); font-size: 14px;">LVL ${lvl}</span></div>
-                        <div style="font-size: 12px; color: #555; margin-top: 2px; font-weight: 600;">${desc}</div>
+                        <div style="font-size: 9px; color: #666; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">${currentRank}</div>
+                        <div style="font-size: 16px; font-weight: 900;">${title} <span style="color: var(--green); font-size: 12px;">LVL ${lvl}</span></div>
+                        <div style="font-size: 11px; color: #444; font-weight: 600;">${desc}</div>
                     </div>
-                    <button class="buy-btn" onclick="buy('${t}', ${price})" ${state.score < price ? 'disabled' : ''} style="min-width: 80px; height: 40px; border-radius: 10px;">
+                    <button class="buy-btn" onclick="buy('${t}', ${price})" ${state.score < price ? 'disabled' : ''} style="min-width: 75px; height: 36px; border-radius: 8px;">
                         ${price > 1000000 ? (price/1000000).toFixed(1) + 'M' : price.toLocaleString()}
                     </button>
                 </div>
-                <div style="width: 100%; height: 2px; background: #222; border-radius: 2px; margin-top: 5px; overflow: hidden;">
-                    <div style="width: ${(lvl % 10 || 10) * 10}%; height: 100%; background: var(--w); opacity: 0.3;"></div>
+                <div style="width: 100%; height: 2px; background: #222; border-radius: 2px; overflow: hidden;">
+                    <div style="width: ${(lvl % 10 || 10) * 10}%; height: 100%; background: var(--w); opacity: 0.2;"></div>
                 </div>
             </div>
         `;
