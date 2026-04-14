@@ -45,27 +45,25 @@
         .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 18px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
         .card:active { transform: scale(0.98); background: #151515; }
         .card.special { border: 1px solid rgba(255,255,255,0.3); background: linear-gradient(145deg, #111, #050505); }
-        .case-icon { font-size: 24px; margin-right: 15px; }
         .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 900; min-width: 80px; }
-        .buy-btn:disabled { background: #333; color: #555; cursor: not-allowed; }
+        
+        .winners-btn { width: 100%; padding: 15px; border-radius: 14px; background: #fff; color: #000; font-weight: 900; margin-bottom: 15px; border: none; display: none; }
 
         nav { position: absolute; bottom: 0; width: 100%; display: flex; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); border-top: 1px solid var(--sg); padding: 15px 0 35px; z-index: 100; }
         .nav-item { flex: 1; text-align: center; color: #444; font-size: 10px; font-weight: 800; cursor: pointer; transition: 0.3s; }
         .nav-item.active { color: var(--w); transform: translateY(-2px); }
-        .nav-item span { display: block; font-size: 24px; margin-bottom: 4px; filter: grayscale(1) brightness(2); transition: 0.3s; }
-        .nav-item.active span { filter: grayscale(0) brightness(1); color: #fff; }
+        .nav-item span { display: block; font-size: 24px; margin-bottom: 4px; filter: grayscale(1) brightness(2); }
         
         .settings-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 12px; border: 1px solid var(--sg); background: var(--g); color: #fff; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
 
         #admin-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .admin-content { background: #111; width: 100%; max-width: 400px; border-radius: 20px; padding: 20px; border: 1px solid #333; max-height: 80vh; overflow-y: auto; }
-        .admin-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 10px; border: none; font-weight: 800; cursor: pointer; color: #fff; }
-        .btn-start { background: var(--green); color: #000; box-shadow: 0 0 15px var(--green); }
+        .admin-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 10px; border: none; font-weight: 800; color: #fff; }
+        .btn-start { background: var(--green); color: #000; }
         .btn-danger { background: var(--red); }
         .btn-neutral { background: #222; }
 
-        #winners-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; color: #000; padding: 25px; border-radius: 20px; z-index: 15000; width: 85%; display: none; text-align: center; box-shadow: 0 0 30px rgba(255,255,255,0.2); }
-        .winner-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+        #winners-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 15000; display: none; flex-direction: column; align-items: center; padding: 40px 20px; text-align: center; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -78,21 +76,21 @@
 <div id="maint-screen">
     <h1 style="font-size: 50px;">🔧</h1>
     <h2 style="margin: 15px 0;">ТЕХ ПЕРЕРЫВ</h2>
-    <p style="color: #666;">Извините, мы проводим технические работы.<br>Скоро вернемся!</p>
+    <p style="color: #666;">Извините, мы проводим технические работы.</p>
 </div>
 
 <div id="winners-popup">
-    <h2 style="margin-bottom: 15px;">🏆 ИВЕНТ ЗАВЕРШЕН</h2>
-    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Наши лидеры:</p>
-    <div id="winners-list"></div>
-    <button class="admin-btn btn-neutral" style="color:#000; margin-top:20px; border: 1px solid #000;" onclick="document.getElementById('winners-popup').style.display='none'">УРА!</button>
+    <h1 style="font-size: 40px; margin-bottom: 10px;">🏆</h1>
+    <h2 id="t-winners-title" style="margin-bottom: 30px; letter-spacing: 2px;">WINNERS</h2>
+    <div id="winners-list" style="width: 100%; max-width: 400px;"></div>
+    <button class="admin-btn btn-neutral" style="margin-top: 40px; max-width: 200px;" onclick="document.getElementById('winners-popup').style.display='none'">CLOSE</button>
 </div>
 
 <div id="admin-modal">
     <div class="admin-content">
-        <h3 style="margin-bottom: 20px; text-align: center; letter-spacing: 2px;">ADMIN PANEL</h3>
+        <h3 style="margin-bottom: 20px; text-align: center;">ADMIN PANEL</h3>
         <button id="event-toggle-btn" class="admin-btn btn-start" onclick="toggleEvent()">НАЧАТЬ ИВЕНТ</button>
-        <button id="event-rush-btn" class="admin-btn btn-neutral hidden" onclick="rushEvent()">ЗАКОНЧИТЬ (ПО SCORE)</button>
+        <button id="event-rush-btn" class="admin-btn btn-neutral hidden" onclick="rushEvent()">ЗАКОНЧИТЬ (СЕЙЧАС)</button>
         <button class="admin-btn btn-danger" onclick="clearWinners()">ОЧИСТИТЬ ПОБЕДИТЕЛЕЙ</button>
         <button class="admin-btn btn-neutral" onclick="toggleMaint()">ТЕХ ПЕРЕРЫВ: <span id="maint-status">OFF</span></button>
         <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
@@ -112,16 +110,14 @@
         <div id="passive-display" style="color:#666; font-size:11px; font-weight:800; margin-top: 5px;">Passive: 0/sec</div>
         <div class="tap-area"><div class="main-circle" id="tapBtn"></div></div>
         <div class="energy-box">
-             <p id="t-tap-label" style="font-size:10px; font-weight:800; letter-spacing:1px; color: #444;">STAMINA</p>
-            <div class="bar-bg">
-                <div id="e-fill"></div>
-                <span id="e-text">150 / 150</span>
-            </div>
+            <p id="t-tap-label" style="font-size:10px; font-weight:800; letter-spacing:1px; color: #444;">STAMINA</p>
+            <div class="bar-bg"><div id="e-fill"></div><span id="e-text">150 / 150</span></div>
         </div>
     </section>
 
     <section id="s-top" class="screen">
         <h2 id="t-top-title" style="align-self:flex-start; margin-bottom:20px; font-weight:900;">TOP 5 JUUG'ERS</h2>
+        <button id="show-winners-btn" class="winners-btn" onclick="document.getElementById('winners-popup').style.display='flex'">LAST WINNERS 🏆</button>
         <div id="leaderboard-list" style="width:100%;"></div>
     </section>
 
@@ -137,27 +133,23 @@
             </div>
             <div class="card" onclick="openUpgrade('click')">
                 <div style="flex:1"><b id="t-click-up">CLICK UPGRADES</b><br><span id="t-click-desc" style="font-size:11px; color:#666">Increase tap income</span></div>
-                <span style="color:#fff">➔</span>
+                <span>➔</span>
             </div>
             <div class="card" onclick="openUpgrade('passive')">
                 <div style="flex:1"><b id="t-pass-up">PASSIVE INCOME</b><br><span id="t-pass-desc" style="font-size:11px; color:#666">Automatic income</span></div>
-                <span style="color:#fff">➔</span>
+                <span>➔</span>
             </div>
         </div>
         <div id="shop-detail" class="hidden" style="width:100%;">
-            <button id="t-back" onclick="backToShop()" style="background:none; border:none; color:#fff; font-weight:800; margin-bottom:15px; cursor:pointer; display:flex; align-items:center; gap:5px;">← BACK</button>
+            <button id="t-back" onclick="backToShop()" style="background:none; border:none; color:#fff; font-weight:800; margin-bottom:15px;">← BACK</button>
             <div id="upgrade-items"></div>
         </div>
     </section>
 
     <section id="s-gear" class="screen">
         <h2 id="t-gear-title" style="align-self:flex-start; margin-bottom:20px; font-weight:900;">GEAR</h2>
-        <button class="settings-btn" onclick="toggleLang()">
-            <span id="t-lang-label">Language</span><span id="cur-lang" style="color:#888">English</span>
-        </button>
-        <button class="settings-btn" onclick="toggleSound()">
-            <span id="t-sound-label">Sound</span><span id="cur-sound" style="color:#888">ON</span>
-        </button>
+        <button class="settings-btn" onclick="toggleLang()"><span id="t-lang-label">Language</span><span id="cur-lang" style="color:#888">EN</span></button>
+        <button class="settings-btn" onclick="toggleSound()"><span id="t-sound-label">Sound</span><span id="cur-sound" style="color:#888">ON</span></button>
         <div id="admin-container"></div>
     </section>
 
@@ -179,13 +171,12 @@
     const currentId = user.id || 999999;
     
     let isLoaded = false;
-    let leaderboardInterval = null;
     let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), lastCaseTime: 0, username: "Guest", lang: 'en', sound: true };
     let globalData = { eventEnd: 0, isMaint: false, winners: null };
 
     const langData = {
-        en: { sync: "LIVE", scoreL: "SCORE", tapL: "TAP TO EARN", passL: "Passive", topT: "TOP 5 JUUG'ERS", shopT: "SHOP", clUp: "CLICK UPGRADES", clDe: "Increase tap income", psUp: "PASSIVE INCOME", psDe: "Automatic income", back: "BACK", gearT: "GEAR", langL: "Language", soundL: "Sound", navTop: "TOP", navGame: "GAME", navShop: "SHOP", navGear: "GEAR", ranks: ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"], caseName: "DAILY CASE", caseOpen: "OPEN", caseReady: "Ready to open!" },
-        ru: { sync: "В СЕТИ", scoreL: "СЧЕТ", tapL: "ТАПАЙ ЧТОБЫ ЗАРАБОТАТЬ", passL: "Пассив", topT: "ТОП 5 ДЖУГЕРОВ", shopT: "МАГАЗИН", clUp: "ПРОКАЧКА КЛИКА", clDe: "Увеличить доход за тап", psUp: "ПАССИВНЫЙ ДОХОД", psDe: "Автоматический доход", back: "НАЗАД", gearT: "МЕНЮ", langL: "Язык", soundL: "Звук", navTop: "ТОП", navGame: "ИГРА", navShop: "МАГАЗИН", navGear: "МЕНЮ", ranks: ["Нуб Джугер", "Обычный Джугер", "Про Джугер", "Хакер Джугер", "Бог Джугер"], caseName: "ДНЕВНОЙ КЕЙС", caseOpen: "ОТКРЫТЬ", caseReady: "Можно открыть!" }
+        en: { sync: "LIVE", scoreL: "SCORE", tapL: "STAMINA", passL: "Passive", topT: "TOP 5 JUUG'ERS", shopT: "SHOP", clUp: "CLICK UPGRADES", clDe: "Increase tap income", psUp: "PASSIVE INCOME", psDe: "Automatic income", back: "BACK", gearT: "GEAR", langL: "Language", soundL: "Sound", navTop: "TOP", navGame: "GAME", navShop: "SHOP", navGear: "GEAR", ranks: ["Noob", "Default", "Pro", "Hacker", "God"], caseName: "DAILY CASE", caseOpen: "OPEN", caseReady: "Ready!", winTitle: "LAST WINNERS", showWin: "LAST WINNERS 🏆", closed: "EVENT CLOSED" },
+        ru: { sync: "В СЕТИ", scoreL: "СЧЕТ", tapL: "ЭНЕРГИЯ", passL: "Пассив", topT: "ТОП 5 ДЖУГЕРОВ", shopT: "МАГАЗИН", clUp: "ПРОКАЧКА КЛИКА", clDe: "Увеличить доход за тап", psUp: "ПАССИВНЫЙ ДОХОД", psDe: "Автоматический доход", back: "НАЗАД", gearT: "МЕНЮ", langL: "Язык", soundL: "Звук", navTop: "ТОП", navGame: "ИГРА", navShop: "МАГАЗИН", navGear: "МЕНЮ", ranks: ["Нуб", "Обычный", "Про", "Хакер", "Бог"], caseName: "ДНЕВНОЙ КЕЙС", caseOpen: "ОТКРЫТЬ", caseReady: "Готов!", winTitle: "ПОСЛЕДНИЕ ПОБЕДИТЕЛИ", showWin: "ПОБЕДИТЕЛИ 🏆", closed: "ИВЕНТ ЗАКРЫТ" }
     };
 
     function openAdmin() { document.getElementById('admin-modal').style.display = 'flex'; }
@@ -193,70 +184,60 @@
     function toggleMaint() { db.ref('global').update({ isMaint: !globalData.isMaint }); }
     function toggleEvent() {
         if (globalData.eventEnd > Date.now()) { db.ref('global').update({ eventEnd: 0 }); } 
-        else { const threeMonths = Date.now() + (90 * 24 * 60 * 60 * 1000); db.ref('global').update({ eventEnd: threeMonths }); }
+        else { const duration = Date.now() + (90 * 24 * 60 * 60 * 1000); db.ref('global').update({ eventEnd: duration }); }
     }
 
     function rushEvent() {
         db.ref('users').once('value', snap => {
             const now = Date.now();
-            const players = Object.values(snap.val())
-                .filter(p => p.username && p.username !== "Guest")
+            const players = Object.values(snap.val()).filter(p => p.username && p.username !== "Guest")
                 .map(p => {
                     const offTime = Math.floor((now - (p.lastUpdate || now)) / 1000);
-                    const realScore = (p.score || 0) + (offTime * (p.passiveLvl || 0));
-                    return { username: p.username, score: realScore, tapLvl: p.tapLvl };
+                    return { username: p.username, score: (p.score || 0) + (offTime * (p.passiveLvl || 0)), tapLvl: p.tapLvl };
                 })
-                .sort((a,b) => b.score - a.score)
-                .slice(0, 5);
+                .sort((a,b) => b.score - a.score).slice(0, 5);
             db.ref('global').update({ eventEnd: now - 1000, winners: players });
         });
     }
 
     function clearWinners() { if(confirm("Очистить список победителей?")) db.ref('global/winners').remove(); }
 
-    // Вернул функционал сброса по Username
     function resetByUsername() {
-        const target = prompt("Введите @username игрока для обнуления (без @):");
+        const target = prompt("Username (без @):");
         if (!target) return;
         db.ref('users').once('value', snap => {
-            const users = snap.val();
-            let found = false;
-            for (let id in users) {
-                if (users[id].username === target) {
+            for (let id in snap.val()) {
+                if (snap.val()[id].username === target) {
                     db.ref(`users/${id}`).update({ score: 0, tapLvl: 1, passiveLvl: 0 });
-                    found = true; break;
+                    alert("Done!"); return;
                 }
             }
-            alert(found ? "Игрок обнулен!" : "Игрок не найден.");
+            alert("Not found");
         });
     }
 
     function resetAllPlayers() {
-        if (!confirm("Внимание! Это обнулит ВСЕХ игроков. Продолжить?")) return;
-        db.ref('users').once('value', snap => {
-            const users = snap.val();
-            for (let id in users) { db.ref(`users/${id}`).update({ score: 0, tapLvl: 1, passiveLvl: 0 }); }
-            alert("Все игроки сброшены!");
+        if (confirm("RESET ALL?")) db.ref('users').once('value', snap => {
+            for (let id in snap.val()) db.ref(`users/${id}`).update({ score: 0, tapLvl: 1, passiveLvl: 0 });
         });
     }
 
+    // Глобальный слушатель обновлений (Таймер и Победители)
     db.ref('global').on('value', snap => {
         globalData = snap.val() || { eventEnd: 0, isMaint: false, winners: null };
         document.getElementById('maint-screen').style.display = (globalData.isMaint && Number(currentId) !== MY_ID) ? 'flex' : 'none';
         document.getElementById('maint-status').innerText = globalData.isMaint ? 'ON' : 'OFF';
-        const eBtn = document.getElementById('event-toggle-btn');
-        const rBtn = document.getElementById('event-rush-btn');
-        if (globalData.eventEnd > Date.now()) {
-            eBtn.innerText = "ЗАКРЫТЬ ИВЕНТ"; eBtn.classList.replace('btn-start', 'btn-danger'); rBtn.classList.remove('hidden');
-        } else {
-            eBtn.innerText = "НАЧАТЬ ИВЕНТ"; eBtn.classList.replace('btn-danger', 'btn-start'); rBtn.classList.add('hidden');
-        }
-        const popup = document.getElementById('winners-popup');
+        
+        // Управление кнопкой победителей в ТОП
+        const winBtn = document.getElementById('show-winners-btn');
         if (globalData.winners) {
+            winBtn.style.display = 'block';
             const list = document.getElementById('winners-list'); list.innerHTML = "";
-            globalData.winners.forEach((p, i) => { list.innerHTML += `<div class="winner-row"><b>${i+1}. @${p.username}</b> <span>${format(p.score)} pts (Lvl ${p.tapLvl})</span></div>`; });
-            popup.style.display = 'block';
-        } else { popup.style.display = 'none'; }
+            globalData.winners.forEach((p, i) => { list.innerHTML += `<div class="card" style="cursor:default"><b>${i+1}. @${p.username}</b> <span>${format(p.score)}</span></div>`; });
+        } else {
+            winBtn.style.display = 'none';
+            document.getElementById('winners-popup').style.display = 'none'; // Закрыть если админ стер
+        }
     });
 
     function updateEventTimer() {
@@ -264,10 +245,25 @@
         const now = Date.now();
         if (globalData.eventEnd > now) {
             const diff = globalData.eventEnd - now;
-            const h = Math.floor(diff / 3600000); const m = Math.floor((diff / 60000) % 60); const s = Math.floor((diff / 1000) % 60);
-            sync.innerText = `END IN: ${h}h ${m}m ${s}s`; sync.style.color = "var(--red)";
+            const daysTotal = Math.floor(diff / (1000 * 60 * 60 * 24));
+            
+            // Если осталось больше 48 часов - показываем месяцы и дни
+            if (daysTotal > 2) {
+                const months = Math.floor(daysTotal / 30);
+                const days = daysTotal % 30;
+                sync.innerText = `${months} MO, ${days} DAYS`;
+                sync.style.color = "var(--green)";
+            } else {
+                // Если меньше 48 часов - точный отсчет
+                const h = Math.floor(diff / 3600000);
+                const m = Math.floor((diff / 60000) % 60);
+                const s = Math.floor((diff / 1000) % 60);
+                sync.innerText = `${h}:${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+                sync.style.color = "var(--red)";
+            }
         } else {
-            sync.innerText = "ИВЕНТ ЗАКРЫТ"; sync.style.color = "#555";
+            sync.innerText = langData[state.lang].closed;
+            sync.style.color = "#555";
         }
     }
     setInterval(updateEventTimer, 1000);
@@ -296,61 +292,23 @@
     });
     window.addEventListener('pointerup', () => tapBtn.classList.remove('is-active'));
 
-    function updateCaseUI() {
-        const btn = document.getElementById('case-btn'); const status = document.getElementById('case-status');
-        const now = Date.now(); const nextTime = (state.lastCaseTime || 0) + (24 * 60 * 60 * 1000);
-        if (now >= nextTime) { btn.disabled = false; status.innerText = langData[state.lang].caseReady; status.style.color = "rgba(255,255,255,0.8)"; } 
-        else { 
-            btn.disabled = true; const diff = nextTime - now;
-            const h = Math.floor(diff / 3600000); const m = Math.floor((diff % 3600000) / 60000); const s = Math.floor((diff % 60000) / 1000);
-            status.innerText = `${h}h ${m}m ${s}s`; status.style.color = "#555";
-        }
-    }
-    window.openDailyCase = () => {
-        const now = Date.now();
-        if (now < (state.lastCaseTime || 0) + (24 * 60 * 60 * 1000)) return;
-        const reward = Math.floor(Math.random() * (10000 - 100 + 1)) + 100;
-        state.score += reward; state.lastCaseTime = now;
-        if(state.sound) tg.HapticFeedback.notificationOccurred('success');
-        alert((state.lang === 'ru' ? "Вы получили: " : "You received: ") + reward + " pts!");
-        updateUI(); updateCaseUI(); save();
-    };
-
-    // Исправлено: Синхронное сохранение при закрытии
-    function save() { 
-        if (isLoaded && currentId !== 0) { 
-            state.lastUpdate = Date.now(); 
-            db.ref(`users/${currentId}`).update(state); 
-        } 
-    }
-    
-    // Принудительное сохранение при закрытии окна TG
+    function save() { if (isLoaded && currentId !== 0) { state.lastUpdate = Date.now(); db.ref(`users/${currentId}`).update(state); } }
     window.addEventListener('beforeunload', save);
     tg.onEvent('viewportChanged', save);
 
     db.ref(`users/${currentId}`).once('value', (snap) => {
         const data = snap.val();
         if (data) {
-            const now = Date.now(); 
-            const offSeconds = Math.floor((now - (data.lastUpdate || now)) / 1000);
-            // Исправлено: энергия копится корректно (1 в сек), но не превышает макс (150)
-            const recoveredEnergy = Math.min(150, (data.energy || 0) + offSeconds);
-            state = { 
-                ...state, 
-                ...data, 
-                score: (data.score || 0) + (offSeconds * (data.passiveLvl || 0)), 
-                energy: recoveredEnergy 
-            };
+            const now = Date.now(); const off = Math.floor((now - (data.lastUpdate || now)) / 1000);
+            state = { ...state, ...data, score: (data.score || 0) + (off * (data.passiveLvl || 0)), energy: Math.min(150, (data.energy || 0) + off) };
         }
         state.username = user.username || data?.username || `User_${currentId}`;
         isLoaded = true;
         document.getElementById('loading-screen').style.opacity = '0';
         setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 500);
         document.getElementById('p-name').innerText = "@" + state.username;
-        if (Number(currentId) === MY_ID) { 
-            document.getElementById('admin-container').innerHTML = `<button class="admin-btn btn-neutral" style="border: 1px solid #fff; margin-top: 10px;" onclick="openAdmin()">ОТКРЫТЬ</button>`; 
-        }
-        updateLangUI(); updateUI(); updateCaseUI(); setInterval(updateCaseUI, 1000);
+        if (Number(currentId) === MY_ID) { document.getElementById('admin-container').innerHTML = `<button class="admin-btn btn-neutral" style="border: 1px solid #fff; margin-top: 10px;" onclick="openAdmin()">ADMIN</button>`; }
+        updateLangUI(); updateUI(); setInterval(updateCaseUI, 1000);
     });
 
     function updateUI() {
@@ -363,46 +321,64 @@
     function format(n) { return n >= 1e6 ? (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? (n/1e3).toFixed(1) + 'K' : Math.floor(n); }
     function getRank(lvl) { return langData[state.lang].ranks[Math.min(Math.floor((lvl || 1) / 10), 4)]; }
 
-    function loadLeaderboard() {
-        const list = document.getElementById('leaderboard-list');
-        db.ref('users').once('value', (snap) => {
-            const data = snap.val(); if (!data) return;
-            const now = Date.now();
-            let players = Object.values(data).filter(p => p && p.username && p.username !== "Guest")
-            .map(p => { const offTime = Math.floor((now - (p.lastUpdate || now)) / 1000); return { ...p, currentScore: (p.score || 0) + (offTime * (p.passiveLvl || 0)) }; })
-            .sort((a, b) => b.currentScore - a.currentScore).slice(0, 5);
-            list.innerHTML = "";
-            players.forEach((p, i) => { const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']; list.innerHTML += `<div class="card" style="${p.username === state.username ? 'border-color: #777;' : ''}"><div style="font-size:20px; min-width:40px;">${medals[i]}</div><div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${getRank(p.tapLvl)} (Lvl ${p.tapLvl || 1})</div></div><div style="font-weight:900;">${format(p.currentScore)}</div></div>`; });
-        });
+    function updateCaseUI() {
+        const btn = document.getElementById('case-btn'); const status = document.getElementById('case-status');
+        const next = (state.lastCaseTime || 0) + 86400000;
+        if (Date.now() >= next) { btn.disabled = false; status.innerText = langData[state.lang].caseReady; } 
+        else { 
+            btn.disabled = true; const d = next - Date.now();
+            const h = Math.floor(d/3600000); const m = Math.floor((d%3600000)/60000); const s = Math.floor((d%60000)/1000);
+            status.innerText = `${h}h ${m}m ${s}s`;
+        }
     }
+
+    window.openDailyCase = () => {
+        if (Date.now() < (state.lastCaseTime || 0) + 86400000) return;
+        const reward = Math.floor(Math.random() * 9901) + 100;
+        state.score += reward; state.lastCaseTime = Date.now();
+        alert("+" + reward + " pts!"); updateUI(); save();
+    };
 
     window.show = (id) => { 
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
         document.getElementById(id).classList.add('active'); 
         document.getElementById('n-' + id.split('-')[1]).classList.add('active'); 
-        if (leaderboardInterval) clearInterval(leaderboardInterval);
-        if (id === 's-top') { loadLeaderboard(); leaderboardInterval = setInterval(loadLeaderboard, 5000); } 
+        if (id === 's-top') loadLeaderboard();
     };
 
-    window.openUpgrade = (type) => { document.getElementById('shop-main').classList.add('hidden'); document.getElementById('shop-detail').classList.remove('hidden'); renderUpgradeItems(type); };
+    function loadLeaderboard() {
+        const list = document.getElementById('leaderboard-list');
+        db.ref('users').once('value', snap => {
+            const players = Object.values(snap.val() || {}).filter(p => p.username && p.username !== "Guest")
+                .map(p => { const off = Math.floor((Date.now() - (p.lastUpdate || Date.now())) / 1000); return { ...p, cur: (p.score || 0) + (off * (p.passiveLvl || 0)) }; })
+                .sort((a,b) => b.cur - a.cur).slice(0, 5);
+            list.innerHTML = "";
+            players.forEach((p, i) => { list.innerHTML += `<div class="card" style="${p.username === state.username ? 'border-color:#777':''}"><div style="font-size:20px; min-width:30px;">${['🥇','🥈','🥉','4️⃣','5️⃣'][i]}</div><div style="flex:1"><b>@${p.username}</b><br><small>${getRank(p.tapLvl)}</small></div><b>${format(p.cur)}</b></div>`; });
+        });
+    }
+
+    window.openUpgrade = (t) => { document.getElementById('shop-main').classList.add('hidden'); document.getElementById('shop-detail').classList.remove('hidden'); renderUp(t); };
     window.backToShop = () => { document.getElementById('shop-main').classList.remove('hidden'); document.getElementById('shop-detail').classList.add('hidden'); };
-    function renderUpgradeItems(type) { const cont = document.getElementById('upgrade-items'); const lvl = type === 'click' ? state.tapLvl : state.passiveLvl; const price = Math.floor(100 * Math.pow(1.4, lvl + (type==='click'?0:1))); cont.innerHTML = `<div class="card" style="cursor:default;"><div style="flex:1"><b style="font-size:18px;">${getRank(lvl)}</b><br><span style="color:#888; font-size:12px;">Level ${lvl} → ${lvl+1}</span></div><button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button></div>`; }
-    window.buy = (type, p) => { if (state.score >= p) { state.score -= p; if (type === 'click') state.tapLvl++; else state.passiveLvl++; updateUI(); renderUpgradeItems(type); save(); if(state.sound) tg.HapticFeedback.notificationOccurred('success'); } };
+    function renderUp(t) {
+        const cont = document.getElementById('upgrade-items');
+        const lvl = t === 'click' ? state.tapLvl : state.passiveLvl;
+        const price = Math.floor(100 * Math.pow(1.4, lvl + (t==='click'?0:1)));
+        cont.innerHTML = `<div class="card" style="cursor:default"><div><b>Lvl ${lvl} → ${lvl+1}</b><br><small>${getRank(lvl)}</small></div><button class="buy-btn" onclick="buy('${t}',${price})" ${state.score<price?'disabled':''}>${format(price)}</button></div>`;
+    }
+    window.buy = (t, p) => { if(state.score>=p){ state.score-=p; if(t==='click')state.tapLvl++; else state.passiveLvl++; updateUI(); renderUp(t); save(); if(state.sound) tg.HapticFeedback.notificationOccurred('success'); } };
 
     function updateLangUI() {
         const l = langData[state.lang];
-        const map = { 't-score-label':'scoreL', 't-tap-label':'tapL', 't-top-title':'topT', 't-shop-title':'shopT', 't-click-up':'clUp', 't-click-desc':'clDe', 't-pass-up':'psUp', 't-pass-desc':'psDe', 't-back':'back', 't-gear-title':'gearT', 't-lang-label':'langL', 't-sound-label':'soundL', 't-nav-top':'navTop', 't-nav-game':'navGame', 't-nav-shop':'navShop', 't-nav-gear':'navGear', 't-case-name':'caseName', 'case-btn':'caseOpen' };
-        for(let id in map) { const el = document.getElementById(id); if(el) el.innerText = l[map[id]]; }
-        document.getElementById('cur-lang').innerText = state.lang === 'en' ? "EN" : "RU";
+        const ids = { 't-score-label':'scoreL', 't-tap-label':'tapL', 't-top-title':'topT', 't-shop-title':'shopT', 't-click-up':'clUp', 't-click-desc':'clDe', 't-pass-up':'psUp', 't-pass-desc':'psDe', 't-back':'back', 't-gear-title':'gearT', 't-lang-label':'langL', 't-sound-label':'soundL', 't-nav-top':'navTop', 't-nav-game':'navGame', 't-nav-shop':'navShop', 't-nav-gear':'navGear', 't-case-name':'caseName', 'case-btn':'caseOpen', 't-winners-title':'winTitle', 'show-winners-btn':'showWin' };
+        for(let id in ids) { const e = document.getElementById(id); if(e) e.innerText = l[ids[id]]; }
+        document.getElementById('cur-lang').innerText = state.lang.toUpperCase();
         document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
-        updateCaseUI();
     }
     function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); updateUI(); save(); }
-    function toggleSound() { state.sound = !state.sound; document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF"; save(); }
+    function toggleSound() { state.sound = !state.sound; updateLangUI(); save(); }
 
     setInterval(() => { if (!isLoaded) return; state.score += (state.passiveLvl || 0); if (state.energy < 150) state.energy++; updateUI(); }, 1000);
-    // Чаще сохраняем в фоне (раз в 5 сек вместо 10)
     setInterval(() => { if(isLoaded) save(); }, 5000);
 </script>
 </body>
