@@ -8,17 +8,17 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --b: #000; --w: #fff; --g: #111; --sg: #222; --accent: #fff; --red: #ff4444; --green: #00ff88; }
+        :root { --b: #000; --w: #fff; --g: #111; --sg: #222; --accent: rgba(255,255,255,0.8); --red: #ff4444; --green: #00ff88; }
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { background: var(--b); color: var(--w); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
         
-        /* Loading */
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.5s ease; }
-        .loader-bar { width: 180px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; position: relative; margin-top: 20px; }
-        .loader-progress { width: 60%; height: 100%; background: #fff; position: absolute; animation: loadAnim 1.5s infinite ease-in-out; }
+        .loader-logo { width: 150px; height: 150px; margin-bottom: 30px; object-fit: contain; }
+        .loader-bar { width: 180px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; position: relative; }
+        .loader-progress { width: 60%; height: 100%; background: #fff; box-shadow: 0 0 15px #fff; position: absolute; animation: loadAnim 1.5s infinite ease-in-out; }
         @keyframes loadAnim { 0% { left: -100%; } 100% { left: 100%; } }
 
-        /* Maintenance */
+        /* Техперерыв */
         #maint-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; }
 
         #particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
@@ -28,131 +28,151 @@
         .screen.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
         .hidden { display: none !important; }
 
-        .header { width: 100%; display: flex; justify-content: space-between; font-weight: 700; font-size: 11px; margin-bottom: 20px; color: #555; }
-        #sync-text { color: var(--red); font-weight: 900; }
-        #score { font-size: 64px; font-weight: 900; margin-top: 5px; }
+        .header { width: 100%; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 20px; color: #555; }
+        #score { font-size: 72px; font-weight: 900; margin-top: 5px; }
         
+        .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; min-height: 300px; }
         .main-circle { width: 240px; height: 240px; border: 4px solid var(--w); border-radius: 50%; transition: transform 0.05s ease-out; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%); box-shadow: 0 0 20px rgba(255,255,255,0.05); position: relative; z-index: 2; touch-action: manipulation; }
         .main-circle.is-active { transform: scale(0.92); background: rgba(255,255,255,0.15); }
 
         .tap-effect { position: absolute; pointer-events: none; color: #fff; font-weight: 900; font-size: 26px; animation: floatUp 0.6s ease-out forwards; z-index: 10; }
         @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120px); opacity: 0; } }
 
-        .bar-bg { height: 20px; width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; margin: 10px 0; overflow: hidden; position: relative; }
-        #e-fill { height: 100%; width: 100%; background: #fff; transition: width 0.3s; }
+        .energy-box { width: 100%; text-align: center; margin-bottom: 20px; position: relative; }
+        .bar-bg { height: 24px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; margin: 15px 0; overflow: hidden; position: relative; backdrop-filter: blur(5px); }
+        #e-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #fff 0%, rgba(200,200,200,0.8) 100%); transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 0 15px rgba(255,255,255,0.2); position: relative; }
+        #e-text { position: absolute; width: 100%; left: 0; top: 50%; transform: translateY(-50%); font-size: 10px; font-weight: 900; letter-spacing: 1px; color: var(--w); text-shadow: 0 0 5px #000; z-index: 10; mix-blend-mode: difference; }
 
-        .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 18px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 900; }
-        .buy-btn:disabled { background: #333; color: #555; }
+        .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 18px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+        .card:active { transform: scale(0.98); background: #151515; }
+        .card.special { border: 1px solid rgba(255,255,255,0.3); background: linear-gradient(145deg, #111, #050505); }
+        .case-icon { font-size: 24px; margin-right: 15px; }
+        .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 900; min-width: 80px; }
+        .buy-btn:disabled { background: #333; color: #555; cursor: not-allowed; }
 
         nav { position: absolute; bottom: 0; width: 100%; display: flex; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); border-top: 1px solid var(--sg); padding: 15px 0 35px; z-index: 100; }
-        .nav-item { flex: 1; text-align: center; color: #444; font-size: 10px; font-weight: 800; }
-        .nav-item.active { color: var(--w); }
-        .nav-item span { display: block; font-size: 22px; margin-bottom: 4px; }
+        .nav-item { flex: 1; text-align: center; color: #444; font-size: 10px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { color: var(--w); transform: translateY(-2px); }
+        .nav-item span { display: block; font-size: 24px; margin-bottom: 4px; filter: grayscale(1) brightness(2); transition: 0.3s; }
+        .nav-item.active span { filter: grayscale(0) brightness(1); color: #fff; }
+        
+        .settings-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 12px; border: 1px solid var(--sg); background: var(--g); color: #fff; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
 
         /* Admin Modal */
         #admin-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .admin-content { background: #111; width: 100%; max-width: 400px; border-radius: 20px; padding: 20px; border: 1px solid #333; max-height: 80vh; overflow-y: auto; }
         .admin-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 10px; border: none; font-weight: 800; cursor: pointer; color: #fff; }
-        .btn-start { background: var(--green); color: #000; }
+        .btn-start { background: var(--green); color: #000; box-shadow: 0 0 15px var(--green); }
         .btn-danger { background: var(--red); }
         .btn-neutral { background: #222; }
 
-        /* Winners Popup */
-        #winners-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; color: #000; padding: 25px; border-radius: 20px; z-index: 15000; width: 85%; display: none; text-align: center; }
+        /* Победители */
+        #winners-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; color: #000; padding: 25px; border-radius: 20px; z-index: 15000; width: 85%; display: none; text-align: center; box-shadow: 0 0 30px rgba(255,255,255,0.2); }
         .winner-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div id="loading-screen">
+    <img src="data:image/png;base64," id="logo-img" class="loader-logo" alt="JuugTAPS">
     <div class="loader-bar"><div class="loader-progress"></div></div>
 </div>
 
 <div id="maint-screen">
-    <h1 style="font-size: 40px;">🔧</h1>
-    <h2 style="margin: 10px 0;">ТЕХ ПЕРЕРЫВ</h2>
-    <p style="color: #666;">Извините, мы обновляем систему.<br>Скоро вернемся!</p>
+    <h1 style="font-size: 50px;">🔧</h1>
+    <h2 style="margin: 15px 0;">ТЕХ ПЕРЕРЫВ</h2>
+    <p style="color: #666;">Извините, мы проводим технические работы.<br>Скоро вернемся!</p>
+</div>
+
+<div id="winners-popup">
+    <h2 style="margin-bottom: 15px;">🏆 ИВЕНТ ЗАВЕРШЕН</h2>
+    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Наши лидеры:</p>
+    <div id="winners-list"></div>
+    <button class="admin-btn btn-neutral" style="color:#000; margin-top:20px; border: 1px solid #000;" onclick="document.getElementById('winners-popup').style.display='none'">УРА!</button>
 </div>
 
 <div id="admin-modal">
     <div class="admin-content">
-        <h3 style="margin-bottom: 20px; text-align: center;">ADMIN CONSOLE</h3>
+        <h3 style="margin-bottom: 20px; text-align: center; letter-spacing: 2px;">ADMIN PANEL</h3>
         <button id="event-toggle-btn" class="admin-btn btn-start" onclick="toggleEvent()">НАЧАТЬ ИВЕНТ</button>
         <button id="event-rush-btn" class="admin-btn btn-neutral hidden" onclick="rushEvent()">ЗАКОНЧИТЬ ДОСРОЧНО</button>
         <button class="admin-btn btn-neutral" onclick="toggleMaint()">ТЕХ ПЕРЕРЫВ: <span id="maint-status">OFF</span></button>
         <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
         <button class="admin-btn btn-danger" onclick="resetAllPlayers()">ОБНУЛИТЬ ВСЕХ ИГРОКОВ</button>
-        <div style="background: #222; padding: 15px; border-radius: 12px;">
-            <p style="font-size: 10px; margin-bottom: 8px;">ОБНУЛИТЬ ОПРЕДЕЛЕННОГО</p>
-            <input type="text" id="target-user" placeholder="Username (без @)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius:5px; margin-bottom:10px;">
-            <button class="admin-btn btn-neutral" style="margin:0;" onclick="resetSpecificPlayer()">СБРОСИТЬ</button>
+        <div style="background: #222; padding: 15px; border-radius: 12px; margin-top: 10px;">
+            <p style="font-size: 10px; margin-bottom: 8px; font-weight: 800; color: #888;">СБРОС ПО USERNAME</p>
+            <input type="text" id="target-user" placeholder="username без @" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius:8px; margin-bottom:10px; outline: none;">
+            <button class="admin-btn btn-neutral" style="margin:0; background: #333;" onclick="resetSpecificPlayer()">ОБНУЛИТЬ</button>
         </div>
         <button class="admin-btn btn-neutral" style="margin-top:20px;" onclick="closeAdmin()">ЗАКРЫТЬ</button>
     </div>
-</div>
-
-<div id="winners-popup">
-    <h2 style="margin-bottom: 15px;">🏆 ПОБЕДИТЕЛИ</h2>
-    <div id="winners-list"></div>
-    <button class="admin-btn btn-neutral" style="color:#000; margin-top:20px; border: 1px solid #000;" onclick="document.getElementById('winners-popup').style.display='none'">КРУТО!</button>
 </div>
 
 <canvas id="particleCanvas"></canvas>
 
 <div id="app">
     <section id="s-game" class="screen active">
-        <div class="header">
-            <span id="p-name">@loading</span>
-            <span id="sync-text">ИВЕНТ ЗАКРЫТ</span>
-        </div>
-        <p style="font-size:10px; font-weight:800; letter-spacing:3px; color: #444;">SCORE</p>
+        <div class="header"><span id="p-name">@loading</span><span id="sync-text">ИВЕНТ ЗАКРЫТ</span></div>
+        <p id="t-score-label" style="font-size:10px; font-weight:800; letter-spacing:3px; color: #444;">SCORE</p>
         <div id="score">0</div>
         <div id="passive-display" style="color:#666; font-size:11px; font-weight:800; margin-top: 5px;">Passive: 0/sec</div>
-        <div style="flex: 1; display: flex; align-items: center;"><div class="main-circle" id="tapBtn"></div></div>
-        <div style="width: 100%; text-align: center; margin-bottom: 20px;">
-            <p style="font-size:10px; font-weight:800; color: #444;">STAMINA</p>
-            <div class="bar-bg"><div id="e-fill"></div></div>
-            <span id="e-text" style="font-size: 10px; font-weight: 900;">150 / 150</span>
+        <div class="tap-area"><div class="main-circle" id="tapBtn"></div></div>
+        <div class="energy-box">
+             <p id="t-tap-label" style="font-size:10px; font-weight:800; letter-spacing:1px; color: #444;">STAMINA</p>
+            <div class="bar-bg">
+                <div id="e-fill"></div>
+                <span id="e-text">150 / 150</span>
+            </div>
         </div>
     </section>
 
     <section id="s-top" class="screen">
-        <h2 style="align-self:flex-start; margin-bottom:20px; font-weight:900;">TOP 5 JUUG'ERS</h2>
+        <h2 id="t-top-title" style="align-self:flex-start; margin-bottom:20px; font-weight:900;">TOP 5 JUUG'ERS</h2>
         <div id="leaderboard-list" style="width:100%;"></div>
     </section>
 
     <section id="s-shop" class="screen">
-        <h2 style="align-self:flex-start; margin-bottom:20px; font-weight:900;">SHOP</h2>
+        <h2 id="t-shop-title" style="align-self:flex-start; margin-bottom:20px; font-weight:900;">SHOP</h2>
         <div id="shop-main" style="width:100%;">
-            <div class="card" style="border:1px solid rgba(255,255,255,0.3)" onclick="openDailyCase()">
-                <div><b>DAILY CASE</b><br><span id="case-status" style="font-size:11px; color:#555">Ready</span></div>
+            <div class="card special" id="case-card" onclick="openDailyCase()">
+                <div style="display:flex; align-items:center;">
+                    <div class="case-icon">📦</div>
+                    <div><b id="t-case-name">DAILY CASE</b><br><span id="case-status" style="font-size:11px; color:rgba(255,255,255,0.5)">100 - 10,000 pts</span></div>
+                </div>
                 <button class="buy-btn" id="case-btn">OPEN</button>
             </div>
-            <div class="card" onclick="openUpgrade('click')"><div><b>CLICK UP</b><br><span style="font-size:11px; color:#555">Income per tap</span></div><span>➔</span></div>
-            <div class="card" onclick="openUpgrade('passive')"><div><b>PASSIVE</b><br><span style="font-size:11px; color:#555">Auto income</span></div><span>➔</span></div>
+            <div class="card" onclick="openUpgrade('click')">
+                <div style="flex:1"><b id="t-click-up">CLICK UPGRADES</b><br><span id="t-click-desc" style="font-size:11px; color:#666">Increase tap income</span></div>
+                <span style="color:#fff">➔</span>
+            </div>
+            <div class="card" onclick="openUpgrade('passive')">
+                <div style="flex:1"><b id="t-pass-up">PASSIVE INCOME</b><br><span id="t-pass-desc" style="font-size:11px; color:#666">Automatic income</span></div>
+                <span style="color:#fff">➔</span>
+            </div>
         </div>
         <div id="shop-detail" class="hidden" style="width:100%;">
-            <button onclick="backToShop()" style="background:none; border:none; color:#fff; font-weight:800; margin-bottom:15px;">← BACK</button>
+            <button id="t-back" onclick="backToShop()" style="background:none; border:none; color:#fff; font-weight:800; margin-bottom:15px; cursor:pointer; display:flex; align-items:center; gap:5px;">← BACK</button>
             <div id="upgrade-items"></div>
         </div>
     </section>
 
     <section id="s-gear" class="screen">
-        <h2 style="align-self:flex-start; margin-bottom:20px; font-weight:900;">GEAR</h2>
-        <button class="settings-btn" style="width:100%; padding:15px; background:#111; border:1px solid #222; color:#fff; border-radius:12px; margin-bottom:10px; display:flex; justify-content:space-between;" onclick="toggleLang()">
-            <span>Language</span><span id="cur-lang">EN</span>
+        <h2 id="t-gear-title" style="align-self:flex-start; margin-bottom:20px; font-weight:900;">GEAR</h2>
+        <button class="settings-btn" onclick="toggleLang()">
+            <span id="t-lang-label">Language</span><span id="cur-lang" style="color:#888">English</span>
         </button>
-        <div id="admin-panel" class="hidden">
-            <button class="admin-btn btn-neutral" style="border: 1px solid #fff; margin-top: 10px;" onclick="openAdmin()">ОТКРЫТЬ АДМИН</button>
-        </div>
+        <button class="settings-btn" onclick="toggleSound()">
+            <span id="t-sound-label">Sound</span><span id="cur-sound" style="color:#888">ON</span>
+        </button>
+        <div id="admin-container">
+            </div>
     </section>
 
     <nav>
-        <div class="nav-item" id="n-top" onclick="show('s-top')"><span>🏆</span>TOP</div>
-        <div class="nav-item active" id="n-game" onclick="show('s-game')"><span>💎</span>GAME</div>
-        <div class="nav-item" id="n-shop" onclick="show('s-shop')"><span>🛒</span>SHOP</div>
-        <div class="nav-item" id="n-gear" onclick="show('s-gear')"><span>⚙️</span>GEAR</div>
+        <div class="nav-item" id="n-top" onclick="show('s-top')"><span>🏆</span><p id="t-nav-top">TOP</p></div>
+        <div class="nav-item active" id="n-game" onclick="show('s-game')"><span>💎</span><p id="t-nav-game">GAME</p></div>
+        <div class="nav-item" id="n-shop" onclick="show('s-shop')"><span>🛒</span><p id="t-nav-shop">SHOP</p></div>
+        <div class="nav-item" id="n-gear" onclick="show('s-gear')"><span>⚙️</span><p id="t-nav-gear">GEAR</p></div>
     </nav>
 </div>
 
@@ -176,78 +196,59 @@
     const currentId = user.id || 999999;
     
     let isLoaded = false;
+    let leaderboardInterval = null;
     let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), lastCaseTime: 0, username: "Guest", lang: 'en', sound: true };
     let globalData = { eventEnd: 0, isMaint: false };
 
-    // --- ADMIN FUNCTIONS ---
+    const langData = {
+        en: { sync: "LIVE", scoreL: "SCORE", tapL: "TAP TO EARN", passL: "Passive", topT: "TOP 5 JUUG'ERS", shopT: "SHOP", clUp: "CLICK UPGRADES", clDe: "Increase tap income", psUp: "PASSIVE INCOME", psDe: "Automatic income", back: "BACK", gearT: "GEAR", langL: "Language", soundL: "Sound", navTop: "TOP", navGame: "GAME", navShop: "SHOP", navGear: "GEAR", ranks: ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"], caseName: "DAILY CASE", caseOpen: "OPEN", caseReady: "Ready to open!" },
+        ru: { sync: "В СЕТИ", scoreL: "СЧЕТ", tapL: "ТАПАЙ ЧТОБЫ ЗАРАБОТАТЬ", passL: "Пассив", topT: "ТОП 5 ДЖУГЕРОВ", shopT: "МАГАЗИН", clUp: "ПРОКАЧКА КЛИКА", clDe: "Увеличить доход за тап", psUp: "ПАССИВНЫЙ ДОХОД", psDe: "Автоматический доход", back: "НАЗАД", gearT: "МЕНЮ", langL: "Язык", soundL: "Звук", navTop: "ТОП", navGame: "ИГРА", navShop: "МАГАЗИН", navGear: "МЕНЮ", ranks: ["Нуб Джугер", "Обычный Джугер", "Про Джугер", "Хакер Джугер", "Бог Джугер"], caseName: "ДНЕВНОЙ КЕЙС", caseOpen: "ОТКРЫТЬ", caseReady: "Можно открыть!" }
+    };
+
+    // --- ADMIN ACTIONS ---
     function openAdmin() { document.getElementById('admin-modal').style.display = 'flex'; }
     function closeAdmin() { document.getElementById('admin-modal').style.display = 'none'; }
-
+    function toggleMaint() { db.ref('global').update({ isMaint: !globalData.isMaint }); }
     function toggleEvent() {
-        if (globalData.eventEnd > Date.now()) {
-            db.ref('global').update({ eventEnd: 0 });
-        } else {
-            const threeMonths = Date.now() + (90 * 24 * 60 * 60 * 1000);
-            db.ref('global').update({ eventEnd: threeMonths });
-        }
+        if (globalData.eventEnd > Date.now()) { db.ref('global').update({ eventEnd: 0 }); } 
+        else { const threeMonths = Date.now() + (90 * 24 * 60 * 60 * 1000); db.ref('global').update({ eventEnd: threeMonths }); }
     }
-
-    function rushEvent() {
-        db.ref('global').update({ eventEnd: Date.now() + 3000 });
-    }
-
-    function toggleMaint() {
-        db.ref('global').update({ isMaint: !globalData.isMaint });
-    }
-
+    function rushEvent() { db.ref('global').update({ eventEnd: Date.now() + 3000 }); }
     function resetAllPlayers() {
-        if (!confirm("УВЕРЕН? Это удалит прогресс ВСЕХ игроков!")) return;
+        if (!confirm("Внимание! Это обнулит ВСЕХ игроков. Продолжить?")) return;
         db.ref('users').once('value', snap => {
             const users = snap.val();
-            for (let id in users) {
-                db.ref(`users/${id}`).update({ score: 0, tapLvl: 1, passiveLvl: 0 });
-            }
-            alert("Все игроки обнулены.");
+            for (let id in users) { db.ref(`users/${id}`).update({ score: 0, tapLvl: 1, passiveLvl: 0 }); }
+            alert("Все игроки сброшены!");
         });
     }
-
     function resetSpecificPlayer() {
         const target = document.getElementById('target-user').value.trim();
         if (!target) return;
         db.ref('users').once('value', snap => {
-            const users = snap.val();
-            let found = false;
+            const users = snap.val(); let found = false;
             for (let id in users) {
                 if (users[id].username === target) {
-                    db.ref(`users/${id}`).update({ score: 0, tapLvl: 1, passiveLvl: 0 });
-                    found = true;
-                    break;
+                    db.ref(`users/${id}`).update({ score: 0, tapLvl: 1, passiveLvl: 0 }); found = true; break;
                 }
             }
-            alert(found ? `Игрок @${target} обнулен.` : "Игрок не найден.");
+            alert(found ? `Игрок @${target} сброшен.` : "Игрок не найден.");
         });
     }
 
-    // --- CORE LOGIC ---
+    // --- GLOBAL SYNC ---
     db.ref('global').on('value', snap => {
         globalData = snap.val() || { eventEnd: 0, isMaint: false };
-        
-        // Тех перерыв
         const isMaint = globalData.isMaint && Number(currentId) !== MY_ID;
         document.getElementById('maint-screen').style.display = isMaint ? 'flex' : 'none';
         document.getElementById('maint-status').innerText = globalData.isMaint ? 'ON' : 'OFF';
 
-        // Кнопки в админке
         const eBtn = document.getElementById('event-toggle-btn');
         const rBtn = document.getElementById('event-rush-btn');
         if (globalData.eventEnd > Date.now()) {
-            eBtn.innerText = "ЗАКРЫТЬ ИВЕНТ";
-            eBtn.classList.replace('btn-start', 'btn-danger');
-            rBtn.classList.remove('hidden');
+            eBtn.innerText = "ЗАКРЫТЬ ИВЕНТ"; eBtn.classList.replace('btn-start', 'btn-danger'); rBtn.classList.remove('hidden');
         } else {
-            eBtn.innerText = "НАЧАТЬ ИВЕНТ";
-            eBtn.classList.replace('btn-danger', 'btn-start');
-            rBtn.classList.add('hidden');
+            eBtn.innerText = "НАЧАТЬ ИВЕНТ"; eBtn.classList.replace('btn-danger', 'btn-start'); rBtn.classList.add('hidden');
         }
     });
 
@@ -257,141 +258,143 @@
         if (globalData.eventEnd > now) {
             const diff = globalData.eventEnd - now;
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-            const mins = Math.floor((diff / 1000 / 60) % 60);
-            const secs = Math.floor((diff / 1000) % 60);
-
-            if (diff < 86400000) { // Последние 24 часа
-                sync.innerText = `END IN: ${hours}h ${mins}m ${secs}s`;
-                sync.style.color = "var(--red)";
+            if (diff < 86400000) {
+                const h = Math.floor((diff / 3600000) % 24); const m = Math.floor((diff / 60000) % 60); const s = Math.floor((diff / 1000) % 60);
+                sync.innerText = `END IN: ${h}h ${m}m ${s}s`; sync.style.color = "var(--red)";
             } else {
-                const months = Math.floor(days / 30);
-                const remainingDays = days % 30;
-                sync.innerText = `EVENT: ${months}M ${remainingDays}D`;
-                sync.style.color = "var(--green)";
+                const months = Math.floor(days / 30); const remDays = days % 30;
+                sync.innerText = `EVENT: ${months}M ${remDays}D`; sync.style.color = "var(--green)";
             }
         } else {
-            sync.innerText = "ИВЕНТ ЗАКРЫТ";
-            sync.style.color = "#555";
-            
-            // Если ивент только что кончился, показываем победителей (условно)
-            if (globalData.eventEnd !== 0 && now - globalData.eventEnd < 10000) {
-                showWinners();
-                db.ref('global').update({ eventEnd: 0 }); // Сброс, чтобы не мозолило глаза
-            }
+            sync.innerText = "ИВЕНТ ЗАКРЫТ"; sync.style.color = "#555";
+            if (globalData.eventEnd !== 0 && now - globalData.eventEnd < 10000) { showWinners(); db.ref('global').update({ eventEnd: 0 }); }
         }
     }
     setInterval(updateEventTimer, 1000);
 
     function showWinners() {
         db.ref('users').once('value', snap => {
-            const data = snap.val();
-            const winners = Object.values(data).sort((a,b) => b.score - a.score).slice(0,3);
-            const list = document.getElementById('winners-list');
-            list.innerHTML = "";
-            winners.forEach((p, i) => {
-                list.innerHTML += `<div class="winner-row"><b>${i+1}. @${p.username}</b> <span>${format(p.score)} pts (Lvl ${p.tapLvl})</span></div>`;
-            });
+            const players = Object.values(snap.val()).sort((a,b) => b.score - a.score).slice(0,3);
+            const list = document.getElementById('winners-list'); list.innerHTML = "";
+            players.forEach((p, i) => { list.innerHTML += `<div class="winner-row"><b>${i+1}. @${p.username}</b> <span>${format(p.score)} pts (Lvl ${p.tapLvl})</span></div>`; });
             document.getElementById('winners-popup').style.display = 'block';
         });
     }
 
-    // --- GAME LOGIC (KEPT FROM PREVIOUS VERSION) ---
+    // --- UI & CORE (From Ideal Code) ---
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    let bgParticles = [];
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resize); resize();
+    class BgP { constructor() { this.reset(); } reset() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.size = Math.random() * 1.5 + 0.5; this.speedX = (Math.random() - 0.5) * 0.3; this.speedY = (Math.random() - 0.5) * 0.3; this.opacity = Math.random() * 0.4 + 0.1; } update() { this.x += this.speedX; this.y += this.speedY; if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset(); } draw() { ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); } }
+    for (let i = 0; i < 40; i++) bgParticles.push(new BgP());
+    function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); bgParticles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
+    animate();
+
     const tapBtn = document.getElementById('tapBtn');
     tapBtn.addEventListener('pointerdown', (e) => {
         if (!isLoaded || state.energy <= 0) return;
+        tapBtn.classList.add('is-active');
         state.score += state.tapLvl; state.energy--;
-        updateUI();
+        updateUI(); 
         if(state.sound) tg.HapticFeedback.impactOccurred('light');
         const num = document.createElement('div');
         num.className = 'tap-effect'; num.innerText = `+${state.tapLvl}`;
         num.style.left = e.clientX + 'px'; num.style.top = e.clientY + 'px';
         document.body.appendChild(num); setTimeout(() => num.remove(), 600);
     });
+    window.addEventListener('pointerup', () => tapBtn.classList.remove('is-active'));
+
+    function updateCaseUI() {
+        const btn = document.getElementById('case-btn'); const status = document.getElementById('case-status');
+        const now = Date.now(); const nextTime = (state.lastCaseTime || 0) + (24 * 60 * 60 * 1000);
+        if (now >= nextTime) { btn.disabled = false; status.innerText = langData[state.lang].caseReady; status.style.color = "rgba(255,255,255,0.8)"; } 
+        else { 
+            btn.disabled = true; const diff = nextTime - now;
+            const h = Math.floor(diff / 3600000); const m = Math.floor((diff % 3600000) / 60000); const s = Math.floor((diff % 60000) / 1000);
+            status.innerText = `${h}h ${m}m ${s}s`; status.style.color = "#555";
+        }
+    }
+    window.openDailyCase = () => {
+        const now = Date.now(); if (now < (state.lastCaseTime || 0) + (24 * 60 * 60 * 1000)) return;
+        const reward = Math.floor(Math.random() * (10000 - 100 + 1)) + 100;
+        state.score += reward; state.lastCaseTime = now;
+        if(state.sound) tg.HapticFeedback.notificationOccurred('success');
+        alert((state.lang === 'ru' ? "Вы получили: " : "You received: ") + reward + " pts!");
+        updateUI(); updateCaseUI(); save();
+    };
+
+    function save() { if (isLoaded && currentId !== 0) { state.lastUpdate = Date.now(); db.ref(`users/${currentId}`).update(state); } }
 
     db.ref(`users/${currentId}`).once('value', (snap) => {
         const data = snap.val();
         if (data) {
-            const now = Date.now(); 
-            const offTime = Math.floor((now - (data.lastUpdate || now)) / 1000);
+            const now = Date.now(); const offTime = Math.floor((now - (data.lastUpdate || now)) / 1000);
             state = { ...state, ...data, score: (data.score || 0) + (offTime * (data.passiveLvl || 0)), energy: Math.min(150, (data.energy || 150) + offTime) };
         }
         state.username = user.username || data?.username || `User_${currentId}`;
         isLoaded = true;
         document.getElementById('loading-screen').style.opacity = '0';
-        setTimeout(() => document.getElementById('loading-screen').style.display='none', 500);
+        setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 500);
         document.getElementById('p-name').innerText = "@" + state.username;
-        if (Number(currentId) === MY_ID) document.getElementById('admin-panel').classList.remove('hidden');
-        updateUI();
+        if (Number(currentId) === MY_ID) { 
+            document.getElementById('admin-container').innerHTML = `<button class="admin-btn btn-neutral" style="border: 1px solid #fff; margin-top: 10px;" onclick="openAdmin()">ОТКРЫТЬ</button>`; 
+        }
+        updateLangUI(); updateUI(); updateCaseUI(); setInterval(updateCaseUI, 1000);
     });
 
-    function save() { if (isLoaded) { state.lastUpdate = Date.now(); db.ref(`users/${currentId}`).update(state); } }
-    setInterval(() => { if(isLoaded) { state.score += state.passiveLvl; if(state.energy<150) state.energy++; updateUI(); } }, 1000);
-    setInterval(save, 10000);
+    window.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') save(); });
 
     function updateUI() {
         document.getElementById('score').innerText = format(state.score);
-        document.getElementById('passive-display').innerText = `Passive: ${state.passiveLvl}/sec`;
+        document.getElementById('passive-display').innerText = `${langData[state.lang].passL}: ${state.passiveLvl}/sec`;
         document.getElementById('e-text').innerText = `${state.energy} / 150`;
         document.getElementById('e-fill').style.width = (state.energy / 1.5) + '%';
     }
 
     function format(n) { return n >= 1e6 ? (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? (n/1e3).toFixed(1) + 'K' : Math.floor(n); }
-    
-    function show(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.getElementById('n-' + id.split('-')[1]).classList.add('active');
-        if(id === 's-top') loadLeaderboard();
-    }
+    function getRank(lvl) { return langData[state.lang].ranks[Math.min(Math.floor((lvl || 1) / 10), 4)]; }
 
     function loadLeaderboard() {
-        db.ref('users').once('value', snap => {
-            const players = Object.values(snap.val()).sort((a,b) => b.score - a.score).slice(0,5);
-            const list = document.getElementById('leaderboard-list');
+        const list = document.getElementById('leaderboard-list');
+        db.ref('users').once('value', (snap) => {
+            const data = snap.val(); if (!data) return;
+            const now = Date.now();
+            let players = Object.values(data).filter(p => p && p.username && p.username !== "Guest")
+            .map(p => { const offTime = Math.floor((now - (p.lastUpdate || now)) / 1000); return { ...p, currentScore: (p.score || 0) + (offTime * (p.passiveLvl || 0)) }; })
+            .sort((a, b) => b.currentScore - a.currentScore).slice(0, 5);
             list.innerHTML = "";
-            players.forEach((p, i) => {
-                list.innerHTML += `<div class="card"><b>${i+1}. @${p.username}</b> <span>${format(p.score)}</span></div>`;
-            });
+            players.forEach((p, i) => { const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']; list.innerHTML += `<div class="card" style="${p.username === state.username ? 'border-color: #777;' : ''}"><div style="font-size:20px; min-width:40px;">${medals[i]}</div><div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${getRank(p.tapLvl)} (Lvl ${p.tapLvl || 1})</div></div><div style="font-weight:900;">${format(p.currentScore)}</div></div>`; });
         });
     }
 
-    function openUpgrade(type) {
-        document.getElementById('shop-main').classList.add('hidden');
-        document.getElementById('shop-detail').classList.remove('hidden');
-        const cont = document.getElementById('upgrade-items');
-        const lvl = type === 'click' ? state.tapLvl : state.passiveLvl;
-        const price = Math.floor(100 * Math.pow(1.5, lvl));
-        cont.innerHTML = `<div class="card"><b>LVL ${lvl}</b> <button class="buy-btn" onclick="buy('${type}', ${price})">${format(price)}</button></div>`;
-    }
-    
-    function buy(type, p) {
-        if(state.score >= p) {
-            state.score -= p;
-            if(type==='click') state.tapLvl++; else state.passiveLvl++;
-            save(); updateUI(); backToShop();
-        }
-    }
-    function backToShop() { document.getElementById('shop-main').classList.remove('hidden'); document.getElementById('shop-detail').classList.add('hidden'); }
+    window.show = (id) => { 
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
+        document.getElementById(id).classList.add('active'); 
+        document.getElementById('n-' + id.split('-')[1]).classList.add('active'); 
+        if (leaderboardInterval) clearInterval(leaderboardInterval);
+        if (id === 's-top') { loadLeaderboard(); leaderboardInterval = setInterval(loadLeaderboard, 5000); } 
+    };
 
-    // BG Particles
-    const canvas = document.getElementById('particleCanvas');
-    const ctx = canvas.getContext('2d');
-    function initParticles() {
-        let pts = [];
-        for(let i=0; i<30; i++) pts.push({x: Math.random()*innerWidth, y: Math.random()*innerHeight, s: Math.random()*2});
-        function draw() {
-            ctx.clearRect(0,0,innerWidth,innerHeight);
-            ctx.fillStyle = "rgba(255,255,255,0.1)";
-            pts.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 7); ctx.fill(); p.y -= 0.2; if(p.y<0) p.y=innerHeight; });
-            requestAnimationFrame(draw);
-        }
-        draw();
+    window.openUpgrade = (type) => { document.getElementById('shop-main').classList.add('hidden'); document.getElementById('shop-detail').classList.remove('hidden'); renderUpgradeItems(type); };
+    window.backToShop = () => { document.getElementById('shop-main').classList.remove('hidden'); document.getElementById('shop-detail').classList.add('hidden'); };
+    function renderUpgradeItems(type) { const cont = document.getElementById('upgrade-items'); const lvl = type === 'click' ? state.tapLvl : state.passiveLvl; const price = Math.floor(100 * Math.pow(1.4, lvl + (type==='click'?0:1))); cont.innerHTML = `<div class="card" style="cursor:default;"><div style="flex:1"><b style="font-size:18px;">${getRank(lvl)}</b><br><span style="color:#888; font-size:12px;">Level ${lvl} → ${lvl+1}</span></div><button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button></div>`; }
+    window.buy = (type, p) => { if (state.score >= p) { state.score -= p; if (type === 'click') state.tapLvl++; else state.passiveLvl++; updateUI(); renderUpgradeItems(type); save(); if(state.sound) tg.HapticFeedback.notificationOccurred('success'); } };
+
+    function updateLangUI() {
+        const l = langData[state.lang];
+        const map = { 't-score-label':'scoreL', 't-tap-label':'tapL', 't-top-title':'topT', 't-shop-title':'shopT', 't-click-up':'clUp', 't-click-desc':'clDe', 't-pass-up':'psUp', 't-pass-desc':'psDe', 't-back':'back', 't-gear-title':'gearT', 't-lang-label':'langL', 't-sound-label':'soundL', 't-nav-top':'navTop', 't-nav-game':'navGame', 't-nav-shop':'navShop', 't-nav-gear':'navGear', 't-case-name':'caseName', 'case-btn':'caseOpen' };
+        for(let id in map) { const el = document.getElementById(id); if(el) el.innerText = l[map[id]]; }
+        document.getElementById('cur-lang').innerText = state.lang === 'en' ? "EN" : "RU";
+        updateCaseUI();
     }
-    window.onresize = () => { canvas.width = innerWidth; canvas.height = innerHeight; };
-    canvas.width = innerWidth; canvas.height = innerHeight;
-    initParticles();
+    function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); updateUI(); save(); }
+    function toggleSound() { state.sound = !state.sound; save(); }
+    
+    setInterval(() => { if (!isLoaded) return; state.score += (state.passiveLvl || 0); if (state.energy < 150) state.energy++; updateUI(); }, 1000);
+    setInterval(() => { if(isLoaded) save(); }, 10000);
 </script>
 </body>
 </html>
