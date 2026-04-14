@@ -12,107 +12,115 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { background: var(--b); color: var(--w); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
         
-        /* ЛОГОТИП И ЗАГРУЗКА */
+        /* ЗАГРУЗОЧНЫЙ ЭКРАН С ЛОГОТИПОМ */
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 9999; display: flex; flex-direction: column;
             align-items: center; justify-content: center; transition: opacity 0.5s;
         }
-        .loader-logo-container { width: 150px; height: 150px; margin-bottom: 20px; position: relative; }
-        .loader-logo-container img { width: 100%; height: 100%; object-fit: contain; animation: pulse 2s infinite ease-in-out; }
-        
-        @keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+        .logo-wrapper {
+            width: 160px; height: 160px; margin-bottom: 30px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .logo-wrapper img {
+            width: 100%; height: 100%; object-fit: contain;
+            animation: pulseLogo 2s infinite ease-in-out;
+        }
+        @keyframes pulseLogo {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
 
         #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; position: relative; height: 100%; }
 
         .screen { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: none; flex-direction: column; align-items: center; padding: 20px; 
-            overflow-y: auto; padding-bottom: 100px;
+            overflow-y: auto; padding-bottom: 120px;
         }
         .screen.active { display: flex; }
-        .hidden { display: none !important; }
 
-        #score { font-size: 64px; font-weight: 900; margin: 10px 0; }
-        
-        /* КРАСИВАЯ КНОПКА С АНИМАЦИЕЙ */
+        /* КРАСИВАЯ КНОПКА */
         .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
         .main-circle { 
-            width: 240px; height: 240px; border: 4px solid var(--w); border-radius: 50%; 
+            width: 260px; height: 260px; border: 5px solid var(--w); border-radius: 50%; 
             position: relative; transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 80%);
+            box-shadow: 0 0 30px rgba(255,255,255,0.05);
+            cursor: pointer;
         }
-        .main-circle:active { transform: scale(0.9); }
+        .main-circle:active { transform: scale(0.92); }
 
-        /* ЭФФЕКТЫ ТАПА */
-        .tap-effect { position: absolute; color: #fff; font-weight: 900; font-size: 32px; pointer-events: none; animation: fly 0.6s ease-out forwards; z-index: 10; }
-        @keyframes fly { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120px); opacity: 0; } }
+        /* ЧИСЛА ПРИ НАЖАТИИ */
+        .tap-number {
+            position: absolute; color: var(--w); font-weight: 900; font-size: 36px;
+            pointer-events: none; animation: tapFloat 0.7s ease-out forwards; z-index: 100;
+        }
+        @keyframes tapFloat {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-150px) scale(1.2); opacity: 0; }
+        }
 
-        /* ТА САМАЯ ПОЛОСКА ЭНЕРГИИ */
-        .energy-box { width: 100%; margin-bottom: 20px; }
-        .bar-bg { height: 20px; background: #1a1a1a; border-radius: 10px; overflow: hidden; position: relative; border: 1px solid #333; }
-        #e-fill { 
+        /* ПОЛОСКА ЭНЕРГИИ (ИЗ ПРЕДЫДУЩЕГО КОДА) */
+        .energy-box { width: 100%; margin-top: 20px; }
+        .energy-bar-bg { 
+            height: 24px; background: #151515; border-radius: 12px; 
+            overflow: hidden; position: relative; border: 1px solid #252525;
+        }
+        #energy-fill { 
             height: 100%; width: 100%; 
-            background: linear-gradient(90deg, #fff 0%, #888 100%); 
-            transition: width 0.2s ease-out; 
+            background: linear-gradient(90deg, #eee 0%, #777 100%); 
+            transition: width 0.2s ease-out;
         }
-        #e-text { position: absolute; width: 100%; text-align: center; top: 0; font-size: 12px; font-weight: 900; line-height: 20px; color: #000; }
+        #energy-text { 
+            position: absolute; width: 100%; text-align: center; top: 0; 
+            font-size: 13px; font-weight: 900; line-height: 24px; color: #000; 
+        }
 
         /* НАВИГАЦИЯ */
-        nav { position: absolute; bottom: 0; width: 100%; display: flex; background: #080808; padding: 15px 0 30px; border-top: 1px solid var(--sg); }
-        .nav-item { flex: 1; text-align: center; color: #555; font-size: 10px; font-weight: 700; }
+        nav { position: absolute; bottom: 0; width: 100%; display: flex; background: rgba(0,0,0,0.95); padding: 15px 0 35px; border-top: 1px solid #111; }
+        .nav-item { flex: 1; text-align: center; color: #444; font-size: 10px; font-weight: 800; }
         .nav-item.active { color: #fff; }
-        .nav-item span { display: block; font-size: 20px; margin-bottom: 3px; }
+        .nav-item span { display: block; font-size: 22px; margin-bottom: 4px; }
 
-        .card { width: 100%; background: var(--g); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--sg); }
-        .buy-btn { background: #fff; color: #000; border: none; padding: 8px 15px; border-radius: 6px; font-weight: 900; }
+        #score { font-size: 72px; font-weight: 900; margin: 10px 0; letter-spacing: -2px; }
     </style>
 </head>
 <body>
 
 <div id="loading-screen">
-    <div class="loader-logo-container">
-        <img src="photo_2026-04-13_17-59-56.jpg" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=LOGO'">
+    <div class="logo-wrapper">
+        <img src="photo_2026-04-13_17-59-56.jpg" alt="JUUG" onerror="console.error('Логотип не найден по пути photo_2026-04-13_17-59-56.jpg')">
     </div>
-    <div style="width: 100px; height: 2px; background: #222; border-radius: 2px; overflow: hidden;">
-        <div style="width: 50%; height: 100%; background: #fff; animation: load 1.5s infinite;"></div>
+    <div style="width: 120px; height: 3px; background: #111; border-radius: 2px; overflow: hidden;">
+        <div style="width: 40%; height: 100%; background: #fff; animation: loadingAnim 1.5s infinite ease-in-out;"></div>
     </div>
 </div>
 
 <div id="app">
     <section id="s-game" class="screen active">
-        <div style="width: 100%; display: flex; justify-content: space-between; font-size: 12px; color: #555; font-weight: 800;">
+        <div style="width: 100%; display: flex; justify-content: space-between; font-size: 12px; color: #444; font-weight: 900;">
             <span id="p-name">@USER</span>
             <span>LIVE</span>
         </div>
         <div id="score">0</div>
-        <div id="passive-display" style="color: #444; font-size: 12px; font-weight: 800; margin-bottom: 20px;">Passive: 0/sec</div>
+        <div id="passive-display" style="color: #666; font-size: 12px; font-weight: 800; margin-bottom: 10px;">Passive: 0/sec</div>
         
         <div class="tap-area">
             <div class="main-circle" id="tapBtn"></div>
         </div>
         
         <div class="energy-box">
-            <div class="bar-bg">
-                <div id="e-fill"></div>
-                <div id="e-text">150 / 150</div>
+            <div class="energy-bar-bg">
+                <div id="energy-fill"></div>
+                <div id="energy-text">150 / 150</div>
             </div>
         </div>
     </section>
 
-    <section id="s-top" class="screen"><h2>TOP</h2><div id="leaderboard-list" style="width:100%; margin-top:20px;"></div></section>
-    <section id="s-shop" class="screen">
-        <h2>SHOP</h2>
-        <div id="shop-main" style="width:100%; margin-top:20px;">
-            <div class="card" onclick="openUpgrade('click')"><div><b>CLICK UP</b><br><small>Increase per tap</small></div><span>➔</span></div>
-            <div class="card" onclick="openUpgrade('passive')"><div><b>PASSIVE</b><br><small>Earn while away</small></div><span>➔</span></div>
-        </div>
-        <div id="shop-detail" class="hidden" style="width:100%;">
-            <button onclick="backToShop()" style="background:none; border:none; color:#fff; margin-bottom:15px;">← BACK</button>
-            <div id="upgrade-items"></div>
-        </div>
-    </section>
-    <section id="s-gear" class="screen"><h2>GEAR</h2></section>
+    <section id="s-top" class="screen"><h2>LEADERBOARD</h2><div id="top-list" style="width:100%;"></div></section>
+    <section id="s-shop" class="screen"><h2>SHOP</h2><div id="shop-list" style="width:100%;"></div></section>
+    <section id="s-gear" class="screen"><h2>SETTINGS</h2></section>
 
     <nav>
         <div class="nav-item" onclick="show('s-top')"><span>🏆</span>TOP</div>
@@ -140,89 +148,68 @@
 
     let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now() };
 
-    // Загрузка данных
     db.ref(`users/${user.id}`).once('value', (snap) => {
         if (snap.exists()) {
             const data = snap.val();
-            const off = Math.floor((Date.now() - data.lastUpdate) / 1000);
-            state = { ...data, score: data.score + (off * data.passiveLvl), energy: Math.min(150, data.energy + off) };
+            const now = Date.now();
+            const diff = Math.floor((now - (data.lastUpdate || now)) / 1000);
+            state = { ...data, score: data.score + (diff * data.passiveLvl), energy: Math.min(150, (data.energy || 150) + diff) };
         }
         document.getElementById('p-name').innerText = "@" + (user.username || "Guest");
         updateUI();
-        setTimeout(() => document.getElementById('loading-screen').style.opacity = '0', 1000);
-        setTimeout(() => document.getElementById('loading-screen').remove(), 1500);
+        // Плавное скрытие загрузки
+        setTimeout(() => {
+            const ls = document.getElementById('loading-screen');
+            ls.style.opacity = '0';
+            setTimeout(() => ls.remove(), 500);
+        }, 1500);
     });
 
     const tapBtn = document.getElementById('tapBtn');
     tapBtn.addEventListener('pointerdown', (e) => {
         if (state.energy <= 0) return;
-        state.score += state.tapLvl; state.energy--;
+        state.score += state.tapLvl;
+        state.energy--;
         updateUI();
-        tg.HapticFeedback.impactOccurred('medium');
+        
+        if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
 
-        const rect = tapBtn.getBoundingClientRect();
+        // Создание партикла (числа)
         const num = document.createElement('div');
-        num.className = 'tap-effect';
+        num.className = 'tap-number';
         num.innerText = `+${state.tapLvl}`;
         num.style.left = e.clientX + 'px';
         num.style.top = e.clientY + 'px';
         document.body.appendChild(num);
-        setTimeout(() => num.remove(), 600);
+        setTimeout(() => num.remove(), 700);
     });
 
     function updateUI() {
         document.getElementById('score').innerText = Math.floor(state.score).toLocaleString();
         document.getElementById('passive-display').innerText = `Passive: ${state.passiveLvl}/sec`;
-        document.getElementById('e-fill').style.width = (state.energy / 1.5) + '%';
-        document.getElementById('e-text').innerText = `${state.energy} / 150`;
+        document.getElementById('energy-fill').style.width = (state.energy / 1.5) + '%';
+        document.getElementById('energy-text').innerText = `${state.energy} / 150`;
     }
 
     window.show = (id) => {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        if(id === 's-top') loadTop();
-    };
-
-    function loadTop() {
-        db.ref('users').limitToLast(5).once('value', snap => {
-            const list = document.getElementById('leaderboard-list');
-            list.innerHTML = "";
-            snap.forEach(child => {
-                const p = child.val();
-                list.innerHTML += `<div class="card"><b>@${p.username}</b> <span>${p.score}</span></div>`;
-            });
-        });
-    }
-
-    window.openUpgrade = (t) => {
-        document.getElementById('shop-main').classList.add('hidden');
-        document.getElementById('shop-detail').classList.remove('hidden');
-        renderUpgrades(t);
-    };
-
-    window.backToShop = () => {
-        document.getElementById('shop-main').classList.remove('hidden');
-        document.getElementById('shop-detail').classList.add('hidden');
-    };
-
-    function renderUpgrades(t) {
-        const cont = document.getElementById('upgrade-items');
-        const lvl = t === 'click' ? state.tapLvl : state.passiveLvl;
-        const price = Math.floor(100 * Math.pow(1.5, lvl));
-        cont.innerHTML = `<div class="card"><div><b>LVL ${lvl}</b><br>${price} pts</div><button class="buy-btn" onclick="buy('${t}', ${price})">BUY</button></div>`;
-    }
-
-    window.buy = (t, p) => {
-        if (state.score >= p) {
-            state.score -= p;
-            if(t === 'click') state.tapLvl++; else state.passiveLvl++;
-            updateUI(); renderUpgrades(t); save();
-        }
+        event.currentTarget.classList.add('active');
     };
 
     function save() { state.lastUpdate = Date.now(); db.ref(`users/${user.id}`).set(state); }
-    setInterval(() => { state.score += state.passiveLvl; if(state.energy < 150) state.energy++; updateUI(); }, 1000);
+    
+    // Регенерация и пассивный доход
+    setInterval(() => {
+        state.score += state.passiveLvl;
+        if(state.energy < 150) state.energy++;
+        updateUI();
+    }, 1000);
+
     setInterval(save, 5000);
+
+    @keyframes loadingAnim { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
 </script>
 </body>
 </html>
