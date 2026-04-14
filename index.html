@@ -12,7 +12,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { background: var(--b); color: var(--w); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
         
-        /* ЭКРАН ЗАГРУЗКИ С НОВЫМ ЛОГО */
+        /* ЭКРАН ЗАГРУЗКИ */
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 9999; display: flex; flex-direction: column;
@@ -20,7 +20,7 @@
         }
         .loader-logo {
             width: 150px; height: auto; margin-bottom: 40px;
-            animation: logoEntrance 1.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+            animation: logoEntrance 1.5s ease-out forwards;
         }
         .loader-bar-container { width: 120px; height: 2px; background: rgba(255,255,255,0.1); position: relative; overflow: hidden; }
         .loader-bar-fill {
@@ -29,7 +29,7 @@
             animation: loadingSwipe 1.2s infinite ease-in-out;
         }
         @keyframes logoEntrance {
-            0% { transform: scale(0.85); opacity: 0; filter: blur(10px); }
+            0% { transform: scale(0.9); opacity: 0; filter: blur(5px); }
             100% { transform: scale(1); opacity: 1; filter: blur(0); }
         }
         @keyframes loadingSwipe { 0% { left: -60px; } 100% { left: 120px; } }
@@ -63,9 +63,22 @@
         @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120px); opacity: 0; } }
 
         .energy-box { width: 100%; text-align: center; margin-bottom: 20px; position: relative; }
-        .bar-bg { height: 24px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; margin: 15px 0; overflow: hidden; position: relative; backdrop-filter: blur(5px); }
-        #e-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #fff 0%, rgba(200,200,200,0.8) 100%); transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); position: relative; }
-        #e-text { position: absolute; width: 100%; left: 0; top: 50%; transform: translateY(-50%); font-size: 10px; font-weight: 900; letter-spacing: 1px; color: var(--w); mix-blend-mode: difference; }
+        .bar-bg { 
+            height: 24px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 12px; margin: 15px 0; overflow: hidden; position: relative; 
+            backdrop-filter: blur(5px);
+        }
+        #e-fill { 
+            height: 100%; width: 100%; 
+            background: linear-gradient(90deg, #fff 0%, rgba(200,200,200,0.8) 100%); 
+            transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); 
+            position: relative;
+        }
+        #e-text { 
+            position: absolute; width: 100%; left: 0; top: 50%; transform: translateY(-50%);
+            font-size: 10px; font-weight: 900; letter-spacing: 1px; color: var(--w); 
+            mix-blend-mode: difference;
+        }
 
         .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 18px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
         .card:active { transform: scale(0.98); background: #151515; }
@@ -85,7 +98,7 @@
 <body>
 
 <div id="loading-screen">
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAYAAAB5fY51AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAViSURBVHgB7d0xkdtGFMbh66wGNo9YpS6hShW8ByOn8BqcPIX3YFWhKrkKL8EqW8XIs9H08XitZkYDSIDf8z6qXhOQyB8YED/vA0m6Wv8Y6e768eNOfA0Y7vW7T/6PST7Xv0Y6uH76uBPfAgBvXj/p97vHnfgWADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO+znO/A9eN48f97p7vqR+BYAePn+H/RzXqf99ePHz3cA1vEPlAAnuR0jO3YAAAAASUVORK5CYII=" class="loader-logo" alt="Logo">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAYAAAB5fY51AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAViSURBVHgB7d0xkdtGFMbh66wGNo9YpS6hShW8ByOn8BqcPIX3YFWhKrkKL8EqW8XIs9H08XitZkYDSIDf8z6qXhOQyB8YED/vA0m6Wv8Y6e768eNOfA0Y7vW7T/6PST7Xv0Y6uH76uBPfAgBvXj/p97vHnfgWADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO+znO/A9eN48f97p7vqR+BYAePn+H/RzXqf99ePHz3cA1vEPlAAnuR0jO3YAAAAASUVORK5CYII=" class="loader-logo" alt="Logo">
     <div class="loader-bar-container"><div class="loader-bar-fill"></div></div>
 </div>
 
@@ -93,14 +106,19 @@
 
 <div id="app">
     <section id="s-game" class="screen active">
-        <div class="header"><span id="p-name">@loading</span><span id="sync-text">LIVE</span></div>
+        <div class="header"><span id="p-name">@loading</span><span id="sync-text">SYNCING...</span></div>
         <p id="t-score-label" style="font-size:10px; font-weight:800; letter-spacing:3px; color: #444;">SCORE</p>
         <div id="score">0</div>
         <div id="passive-display" style="color:#666; font-size:11px; font-weight:800; margin-top: 5px;">Passive: 0/sec</div>
+        
         <div class="tap-area"><div class="main-circle" id="tapBtn"></div></div>
+        
         <div class="energy-box">
             <p id="t-tap-label" style="font-size:10px; font-weight:800; letter-spacing:1px; color: #444;">STAMINA</p>
-            <div class="bar-bg"><div id="e-fill"></div><span id="e-text">150 / 150</span></div>
+            <div class="bar-bg">
+                <div id="e-fill"></div>
+                <span id="e-text">150 / 150</span>
+            </div>
         </div>
     </section>
 
@@ -113,26 +131,35 @@
         <h2 id="t-shop-title" style="align-self:flex-start; margin-bottom:20px; font-weight:900;">SHOP</h2>
         <div id="shop-main" style="width:100%;">
             <div class="card special" id="case-card" onclick="openDailyCase()">
-                <div style="display:flex; align-items:center;"><div style="font-size:24px; margin-right:15px;">📦</div><div><b id="t-case-name">DAILY CASE</b><br><span id="case-status" style="font-size:11px; color:rgba(255,255,255,0.5)">100 - 10,000 pts</span></div></div>
+                <div style="display:flex; align-items:center;">
+                    <div class="case-icon">📦</div>
+                    <div><b id="t-case-name">DAILY CASE</b><br><span id="case-status" style="font-size:11px; color:rgba(255,255,255,0.5)">100 - 10,000 pts</span></div>
+                </div>
                 <button class="buy-btn" id="case-btn">OPEN</button>
             </div>
             <div class="card" onclick="openUpgrade('click')">
-                <div style="flex:1"><b id="t-click-up">CLICK UPGRADES</b><br><span id="t-click-desc" style="font-size:11px; color:#666">Increase tap income</span></div><span style="color:#fff">➔</span>
+                <div style="flex:1"><b id="t-click-up">CLICK UPGRADES</b><br><span id="t-click-desc" style="font-size:11px; color:#666">Increase tap income</span></div>
+                <span style="color:#fff">➔</span>
             </div>
             <div class="card" onclick="openUpgrade('passive')">
-                <div style="flex:1"><b id="t-pass-up">PASSIVE INCOME</b><br><span id="t-pass-desc" style="font-size:11px; color:#666">Automatic income</span></div><span style="color:#fff">➔</span>
+                <div style="flex:1"><b id="t-pass-up">PASSIVE INCOME</b><br><span id="t-pass-desc" style="font-size:11px; color:#666">Automatic income</span></div>
+                <span style="color:#fff">➔</span>
             </div>
         </div>
         <div id="shop-detail" class="hidden" style="width:100%;">
-            <button id="t-back" onclick="backToShop()" style="background:none; border:none; color:#fff; font-weight:800; margin-bottom:15px; cursor:pointer;">← BACK</button>
+            <button id="t-back" onclick="backToShop()" style="background:none; border:none; color:#fff; font-weight:800; margin-bottom:15px; cursor:pointer; display:flex; align-items:center; gap:5px;">← BACK</button>
             <div id="upgrade-items"></div>
         </div>
     </section>
 
     <section id="s-gear" class="screen">
         <h2 id="t-gear-title" style="align-self:flex-start; margin-bottom:20px; font-weight:900;">GEAR</h2>
-        <button class="settings-btn" onclick="toggleLang()"><span id="t-lang-label">Language</span><span id="cur-lang" style="color:#888">English</span></button>
-        <button class="settings-btn" onclick="toggleSound()"><span id="t-sound-label">Sound</span><span id="cur-sound" style="color:#888">ON</span></button>
+        <button class="settings-btn" onclick="toggleLang()">
+            <span id="t-lang-label">Language</span><span id="cur-lang" style="color:#888">English</span>
+        </button>
+        <button class="settings-btn" onclick="toggleSound()">
+            <span id="t-sound-label">Sound</span><span id="cur-sound" style="color:#888">ON</span>
+        </button>
         <div id="admin-container"></div>
     </section>
 
@@ -200,11 +227,11 @@
         const status = document.getElementById('case-status');
         const now = Date.now();
         const nextTime = (state.lastCaseTime || 0) + (24 * 60 * 60 * 1000);
-        if (now >= nextTime) { btn.disabled = false; status.innerText = langData[state.lang].caseReady; } 
+        if (now >= nextTime) { btn.disabled = false; status.innerText = langData[state.lang].caseReady; status.style.color = "rgba(255,255,255,0.8)"; } 
         else { 
             btn.disabled = true; const diff = nextTime - now;
             const h = Math.floor(diff / 3600000); const m = Math.floor((diff % 3600000) / 60000); const s = Math.floor((diff % 60000) / 1000);
-            status.innerText = `${h}h ${m}m ${s}s`;
+            status.innerText = `${h}h ${m}m ${s}s`; status.style.color = "#555";
         }
     }
 
@@ -218,95 +245,70 @@
         updateUI(); updateCaseUI(); save();
     };
 
-    const currentId = user.id || 999999;
+    const fallbackId = 999999;
+    const currentId = (user && user.id) ? user.id : fallbackId;
     db.ref(`users/${currentId}`).once('value', (snap) => {
         const data = snap.val();
         if (data) {
             const now = Date.now(); const offTime = Math.floor((now - (data.lastUpdate || now)) / 1000);
             state = { ...state, ...data, score: (data.score || 0) + (offTime * (data.passiveLvl || 0)), energy: Math.min(150, (data.energy || 150) + offTime) };
         }
-        state.username = user.username || data?.username || `User_${currentId}`;
+        state.username = user.username || data?.username || (currentId !== fallbackId ? `User_${currentId}` : "PC_Guest");
         isLoaded = true;
-        setTimeout(() => { document.getElementById('loading-screen').classList.add('fade-out'); }, 1200);
+        
+        // Убираем экран загрузки после получения данных
+        setTimeout(() => {
+            document.getElementById('loading-screen').classList.add('fade-out');
+        }, 1500);
+
         document.getElementById('p-name').innerText = "@" + state.username;
+        if (Number(currentId) === MY_ID) { document.getElementById('admin-container').innerHTML = `<div style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:12px;"><p style="color:#ff4444; font-size:10px; margin-bottom:10px; font-weight:900;">ADMIN PANEL</p><button style="width:100%; padding:15px; font-weight:900; background:#fff; border:none; border-radius:8px; color:#000;">EVENT CONTROL</button></div>`; }
         updateLangUI(); updateUI(); updateCaseUI(); setInterval(updateCaseUI, 1000);
     });
 
-    function save() { if (isLoaded) { state.lastUpdate = Date.now(); db.ref(`users/${currentId}`).update(state); } }
+    function save() { if (isLoaded && currentId !== 0) { state.lastUpdate = Date.now(); db.ref(`users/${currentId}`).update(state); } }
 
     function updateUI() {
         document.getElementById('score').innerText = format(state.score);
         document.getElementById('passive-display').innerText = `${langData[state.lang].passL}: ${state.passiveLvl}/sec`;
         document.getElementById('e-text').innerText = `${state.energy} / 150`;
         document.getElementById('e-fill').style.width = (state.energy / 1.5) + '%';
-        document.getElementById('e-fill').style.background = state.energy < 20 ? '#ff4444' : '#fff';
+        document.getElementById('e-fill').style.background = state.energy < 20 ? 'linear-gradient(90deg, #ff4444, #880000)' : 'linear-gradient(90deg, #fff 0%, rgba(200,200,200,0.8) 100%)';
     }
 
     function format(n) { return n >= 1e6 ? (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? (n/1e3).toFixed(1) + 'K' : Math.floor(n); }
     function getRank(lvl) { return langData[state.lang].ranks[Math.min(Math.floor((lvl || 1) / 10), 4)]; }
 
-    window.show = (id) => { 
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); 
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
-        document.getElementById(id).classList.add('active'); 
-        document.getElementById('n-' + id.split('-')[1]).classList.add('active'); 
-        if (id === 's-top') loadLeaderboard(); 
-    };
-
-    window.openUpgrade = (type) => { document.getElementById('shop-main').classList.add('hidden'); document.getElementById('shop-detail').classList.remove('hidden'); renderUpgradeItems(type); };
-    window.backToShop = () => { document.getElementById('shop-main').classList.remove('hidden'); document.getElementById('shop-detail').classList.add('hidden'); };
-    
-    function renderUpgradeItems(type) { 
-        const cont = document.getElementById('upgrade-items'); 
-        const lvl = type === 'click' ? state.tapLvl : state.passiveLvl; 
-        const price = Math.floor(100 * Math.pow(1.4, lvl + (type==='click'?0:1))); 
-        cont.innerHTML = `<div class="card" style="cursor:default;"><div style="flex:1"><b style="font-size:18px;">${getRank(lvl)}</b><br><span style="color:#888; font-size:12px;">Level ${lvl} → ${lvl+1}</span></div><button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button></div>`; 
-    }
-    
-    window.buy = (type, p) => { if (state.score >= p) { state.score -= p; if (type === 'click') state.tapLvl++; else state.passiveLvl++; updateUI(); renderUpgradeItems(type); save(); } };
-    
-    // ФУНКЦИИ ЛИДЕРБОРДА (ВОССТАНОВЛЕНО ПОЛНОСТЬЮ)
     function loadLeaderboard() {
         const list = document.getElementById('leaderboard-list');
         list.innerHTML = "<p style='text-align:center; color:#555;'>Syncing...</p>";
         db.ref('users').once('value', (snap) => {
             const data = snap.val(); if (!data) return;
             const now = Date.now();
-            let players = Object.values(data).filter(p => p && p.username && p.username !== "Guest")
-            .map(p => { 
-                const offTime = Math.floor((now - (p.lastUpdate || now)) / 1000); 
-                return { ...p, currentScore: (p.score || 0) + (offTime * (p.passiveLvl || 0)) }; 
-            })
-            .sort((a, b) => b.currentScore - a.currentScore).slice(0, 5);
+            let players = Object.values(data).filter(p => p && p.username && p.username !== "undefined" && p.username !== "Guest")
+            .map(p => { const offTime = Math.floor((now - (p.lastUpdate || now)) / 1000); return { ...p, currentScore: (p.score || 0) + (offTime * (p.passiveLvl || 0)) }; }).sort((a, b) => b.currentScore - a.currentScore).slice(0, 5);
             list.innerHTML = "";
-            players.forEach((p, i) => { 
-                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']; 
-                const isMe = p.username === state.username;
-                list.innerHTML += `
-                <div class="card" style="${isMe ? 'border: 1px solid #777; background: #151515;' : ''}">
-                    <div style="font-size:20px; min-width:40px;">${medals[i]}</div>
-                    <div style="flex:1">
-                        <div style="font-weight:900;">@${p.username} ${isMe ? '(YOU)' : ''}</div>
-                        <div style="font-size:10px; color:#555">${getRank(p.tapLvl)}</div>
-                    </div>
-                    <div style="font-weight:900;">${format(p.currentScore)}</div>
-                </div>`; 
-            });
+            players.forEach((p, i) => { const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']; list.innerHTML += `<div class="card" style="${p.username === state.username ? 'border-color: #777;' : ''}"><div style="font-size:20px; min-width:40px;">${medals[i]}</div><div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${getRank(p.tapLvl)} (Lvl ${p.tapLvl || 1})</div></div><div style="font-weight:900;">${format(p.currentScore)}</div></div>`; });
         });
     }
 
+    window.show = (id) => { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.getElementById(id).classList.add('active'); document.getElementById('n-' + id.split('-')[1]).classList.add('active'); if (id === 's-top') loadLeaderboard(); };
+    window.openUpgrade = (type) => { document.getElementById('shop-main').classList.add('hidden'); document.getElementById('shop-detail').classList.remove('hidden'); renderUpgradeItems(type); };
+    window.backToShop = () => { document.getElementById('shop-main').classList.remove('hidden'); document.getElementById('shop-detail').classList.add('hidden'); };
+    function renderUpgradeItems(type) { const cont = document.getElementById('upgrade-items'); const lvl = type === 'click' ? state.tapLvl : state.passiveLvl; const price = Math.floor(100 * Math.pow(1.4, lvl + (type==='click'?0:1))); cont.innerHTML = `<div class="card" style="cursor:default;"><div style="flex:1"><b style="font-size:18px;">${getRank(lvl)}</b><br><span style="color:#888; font-size:12px;">Level ${lvl} → ${lvl+1}</span></div><button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button></div>`; }
+    window.buy = (type, p) => { if (state.score >= p) { state.score -= p; if (type === 'click') state.tapLvl++; else state.passiveLvl++; updateUI(); renderUpgradeItems(type); save(); if(state.sound) tg.HapticFeedback.notificationOccurred('success'); } };
     function updateLangUI() {
         const l = langData[state.lang];
         const map = { 'sync-text':'sync', 't-score-label':'scoreL', 't-tap-label':'tapL', 't-top-title':'topT', 't-shop-title':'shopT', 't-click-up':'clUp', 't-click-desc':'clDe', 't-pass-up':'psUp', 't-pass-desc':'psDe', 't-back':'back', 't-gear-title':'gearT', 't-lang-label':'langL', 't-sound-label':'soundL', 't-nav-top':'navTop', 't-nav-game':'navGame', 't-nav-shop':'navShop', 't-nav-gear':'navGear', 't-case-name':'caseName', 'case-btn':'caseOpen' };
-        for(let id in map) { if(document.getElementById(id)) document.getElementById(id).innerText = l[map[id]]; }
+        for(let id in map) { const el = document.getElementById(id); if(el) el.innerText = l[map[id]]; }
         document.getElementById('cur-lang').innerText = state.lang === 'en' ? "English" : "Русский";
         document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
+        updateCaseUI();
     }
-    function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); save(); }
+    function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); updateUI(); save(); }
     function toggleSound() { state.sound = !state.sound; document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF"; save(); }
-    
-    setInterval(() => { if (isLoaded) { state.score += (state.passiveLvl || 0); if (state.energy < 150) state.energy++; updateUI(); } }, 1000);
-    setInterval(save, 10000);
+    setInterval(() => { if (!isLoaded) return; state.score += (state.passiveLvl || 0); if (state.energy < 150) state.energy++; updateUI(); }, 1000);
+    setInterval(() => { if(isLoaded) save(); }, 10000);
 </script>
 </body>
 </html>
