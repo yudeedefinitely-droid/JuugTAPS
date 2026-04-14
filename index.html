@@ -19,7 +19,9 @@
             align-items: center; justify-content: center; transition: opacity 0.8s ease-in-out;
         }
         .loader-logo {
-            width: 150px; height: auto; margin-bottom: 40px;
+            width: 180px; height: auto; margin-bottom: 40px;
+            /* Инверсия, чтобы лого был белым, если исходник черный */
+            filter: brightness(0) invert(1); 
             animation: logoEntrance 1.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
         }
         .loader-bar-container { width: 100px; height: 2px; background: rgba(255,255,255,0.1); position: relative; overflow: hidden; }
@@ -29,8 +31,8 @@
             animation: loadingSwipe 1.2s infinite ease-in-out;
         }
         @keyframes logoEntrance {
-            0% { transform: scale(0.9); opacity: 0; filter: blur(10px); }
-            100% { transform: scale(1); opacity: 1; filter: blur(0); }
+            0% { transform: scale(0.85); opacity: 0; filter: brightness(0) invert(1) blur(10px); }
+            100% { transform: scale(1); opacity: 1; filter: brightness(0) invert(1) blur(0); }
         }
         @keyframes loadingSwipe { 0% { left: -40px; } 100% { left: 100px; } }
         #loading-screen.fade-out { opacity: 0; pointer-events: none; }
@@ -106,7 +108,7 @@
 <body>
 
 <div id="loading-screen">
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAYAAAB5fY51AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAViSURBVHgB7d0xkdtGFMbh66wGNo9YpS6hShW8ByOn8BqcPIX3YFWhKrkKL8EqW8XIs9H08XitZkYDSIDf8z6qXhOQyB8YED/vA0m6Wv8Y6e768eNOfA0Y7vW7T/6PST7Xv0Y6uH76uBPfAgBvXj/p97vHnfgWADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO+znO/A9eN48f97p7vqR+BYAePn+H/RzXqf99ePHz3cA1vEPlAAnuR0jO3YAAAAASUVORK5CYII=" class="loader-logo" alt="Juug Logo">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAYAAAB5fY51AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAViSURBVHgB7d0xkdtGFMbh66wGNo9YpS6hShW8ByOn8BqcPIX3YFWhKrkKL8EqW8XIs9H08XitZkYDSIDf8z6qXhOQyB8YED/vA0m6Wv8Y6e768eNOfA0Y7vW7T/6PST7Xv0Y6uH76uBPfAgBvXj/p97vHnfgWADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO6wAOKwAsMMKgMMKADusADisALDDCoDDCgA7rACwwwqAwwoAO+znO/A9eN48f97p7vqR+BYAePn+H/RzXqf99ePHz3cA1vEPlAAnuR0jO3YAAAAASUVORK5CYII=" class="loader-logo" alt="Logo">
     <div class="loader-bar-container"><div class="loader-bar-fill"></div></div>
 </div>
 
@@ -114,7 +116,7 @@
 
 <div id="app">
     <section id="s-game" class="screen active">
-        <div class="header"><span id="p-name">@loading</span><span id="sync-text">SYNCING...</span></div>
+        <div class="header"><span id="p-name">@loading</span><span id="sync-text">LIVE</span></div>
         <p id="t-score-label" style="font-size:10px; font-weight:800; letter-spacing:3px; color: #444;">SCORE</p>
         <div id="score">0</div>
         <div id="passive-display" style="color:#666; font-size:11px; font-weight:800; margin-top: 5px;">Passive: 0/sec</div>
@@ -264,13 +266,12 @@
         state.username = user.username || data?.username || `User_${currentId}`;
         isLoaded = true;
         
-        // Убираем экран загрузки
         setTimeout(() => {
             document.getElementById('loading-screen').classList.add('fade-out');
         }, 800);
 
         document.getElementById('p-name').innerText = "@" + state.username;
-        if (Number(currentId) === MY_ID) { document.getElementById('admin-container').innerHTML = `<div style="border:1px solid #ff4444; padding:10px; border-radius:8px;"><p style="color:#ff4444; font-size:10px;">ADMIN</p></div>`; }
+        if (Number(currentId) === MY_ID) { document.getElementById('admin-container').innerHTML = `<div style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:12px; margin-top:10px;"><p style="color:#ff4444; font-size:10px; font-weight:900;">ADMIN PANEL</p></div>`; }
         updateLangUI(); updateUI(); updateCaseUI(); setInterval(updateCaseUI, 1000);
     });
 
@@ -295,19 +296,25 @@
         const cont = document.getElementById('upgrade-items'); 
         const lvl = type === 'click' ? state.tapLvl : state.passiveLvl; 
         const price = Math.floor(100 * Math.pow(1.4, lvl + (type==='click'?0:1))); 
-        cont.innerHTML = `<div class="card"><div style="flex:1"><b>${getRank(lvl)}</b><br><span style="color:#888;">Lvl ${lvl}</span></div><button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button></div>`; 
+        cont.innerHTML = `<div class="card" style="cursor:default;"><div style="flex:1"><b style="font-size:18px;">${getRank(lvl)}</b><br><span style="color:#888; font-size:12px;">Level ${lvl} → ${lvl+1}</span></div><button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button></div>`; 
     }
     
     window.buy = (type, p) => { if (state.score >= p) { state.score -= p; if (type === 'click') state.tapLvl++; else state.passiveLvl++; updateUI(); renderUpgradeItems(type); save(); } };
     
     function loadLeaderboard() {
         const list = document.getElementById('leaderboard-list');
-        list.innerHTML = "<p>Syncing...</p>";
+        list.innerHTML = "<p style='text-align:center; color:#555;'>Syncing...</p>";
         db.ref('users').once('value', (snap) => {
             const data = snap.val(); if (!data) return;
-            let players = Object.values(data).sort((a,b) => (b.score||0)-(a.score||0)).slice(0, 5);
+            const now = Date.now();
+            let players = Object.values(data).filter(p => p && p.username && p.username !== "Guest")
+            .map(p => { const offTime = Math.floor((now - (p.lastUpdate || now)) / 1000); return { ...p, currentScore: (p.score || 0) + (offTime * (p.passiveLvl || 0)) }; })
+            .sort((a, b) => b.currentScore - a.currentScore).slice(0, 5);
             list.innerHTML = "";
-            players.forEach((p, i) => { list.innerHTML += `<div class="card"><span>${i+1}. @${p.username}</span><b>${format(p.score||0)}</b></div>`; });
+            players.forEach((p, i) => { 
+                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']; 
+                list.innerHTML += `<div class="card" style="${p.username === state.username ? 'border-color: #777;' : ''}"><div style="font-size:20px; min-width:40px;">${medals[i]}</div><div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${getRank(p.tapLvl)}</div></div><div style="font-weight:900;">${format(p.currentScore)}</div></div>`; 
+            });
         });
     }
 
@@ -315,6 +322,8 @@
         const l = langData[state.lang];
         const map = { 'sync-text':'sync', 't-score-label':'scoreL', 't-tap-label':'tapL', 't-top-title':'topT', 't-shop-title':'shopT', 't-click-up':'clUp', 't-click-desc':'clDe', 't-pass-up':'psUp', 't-pass-desc':'psDe', 't-back':'back', 't-gear-title':'gearT', 't-lang-label':'langL', 't-sound-label':'soundL', 't-nav-top':'navTop', 't-nav-game':'navGame', 't-nav-shop':'navShop', 't-nav-gear':'navGear', 't-case-name':'caseName', 'case-btn':'caseOpen' };
         for(let id in map) { if(document.getElementById(id)) document.getElementById(id).innerText = l[map[id]]; }
+        document.getElementById('cur-lang').innerText = state.lang === 'en' ? "English" : "Русский";
+        document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
     }
     function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); save(); }
     function toggleSound() { state.sound = !state.sound; document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF"; save(); }
