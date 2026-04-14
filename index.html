@@ -12,33 +12,23 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { background: var(--b); color: var(--w); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
         
-        /* ЗАГРУЗОЧНЫЙ ЭКРАН */
-        #splash-screen {
+        /* LOADING SCREEN */
+        #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 1000; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--b); z-index: 2000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; transition: opacity 0.5s ease;
         }
-        .splash-logo {
-            width: 180px; height: 180px;
+        .loading-logo {
+            width: 150px; height: 150px;
             background: url('photo_2026-04-13_17-59-56.jpg') no-repeat center;
-            background-size: contain;
-            filter: drop-shadow(0 0 15px rgba(255,255,255,0.2));
-            animation: splashPulse 2.5s infinite ease-in-out;
+            background-size: cover; border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255,255,255,0.1);
+            animation: pulseLogo 2s infinite ease-in-out;
         }
-        @keyframes splashPulse {
-            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(255,255,255,0.2)); opacity: 0.8; }
-            50% { transform: scale(1.05); filter: drop-shadow(0 0 30px rgba(255,255,255,0.5)); opacity: 1; }
-        }
-        .loader-bar {
-            width: 120px; height: 2px; background: #222; margin-top: 30px;
-            border-radius: 2px; overflow: hidden; position: relative;
-        }
-        .loader-progress {
-            width: 40%; height: 100%; background: #fff;
-            position: absolute; animation: loadMove 1.5s infinite linear;
-        }
-        @keyframes loadMove {
-            0% { left: -40%; } 100% { left: 140%; }
+        @keyframes pulseLogo {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; box-shadow: 0 0 50px rgba(255,255,255,0.2); }
+            100% { transform: scale(1); opacity: 0.8; }
         }
 
         #particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
@@ -57,13 +47,16 @@
         .header { width: 100%; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 20px; color: #555; }
         #score { font-size: 72px; font-weight: 900; margin-top: 5px; }
         
+        /* КНОПКА ТАПА С ЛОГО */
         .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; min-height: 300px; }
         .main-circle { 
             width: 240px; height: 240px; border: 4px solid var(--w); border-radius: 50%; 
-            transition: transform 0.05s ease-out; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            transition: transform 0.05s ease-out; 
+            background: url('photo_2026-04-13_17-59-56.jpg') no-repeat center;
+            background-size: 80%; /* Логотип внутри круга */
             box-shadow: 0 0 20px rgba(255,255,255,0.05); position: relative; z-index: 2; touch-action: manipulation;
         }
-        .main-circle.is-active { transform: scale(0.92); background: rgba(255,255,255,0.15); }
+        .main-circle.is-active { transform: scale(0.92); filter: brightness(1.2); }
 
         .tap-effect { position: absolute; pointer-events: none; color: #fff; font-weight: 900; font-size: 26px; animation: floatUp 0.6s ease-out forwards; z-index: 10; }
         @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120px); opacity: 0; } }
@@ -78,7 +71,7 @@
             height: 100%; width: 100%; 
             background: linear-gradient(90deg, #fff 0%, rgba(200,200,200,0.8) 100%); 
             transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); 
-            position: relative;
+            box-shadow: 0 0 15px rgba(255,255,255,0.2);
         }
         #e-text { 
             position: absolute; width: 100%; left: 0; top: 50%; transform: translateY(-50%);
@@ -101,21 +94,22 @@
 </head>
 <body>
 
-<div id="splash-screen">
-    <div class="splash-logo"></div>
-    <div class="loader-bar"><div class="loader-progress"></div></div>
-    <p style="margin-top: 15px; font-size: 10px; letter-spacing: 2px; color: #444; font-weight: 900;">INITIALIZING</p>
+<div id="loading-screen">
+    <div class="loading-logo"></div>
+    <p style="margin-top:20px; font-weight:900; letter-spacing:2px; font-size:12px;">LOADING DATA...</p>
 </div>
 
 <canvas id="particleCanvas"></canvas>
 
 <div id="app">
     <section id="s-game" class="screen active">
-        <div class="header"><span id="p-name">@loading</span><span id="sync-text">LIVE</span></div>
+        <div class="header"><span id="p-name">@loading</span><span id="sync-text">SYNCING...</span></div>
         <p id="t-score-label" style="font-size:10px; font-weight:800; letter-spacing:3px; color: #444;">SCORE</p>
         <div id="score">0</div>
         <div id="passive-display" style="color:#666; font-size:11px; font-weight:800; margin-top: 5px;">Passive: 0/sec</div>
+        
         <div class="tap-area"><div class="main-circle" id="tapBtn"></div></div>
+        
         <div class="energy-box">
             <p id="t-tap-label" style="font-size:10px; font-weight:800; letter-spacing:1px; color: #444;">STAMINA</p>
             <div class="bar-bg">
@@ -142,11 +136,11 @@
             </div>
             <div class="card" onclick="openUpgrade('click')">
                 <div style="flex:1"><b id="t-click-up">CLICK UPGRADES</b><br><span id="t-click-desc" style="font-size:11px; color:#666">Increase tap income</span></div>
-                <span>➔</span>
+                <span style="color:#fff">➔</span>
             </div>
             <div class="card" onclick="openUpgrade('passive')">
                 <div style="flex:1"><b id="t-pass-up">PASSIVE INCOME</b><br><span id="t-pass-desc" style="font-size:11px; color:#666">Automatic income</span></div>
-                <span>➔</span>
+                <span style="color:#fff">➔</span>
             </div>
         </div>
         <div id="shop-detail" class="hidden" style="width:100%;">
@@ -192,8 +186,8 @@
 
     const MY_ID = 5291965471;
     const user = tg.initDataUnsafe?.user || { id: 0, username: "Guest" };
-    const currentId = user.id || 999999;
-
+    const currentId = (user && user.id) ? user.id : 999999;
+    
     let isLoaded = false;
     let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), lastCaseTime: 0, username: "Guest", lang: 'en', sound: true };
 
@@ -202,7 +196,7 @@
         ru: { sync: "В СЕТИ", scoreL: "СЧЕТ", tapL: "ТАПАЙ ЧТОБЫ ЗАРАБОТАТЬ", passL: "Пассив", topT: "ТОП 5 ДЖУГЕРОВ", shopT: "МАГАЗИН", clUp: "ПРОКАЧКА КЛИКА", clDe: "Увеличить доход за тап", psUp: "ПАССИВНЫЙ ДОХОД", psDe: "Автоматический доход", back: "НАЗАД", gearT: "МЕНЮ", langL: "Язык", soundL: "Звук", navTop: "ТОП", navGame: "ИГРА", navShop: "МАГАЗИН", navGear: "МЕНЮ", ranks: ["Нуб Джугер", "Обычный Джугер", "Про Джугер", "Хакер Джугер", "Бог Джугер"], caseName: "ДНЕВНОЙ КЕЙС", caseOpen: "ОТКРЫТЬ", caseReady: "Можно открыть!" }
     };
 
-    // Particles BG
+    // Canvas BG
     const canvas = document.getElementById('particleCanvas');
     const ctx = canvas.getContext('2d');
     let bgParticles = [];
@@ -213,7 +207,7 @@
     function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); bgParticles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
     animate();
 
-    // Game Logic
+    // Main Logic
     const tapBtn = document.getElementById('tapBtn');
     tapBtn.addEventListener('pointerdown', (e) => {
         if (!isLoaded || state.energy <= 0) return;
@@ -228,36 +222,58 @@
     });
     window.addEventListener('pointerup', () => tapBtn.classList.remove('is-active'));
 
-    // Firebase Data Loading
+    function updateCaseUI() {
+        const btn = document.getElementById('case-btn');
+        const status = document.getElementById('case-status');
+        const now = Date.now();
+        const nextTime = (state.lastCaseTime || 0) + (24 * 60 * 60 * 1000);
+        if (now >= nextTime) { btn.disabled = false; status.innerText = langData[state.lang].caseReady; } 
+        else { 
+            btn.disabled = true; const diff = nextTime - now;
+            const h = Math.floor(diff / 3600000); const m = Math.floor((diff % 3600000) / 60000);
+            status.innerText = `${h}h ${m}m remaining`;
+        }
+    }
+
+    window.openDailyCase = () => {
+        const now = Date.now();
+        if (now < (state.lastCaseTime || 0) + (24 * 60 * 60 * 1000)) return;
+        const reward = Math.floor(Math.random() * 9901) + 100;
+        state.score += reward; state.lastCaseTime = now;
+        if(state.sound) tg.HapticFeedback.notificationOccurred('success');
+        alert((state.lang === 'ru' ? "Вы получили: " : "You received: ") + reward + " pts!");
+        updateUI(); updateCaseUI(); save();
+    };
+
     db.ref(`users/${currentId}`).once('value', (snap) => {
         const data = snap.val();
         if (data) {
-            const now = Date.now(); 
-            const offTime = Math.floor((now - (data.lastUpdate || now)) / 1000);
+            const now = Date.now(); const offTime = Math.floor((now - (data.lastUpdate || now)) / 1000);
             state = { ...state, ...data, score: (data.score || 0) + (offTime * (data.passiveLvl || 0)), energy: Math.min(150, (data.energy || 150) + offTime) };
         }
         state.username = user.username || data?.username || "Guest";
         isLoaded = true;
         
-        // Плавное скрытие Splash Screen
-        const splash = document.getElementById('splash-screen');
-        splash.style.opacity = '0';
-        setTimeout(() => splash.classList.add('hidden'), 800);
+        // Плавный переход после загрузки
+        const loader = document.getElementById('loading-screen');
+        loader.style.opacity = '0';
+        setTimeout(() => loader.style.display = 'none', 500);
 
         document.getElementById('p-name').innerText = "@" + state.username;
         if (Number(currentId) === MY_ID) { 
-            document.getElementById('admin-container').innerHTML = `<div style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:12px; margin-top:10px;"><p style="color:#ff4444; font-size:10px; margin-bottom:5px; font-weight:900;">ADMIN PANEL</p><button style="width:100%; padding:10px; font-weight:900; background:#fff; border:none; border-radius:8px;">EVENT CONTROL</button></div>`; 
+            document.getElementById('admin-container').innerHTML = `<div style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:12px; margin-top:10px;"><p style="color:#ff4444; font-size:10px; margin-bottom:10px; font-weight:900;">ADMIN PANEL</p><button style="width:100%; padding:15px; font-weight:900; background:#fff; border:none; border-radius:8px; color:#000;">EVENT CONTROL</button></div>`; 
         }
-        updateLangUI(); updateUI(); updateCaseUI();
+        updateLangUI(); updateUI(); updateCaseUI(); setInterval(updateCaseUI, 1000);
     });
 
-    function save() { if (isLoaded && currentId !== 0) { state.lastUpdate = Date.now(); db.ref(`users/${currentId}`).update(state); } }
+    function save() { if (isLoaded) { state.lastUpdate = Date.now(); db.ref(`users/${currentId}`).update(state); } }
 
     function updateUI() {
         document.getElementById('score').innerText = format(state.score);
         document.getElementById('passive-display').innerText = `${langData[state.lang].passL}: ${state.passiveLvl}/sec`;
         document.getElementById('e-text').innerText = `${state.energy} / 150`;
         document.getElementById('e-fill').style.width = (state.energy / 1.5) + '%';
+        document.getElementById('e-fill').style.background = state.energy < 20 ? '#ff4444' : 'linear-gradient(90deg, #fff 0%, rgba(200,200,200,0.8) 100%)';
     }
 
     function format(n) { return n >= 1e6 ? (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? (n/1e3).toFixed(1) + 'K' : Math.floor(n); }
@@ -273,10 +289,7 @@
             .map(p => { const offTime = Math.floor((now - (p.lastUpdate || now)) / 1000); return { ...p, currentScore: (p.score || 0) + (offTime * (p.passiveLvl || 0)) }; })
             .sort((a, b) => b.currentScore - a.currentScore).slice(0, 5);
             list.innerHTML = "";
-            players.forEach((p, i) => { 
-                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']; 
-                list.innerHTML += `<div class="card" style="${p.username === state.username ? 'border-color: #777;' : ''}"><div style="font-size:20px; min-width:40px;">${medals[i]}</div><div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${getRank(p.tapLvl)}</div></div><div style="font-weight:900;">${format(p.currentScore)}</div></div>`; 
-            });
+            players.forEach((p, i) => { const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']; list.innerHTML += `<div class="card" style="${p.username === state.username ? 'border-color: #777;' : ''}"><div style="font-size:20px; min-width:40px;">${medals[i]}</div><div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${getRank(p.tapLvl)} (Lvl ${p.tapLvl || 1})</div></div><div style="font-weight:900;">${format(p.currentScore)}</div></div>`; });
         });
     }
 
@@ -288,29 +301,6 @@
         if (id === 's-top') loadLeaderboard(); 
     };
 
-    window.openDailyCase = () => {
-        const now = Date.now();
-        if (now < (state.lastCaseTime || 0) + (24 * 60 * 60 * 1000)) return;
-        const reward = Math.floor(Math.random() * 9901) + 100;
-        state.score += reward; state.lastCaseTime = now;
-        if(state.sound) tg.HapticFeedback.notificationOccurred('success');
-        alert((state.lang === 'ru' ? "Вы получили: " : "You received: ") + reward + " pts!");
-        updateUI(); updateCaseUI(); save();
-    };
-
-    function updateCaseUI() {
-        const btn = document.getElementById('case-btn');
-        const status = document.getElementById('case-status');
-        const nextTime = (state.lastCaseTime || 0) + (86400000);
-        if (Date.now() >= nextTime) { btn.disabled = false; status.innerText = langData[state.lang].caseReady; } 
-        else { 
-            btn.disabled = true; 
-            const diff = nextTime - Date.now();
-            const h = Math.floor(diff/3600000); const m = Math.floor((diff%3600000)/60000);
-            status.innerText = `${h}h ${m}m remaining`;
-        }
-    }
-
     window.openUpgrade = (type) => { document.getElementById('shop-main').classList.add('hidden'); document.getElementById('shop-detail').classList.remove('hidden'); renderUpgradeItems(type); };
     window.backToShop = () => { document.getElementById('shop-main').classList.remove('hidden'); document.getElementById('shop-detail').classList.add('hidden'); };
     
@@ -318,17 +308,11 @@
         const cont = document.getElementById('upgrade-items'); 
         const lvl = type === 'click' ? state.tapLvl : state.passiveLvl; 
         const price = Math.floor(100 * Math.pow(1.4, lvl + (type==='click'?0:1))); 
-        cont.innerHTML = `<div class="card" style="cursor:default;"><div style="flex:1"><b>Level ${lvl} → ${lvl+1}</b><br><span style="color:#555;">${type==='click'?'Tap power':'Passive income'}</span></div><button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button></div>`; 
+        cont.innerHTML = `<div class="card" style="cursor:default;"><div style="flex:1"><b style="font-size:18px;">${getRank(lvl)}</b><br><span style="color:#888; font-size:12px;">Level ${lvl} → ${lvl+1}</span></div><button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button></div>`; 
     }
 
-    window.buy = (type, p) => { 
-        if (state.score >= p) { 
-            state.score -= p; if (type === 'click') state.tapLvl++; else state.passiveLvl++; 
-            updateUI(); renderUpgradeItems(type); save(); 
-            if(state.sound) tg.HapticFeedback.notificationOccurred('success'); 
-        } 
-    };
-
+    window.buy = (type, p) => { if (state.score >= p) { state.score -= p; if (type === 'click') state.tapLvl++; else state.passiveLvl++; updateUI(); renderUpgradeItems(type); save(); if(state.sound) tg.HapticFeedback.notificationOccurred('success'); } };
+    
     function updateLangUI() {
         const l = langData[state.lang];
         const map = { 'sync-text':'sync', 't-score-label':'scoreL', 't-tap-label':'tapL', 't-top-title':'topT', 't-shop-title':'shopT', 't-click-up':'clUp', 't-click-desc':'clDe', 't-pass-up':'psUp', 't-pass-desc':'psDe', 't-back':'back', 't-gear-title':'gearT', 't-lang-label':'langL', 't-sound-label':'soundL', 't-nav-top':'navTop', 't-nav-game':'navGame', 't-nav-shop':'navShop', 't-nav-gear':'navGear', 't-case-name':'caseName', 'case-btn':'caseOpen' };
@@ -337,9 +321,9 @@
         document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
     }
 
-    function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); save(); }
+    function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); updateUI(); save(); }
     function toggleSound() { state.sound = !state.sound; document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF"; save(); }
-
+    
     setInterval(() => { if (!isLoaded) return; state.score += (state.passiveLvl || 0); if (state.energy < 150) state.energy++; updateUI(); }, 1000);
     setInterval(() => { if(isLoaded) save(); }, 10000);
 </script>
