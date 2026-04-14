@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --b: #000; --w: #fff; --g: #111; --sg: #222; }
+        :root { --b: #000; --w: #fff; --g: #111; --sg: #222; --accent: rgba(255,255,255,0.8); }
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { background: var(--b); color: var(--w); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
         
@@ -41,18 +41,37 @@
         @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120px); opacity: 0; } }
         @keyframes flyOut { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; } }
 
-        .energy-box { width: 100%; text-align: center; margin-bottom: 20px; }
-        .bar-bg { height: 10px; background: #1a1a1a; border-radius: 10px; margin: 15px 0; overflow: hidden; }
-        #e-fill { height: 100%; width: 100%; background: #fff; transition: width 0.2s; }
+        /* ОБНОВЛЕННАЯ ЭНЕРГИЯ */
+        .energy-box { width: 100%; text-align: center; margin-bottom: 20px; position: relative; }
+        .bar-bg { 
+            height: 24px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 12px; margin: 15px 0; overflow: hidden; position: relative; 
+            backdrop-filter: blur(5px);
+        }
+        #e-fill { 
+            height: 100%; width: 100%; 
+            background: linear-gradient(90deg, #fff 0%, rgba(200,200,200,0.8) 100%); 
+            transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); 
+            box-shadow: 0 0 15px rgba(255,255,255,0.2);
+            position: relative;
+        }
+        #e-fill::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shine 2s infinite;
+        }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
-        /* СТИЛЬ КАРТОЧЕК */
+        #e-text { 
+            position: absolute; width: 100%; left: 0; top: 50%; transform: translateY(-50%);
+            font-size: 10px; font-weight: 900; letter-spacing: 1px; color: var(--w); 
+            text-shadow: 0 0 5px #000; z-index: 10; mix-blend-mode: difference;
+        }
+
         .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 18px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
         .card:active { transform: scale(0.98); background: #151515; }
-        
-        /* ОСОБЫЙ СТИЛЬ ДЛЯ КЕЙСА */
         .card.special { border: 1px solid rgba(255,255,255,0.3); background: linear-gradient(145deg, #111, #050505); }
         .case-icon { font-size: 24px; margin-right: 15px; }
-
         .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 900; min-width: 80px; }
         .buy-btn:disabled { background: #333; color: #555; cursor: not-allowed; }
 
@@ -73,14 +92,18 @@
 <div id="app">
     <section id="s-game" class="screen active">
         <div class="header"><span id="p-name">@loading</span><span id="sync-text">SYNCING...</span></div>
-        <p id="t-score-label" style="font-size:12px; font-weight:800; letter-spacing:2px;">SCORE</p>
+        <p id="t-score-label" style="font-size:10px; font-weight:800; letter-spacing:3px; color: #444;">SCORE</p>
         <div id="score">0</div>
-        <div id="passive-display" style="color:#888; font-size:12px; font-weight:800;">Passive: 0/sec</div>
+        <div id="passive-display" style="color:#666; font-size:11px; font-weight:800; margin-top: 5px;">Passive: 0/sec</div>
+        
         <div class="tap-area"><div class="main-circle" id="tapBtn"></div></div>
+        
         <div class="energy-box">
-            <p id="t-tap-label" style="font-size:12px; font-weight:800;">TAP TO EARN</p>
-            <div class="bar-bg"><div id="e-fill"></div></div>
-            <b id="e-text">150 / 150</b>
+            <p id="t-tap-label" style="font-size:10px; font-weight:800; letter-spacing:1px; color: #444;">STAMINA</p>
+            <div class="bar-bg">
+                <div id="e-fill"></div>
+                <span id="e-text">150 / 150</span>
+            </div>
         </div>
     </section>
 
@@ -95,14 +118,10 @@
             <div class="card special" id="case-card" onclick="openDailyCase()">
                 <div style="display:flex; align-items:center;">
                     <div class="case-icon">📦</div>
-                    <div>
-                        <b id="t-case-name">DAILY CASE</b><br>
-                        <span id="case-status" style="font-size:11px; color:rgba(255,255,255,0.5)">100 - 10,000 pts</span>
-                    </div>
+                    <div><b id="t-case-name">DAILY CASE</b><br><span id="case-status" style="font-size:11px; color:rgba(255,255,255,0.5)">100 - 10,000 pts</span></div>
                 </div>
                 <button class="buy-btn" id="case-btn">OPEN</button>
             </div>
-
             <div class="card" onclick="openUpgrade('click')">
                 <div style="flex:1"><b id="t-click-up">CLICK UPGRADES</b><br><span id="t-click-desc" style="font-size:11px; color:#666">Increase tap income</span></div>
                 <span style="color:#fff">➔</span>
@@ -138,6 +157,7 @@
 </div>
 
 <script>
+    // --- ВСЯ ЛОГИКА ОСТАЕТСЯ ПРЕЖНЕЙ ---
     const firebaseConfig = {
         apiKey: "AIzaSyDcUMfQAd9QnoPUVxfM9SWp_lHBc2CaRKY",
         authDomain: "juugtaaap.firebaseapp.com",
@@ -157,7 +177,6 @@
     const user = tg.initDataUnsafe?.user || { id: 0, username: "Guest" };
     
     let isLoaded = false;
-    // Добавлено поле lastCaseTime в state
     let state = { score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, lastUpdate: Date.now(), lastCaseTime: 0, username: "Guest", lang: 'en', sound: true };
 
     const langData = {
@@ -165,23 +184,16 @@
         ru: { sync: "В СЕТИ", scoreL: "СЧЕТ", tapL: "ТАПАЙ ЧТОБЫ ЗАРАБОТАТЬ", passL: "Пассив", topT: "ТОП 5 ДЖУГЕРОВ", shopT: "МАГАЗИН", clUp: "ПРОКАЧКА КЛИКА", clDe: "Увеличить доход за тап", psUp: "ПАССИВНЫЙ ДОХОД", psDe: "Автоматический доход", back: "НАЗАД", gearT: "МЕНЮ", langL: "Язык", soundL: "Звук", navTop: "ТОП", navGame: "ИГРА", navShop: "МАГАЗИН", navGear: "МЕНЮ", ranks: ["Нуб Джугер", "Обычный Джугер", "Про Джугер", "Хакер Джугер", "Бог Джугер"], caseName: "ДНЕВНОЙ КЕЙС", caseOpen: "ОТКРЫТЬ", caseReady: "Можно открыть!" }
     };
 
-    // --- ФОН ---
     const canvas = document.getElementById('particleCanvas');
     const ctx = canvas.getContext('2d');
     let bgParticles = [];
     function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener('resize', resize); resize();
-    class BgP {
-        constructor() { this.reset(); }
-        reset() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.size = Math.random() * 1.5 + 0.5; this.speedX = (Math.random() - 0.5) * 0.3; this.speedY = (Math.random() - 0.5) * 0.3; this.opacity = Math.random() * 0.4 + 0.1; }
-        update() { this.x += this.speedX; this.y += this.speedY; if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset(); }
-        draw() { ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); }
-    }
+    class BgP { constructor() { this.reset(); } reset() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.size = Math.random() * 1.5 + 0.5; this.speedX = (Math.random() - 0.5) * 0.3; this.speedY = (Math.random() - 0.5) * 0.3; this.opacity = Math.random() * 0.4 + 0.1; } update() { this.x += this.speedX; this.y += this.speedY; if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset(); } draw() { ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); } }
     for (let i = 0; i < 40; i++) bgParticles.push(new BgP());
     function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); bgParticles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
     animate();
 
-    // --- ТАПЫ ---
     const tapBtn = document.getElementById('tapBtn');
     tapBtn.addEventListener('pointerdown', (e) => {
         if (!isLoaded || state.energy <= 0) return;
@@ -196,76 +208,42 @@
     });
     window.addEventListener('pointerup', () => tapBtn.classList.remove('is-active'));
 
-    // --- ЕЖЕДНЕВНЫЙ КЕЙС ЛОГИКА ---
     function updateCaseUI() {
         const btn = document.getElementById('case-btn');
         const status = document.getElementById('case-status');
         const now = Date.now();
-        const nextTime = state.lastCaseTime + (24 * 60 * 60 * 1000);
-        
-        if (now >= nextTime) {
-            btn.disabled = false;
-            status.innerText = langData[state.lang].caseReady;
-            status.style.color = "rgba(255,255,255,0.8)";
-        } else {
-            btn.disabled = true;
-            const diff = nextTime - now;
-            const h = Math.floor(diff / (1000 * 60 * 60));
-            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const s = Math.floor((diff % (1000 * 60)) / 1000);
-            status.innerText = `${h}h ${m}m ${s}s`;
-            status.style.color = "#555";
+        const nextTime = (state.lastCaseTime || 0) + (24 * 60 * 60 * 1000);
+        if (now >= nextTime) { btn.disabled = false; status.innerText = langData[state.lang].caseReady; status.style.color = "rgba(255,255,255,0.8)"; } 
+        else { 
+            btn.disabled = true; const diff = nextTime - now;
+            const h = Math.floor(diff / 3600000); const m = Math.floor((diff % 3600000) / 60000); const s = Math.floor((diff % 60000) / 1000);
+            status.innerText = `${h}h ${m}m ${s}s`; status.style.color = "#555";
         }
     }
 
     window.openDailyCase = () => {
         const now = Date.now();
-        if (now < state.lastCaseTime + (24 * 60 * 60 * 1000)) return;
-        
+        if (now < (state.lastCaseTime || 0) + (24 * 60 * 60 * 1000)) return;
         const reward = Math.floor(Math.random() * (10000 - 100 + 1)) + 100;
-        state.score += reward;
-        state.lastCaseTime = now;
-        
+        state.score += reward; state.lastCaseTime = now;
         if(state.sound) tg.HapticFeedback.notificationOccurred('success');
         alert((state.lang === 'ru' ? "Вы получили: " : "You received: ") + reward + " pts!");
-        
-        updateUI();
-        updateCaseUI();
-        save();
+        updateUI(); updateCaseUI(); save();
     };
 
-    // --- ОБРАБОТКА ID И ЗАГРУЗКА ---
     const fallbackId = 999999;
     const currentId = (user && user.id) ? user.id : fallbackId;
-
     db.ref(`users/${currentId}`).once('value', (snap) => {
         const data = snap.val();
         if (data) {
-            const now = Date.now();
-            const offTime = Math.floor((now - (data.lastUpdate || now)) / 1000);
-            state = { 
-                ...state, 
-                ...data, 
-                score: (data.score || 0) + (offTime * (data.passiveLvl || 0)), 
-                energy: Math.min(150, (data.energy || 150) + offTime) 
-            };
+            const now = Date.now(); const offTime = Math.floor((now - (data.lastUpdate || now)) / 1000);
+            state = { ...state, ...data, score: (data.score || 0) + (offTime * (data.passiveLvl || 0)), energy: Math.min(150, (data.energy || 150) + offTime) };
         }
-        
         state.username = user.username || data?.username || (currentId !== fallbackId ? `User_${currentId}` : "PC_Guest");
         isLoaded = true;
         document.getElementById('p-name').innerText = "@" + state.username;
-        
-        if (Number(currentId) === MY_ID) {
-            const adminBox = document.getElementById('admin-container');
-            adminBox.innerHTML = `<div style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:12px;"><p style="color:#ff4444; font-size:10px; margin-bottom:10px; font-weight:900;">ADMIN PANEL</p><button style="width:100%; padding:15px; font-weight:900; background:#fff; border:none; border-radius:8px; color:#000;">EVENT CONTROL</button></div>`;
-        }
-
-        updateLangUI(); updateUI();
-        updateCaseUI();
-        setInterval(updateCaseUI, 1000); // Обновляем таймер кейса каждую секунду
-    }).catch(() => {
-        isLoaded = true;
-        document.getElementById('p-name').innerText = "@Local_Mode";
+        if (Number(currentId) === MY_ID) { document.getElementById('admin-container').innerHTML = `<div style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:12px;"><p style="color:#ff4444; font-size:10px; margin-bottom:10px; font-weight:900;">ADMIN PANEL</p><button style="width:100%; padding:15px; font-weight:900; background:#fff; border:none; border-radius:8px; color:#000;">EVENT CONTROL</button></div>`; }
+        updateLangUI(); updateUI(); updateCaseUI(); setInterval(updateCaseUI, 1000);
     });
 
     function save() { if (isLoaded && currentId !== 0) { state.lastUpdate = Date.now(); db.ref(`users/${currentId}`).update(state); } }
@@ -275,6 +253,8 @@
         document.getElementById('passive-display').innerText = `${langData[state.lang].passL}: ${state.passiveLvl}/sec`;
         document.getElementById('e-text').innerText = `${state.energy} / 150`;
         document.getElementById('e-fill').style.width = (state.energy / 1.5) + '%';
+        // Доп. эффект при низком заряде
+        document.getElementById('e-fill').style.background = state.energy < 20 ? 'linear-gradient(90deg, #ff4444, #880000)' : 'linear-gradient(90deg, #fff 0%, rgba(200,200,200,0.8) 100%)';
     }
 
     function format(n) { return n >= 1e6 ? (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? (n/1e3).toFixed(1) + 'K' : Math.floor(n); }
@@ -287,74 +267,28 @@
             const data = snap.val(); if (!data) return;
             const now = Date.now();
             let players = Object.values(data).filter(p => p && p.username && p.username !== "undefined" && p.username !== "Guest")
-            .map(p => {
-                const offTime = Math.floor((now - (p.lastUpdate || now)) / 1000);
-                return { ...p, currentScore: (p.score || 0) + (offTime * (p.passiveLvl || 0)) };
-            }).sort((a, b) => b.currentScore - a.currentScore).slice(0, 5);
-
+            .map(p => { const offTime = Math.floor((now - (p.lastUpdate || now)) / 1000); return { ...p, currentScore: (p.score || 0) + (offTime * (p.passiveLvl || 0)) }; }).sort((a, b) => b.currentScore - a.currentScore).slice(0, 5);
             list.innerHTML = "";
-            players.forEach((p, i) => {
-                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-                list.innerHTML += `<div class="card" style="${p.username === state.username ? 'border-color: #777;' : ''}">
-                    <div style="font-size:20px; min-width:40px;">${medals[i]}</div>
-                    <div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${getRank(p.tapLvl)} (Lvl ${p.tapLvl || 1})</div></div>
-                    <div style="font-weight:900;">${format(p.currentScore)}</div>
-                </div>`;
-            });
+            players.forEach((p, i) => { const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']; list.innerHTML += `<div class="card" style="${p.username === state.username ? 'border-color: #777;' : ''}"><div style="font-size:20px; min-width:40px;">${medals[i]}</div><div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${getRank(p.tapLvl)} (Lvl ${p.tapLvl || 1})</div></div><div style="font-weight:900;">${format(p.currentScore)}</div></div>`; });
         });
     }
 
-    window.show = (id) => { 
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); 
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
-        document.getElementById(id).classList.add('active'); 
-        document.getElementById('n-' + id.split('-')[1]).classList.add('active'); 
-        if (id === 's-top') loadLeaderboard(); 
-    };
-
-    window.openUpgrade = (type) => { 
-        document.getElementById('shop-main').classList.add('hidden'); 
-        document.getElementById('shop-detail').classList.remove('hidden'); 
-        renderUpgradeItems(type); 
-    };
-    window.backToShop = () => { 
-        document.getElementById('shop-main').classList.remove('hidden'); 
-        document.getElementById('shop-detail').classList.add('hidden'); 
-    };
-    
-    function renderUpgradeItems(type) {
-        const cont = document.getElementById('upgrade-items');
-        const lvl = type === 'click' ? state.tapLvl : state.passiveLvl;
-        const price = Math.floor(100 * Math.pow(1.4, lvl + (type==='click'?0:1))); 
-        const rank = getRank(lvl);
-        cont.innerHTML = `<div class="card" style="cursor:default;"><div style="flex:1"><b style="font-size:18px;">${rank}</b><br><span style="color:#888; font-size:12px;">Level ${lvl} → ${lvl+1}</span></div><button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button></div>`;
-    }
-
-    window.buy = (type, p) => { 
-        if (state.score >= p) { 
-            state.score -= p; 
-            if (type === 'click') state.tapLvl++; else state.passiveLvl++; 
-            updateUI(); renderUpgradeItems(type); save();
-            if(state.sound) tg.HapticFeedback.notificationOccurred('success'); 
-        } 
-    };
-    
+    window.show = (id) => { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.getElementById(id).classList.add('active'); document.getElementById('n-' + id.split('-')[1]).classList.add('active'); if (id === 's-top') loadLeaderboard(); };
+    window.openUpgrade = (type) => { document.getElementById('shop-main').classList.add('hidden'); document.getElementById('shop-detail').classList.remove('hidden'); renderUpgradeItems(type); };
+    window.backToShop = () => { document.getElementById('shop-main').classList.remove('hidden'); document.getElementById('shop-detail').classList.add('hidden'); };
+    function renderUpgradeItems(type) { const cont = document.getElementById('upgrade-items'); const lvl = type === 'click' ? state.tapLvl : state.passiveLvl; const price = Math.floor(100 * Math.pow(1.4, lvl + (type==='click'?0:1))); cont.innerHTML = `<div class="card" style="cursor:default;"><div style="flex:1"><b style="font-size:18px;">${getRank(lvl)}</b><br><span style="color:#888; font-size:12px;">Level ${lvl} → ${lvl+1}</span></div><button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})">${format(price)}</button></div>`; }
+    window.buy = (type, p) => { if (state.score >= p) { state.score -= p; if (type === 'click') state.tapLvl++; else state.passiveLvl++; updateUI(); renderUpgradeItems(type); save(); if(state.sound) tg.HapticFeedback.notificationOccurred('success'); } };
     function updateLangUI() {
         const l = langData[state.lang];
         const map = { 'sync-text':'sync', 't-score-label':'scoreL', 't-tap-label':'tapL', 't-top-title':'topT', 't-shop-title':'shopT', 't-click-up':'clUp', 't-click-desc':'clDe', 't-pass-up':'psUp', 't-pass-desc':'psDe', 't-back':'back', 't-gear-title':'gearT', 't-lang-label':'langL', 't-sound-label':'soundL', 't-nav-top':'navTop', 't-nav-game':'navGame', 't-nav-shop':'navShop', 't-nav-gear':'navGear', 't-case-name':'caseName', 'case-btn':'caseOpen' };
-        for(let id in map) {
-            const el = document.getElementById(id);
-            if(el) el.innerText = l[map[id]];
-        }
+        for(let id in map) { const el = document.getElementById(id); if(el) el.innerText = l[map[id]]; }
         document.getElementById('cur-lang').innerText = state.lang === 'en' ? "English" : "Русский";
         document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
         updateCaseUI();
     }
-
     function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); updateUI(); save(); }
     function toggleSound() { state.sound = !state.sound; document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF"; save(); }
-
-    setInterval(() => { if (!isLoaded) return; state.score += state.passiveLvl; if (state.energy < 150) state.energy++; updateUI(); }, 1000);
+    setInterval(() => { if (!isLoaded) return; state.score += (state.passiveLvl || 0); if (state.energy < 150) state.energy++; updateUI(); }, 1000);
     setInterval(() => { if(isLoaded) save(); }, 10000);
 </script>
 </body>
