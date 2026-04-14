@@ -15,13 +15,8 @@
         #loading-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            transition: opacity 0.5s ease;
+            background: #000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.5s ease;
         }
         .loader-logo { width: 150px; height: 150px; margin-bottom: 30px; object-fit: contain; }
         .loader-bar { width: 180px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; position: relative; }
@@ -165,11 +160,9 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // Включаем подтверждение при закрытии, чтобы успеть сохранить данные
-    tg.enableClosingConfirmation();
-
     const MY_ID = 5291965471;
     const user = tg.initDataUnsafe?.user || { id: 0, username: "Guest" };
+    const currentId = user.id || 999999;
     
     let isLoaded = false;
     let leaderboardInterval = null;
@@ -180,6 +173,7 @@
         ru: { sync: "В СЕТИ", scoreL: "СЧЕТ", tapL: "ТАПАЙ ЧТОБЫ ЗАРАБОТАТЬ", passL: "Пассив", topT: "ТОП 5 ДЖУГЕРОВ", shopT: "МАГАЗИН", clUp: "ПРОКАЧКА КЛИКА", clDe: "Увеличить доход за тап", psUp: "ПАССИВНЫЙ ДОХОД", psDe: "Автоматический доход", back: "НАЗАД", gearT: "МЕНЮ", langL: "Язык", soundL: "Звук", navTop: "ТОП", navGame: "ИГРА", navShop: "МАГАЗИН", navGear: "МЕНЮ", ranks: ["Нуб Джугер", "Обычный Джугер", "Про Джугер", "Хакер Джугер", "Бог Джугер"], caseName: "ДНЕВНОЙ КЕЙС", caseOpen: "ОТКРЫТЬ", caseReady: "Можно открыть!" }
     };
 
+    // ЧАСТИЦЫ ФОНА
     const canvas = document.getElementById('particleCanvas');
     const ctx = canvas.getContext('2d');
     let bgParticles = [];
@@ -190,6 +184,7 @@
     function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); bgParticles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
     animate();
 
+    // ТАПЫ
     const tapBtn = document.getElementById('tapBtn');
     tapBtn.addEventListener('pointerdown', (e) => {
         if (!isLoaded || state.energy <= 0) return;
@@ -204,6 +199,7 @@
     });
     window.addEventListener('pointerup', () => tapBtn.classList.remove('is-active'));
 
+    // КЕЙС
     function updateCaseUI() {
         const btn = document.getElementById('case-btn');
         const status = document.getElementById('case-status');
@@ -218,7 +214,6 @@
             status.innerText = `${h}h ${m}m ${s}s`; status.style.color = "#555";
         }
     }
-
     window.openDailyCase = () => {
         const now = Date.now();
         if (now < (state.lastCaseTime || 0) + (24 * 60 * 60 * 1000)) return;
@@ -229,39 +224,7 @@
         updateUI(); updateCaseUI(); save();
     };
 
-    const fallbackId = 999999;
-    const currentId = (user && user.id) ? user.id : fallbackId;
-    
-    // ИНИЦИАЛИЗАЦИЯ
-    db.ref(`users/${currentId}`).once('value', (snap) => {
-        const data = snap.val();
-        if (data) {
-            const now = Date.now(); 
-            // Считаем время отсутствия (в секундах)
-            const offTime = Math.floor((now - (data.lastUpdate || now)) / 1000);
-            
-            // Начисляем пассивный доход
-            const offlinePassive = offTime * (data.passiveLvl || 0);
-            
-            // Начисляем энергию (1 энергия в секунду, максимум до 150)
-            const currentEnergy = Math.min(150, (data.energy || 150) + offTime);
-
-            state = { 
-                ...state, 
-                ...data, 
-                score: (data.score || 0) + offlinePassive, 
-                energy: currentEnergy 
-            };
-        }
-        state.username = user.username || data?.username || (currentId !== fallbackId ? `User_${currentId}` : "PC_Guest");
-        isLoaded = true;
-        const loader = document.getElementById('loading-screen');
-        if (loader) { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 500); }
-        document.getElementById('p-name').innerText = "@" + state.username;
-        updateLangUI(); updateUI(); updateCaseUI(); setInterval(updateCaseUI, 1000);
-    });
-
-    // Функция сохранения
+    // ФУНКЦИЯ СОХРАНЕНИЯ
     function save() { 
         if (isLoaded && currentId !== 0) { 
             state.lastUpdate = Date.now(); 
@@ -269,9 +232,38 @@
         } 
     }
 
-    // МГНОВЕННОЕ СОХРАНЕНИЕ ПРИ ЗАКРЫТИИ (Telegram Web App)
-    tg.onEvent('viewportChanged', save); // На случай сворачивания
-    window.addEventListener('beforeunload', save);
+    // ЗАГРУЗКА ДАННЫХ
+    db.ref(`users/${currentId}`).once('value', (snap) => {
+        const data = snap.val();
+        if (data) {
+            const now = Date.now(); 
+            const offTime = Math.floor((now - (data.lastUpdate || now)) / 1000);
+            state = { 
+                ...state, 
+                ...data, 
+                score: (data.score || 0) + (offTime * (data.passiveLvl || 0)), 
+                energy: Math.min(150, (data.energy || 150) + offTime) 
+            };
+        }
+        state.username = user.username || data?.username || `User_${currentId}`;
+        isLoaded = true;
+        document.getElementById('loading-screen').style.opacity = '0';
+        setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 500);
+        document.getElementById('p-name').innerText = "@" + state.username;
+        
+        // ВОЗВРАТ АДМИН ПАНЕЛИ
+        if (Number(currentId) === MY_ID) { 
+            document.getElementById('admin-container').innerHTML = `
+            <div style="width:100%; border:1px solid #ff4444; padding:15px; border-radius:12px; margin-top:20px;">
+                <p style="color:#ff4444; font-size:10px; margin-bottom:10px; font-weight:900;">ADMIN PANEL</p>
+                <button onclick="alert('Admin Event: Passive x2')" style="width:100%; padding:15px; font-weight:900; background:#fff; border:none; border-radius:8px; color:#000;">EVENT CONTROL</button>
+            </div>`; 
+        }
+        
+        updateLangUI(); updateUI(); updateCaseUI(); setInterval(updateCaseUI, 1000);
+    });
+
+    // СОХРАНЕНИЕ ПРИ ВЫХОДЕ (БЕЗ УВЕДОМЛЕНИЙ)
     window.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') save(); });
 
     function updateUI() {
@@ -279,7 +271,6 @@
         document.getElementById('passive-display').innerText = `${langData[state.lang].passL}: ${state.passiveLvl}/sec`;
         document.getElementById('e-text').innerText = `${state.energy} / 150`;
         document.getElementById('e-fill').style.width = (state.energy / 1.5) + '%';
-        document.getElementById('e-fill').style.background = state.energy < 20 ? 'linear-gradient(90deg, #ff4444, #880000)' : 'linear-gradient(90deg, #fff 0%, rgba(200,200,200,0.8) 100%)';
     }
 
     function format(n) { return n >= 1e6 ? (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? (n/1e3).toFixed(1) + 'K' : Math.floor(n); }
@@ -287,11 +278,10 @@
 
     function loadLeaderboard() {
         const list = document.getElementById('leaderboard-list');
-        if (list.innerHTML === "") list.innerHTML = "<p style='text-align:center; color:#555;'>Syncing...</p>";
         db.ref('users').once('value', (snap) => {
             const data = snap.val(); if (!data) return;
             const now = Date.now();
-            let players = Object.values(data).filter(p => p && p.username && p.username !== "undefined" && p.username !== "Guest")
+            let players = Object.values(data).filter(p => p && p.username && p.username !== "Guest")
             .map(p => { 
                 const offTime = Math.floor((now - (p.lastUpdate || now)) / 1000); 
                 return { ...p, currentScore: (p.score || 0) + (offTime * (p.passiveLvl || 0)) }; 
@@ -326,15 +316,7 @@
     function toggleLang() { state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); updateUI(); save(); }
     function toggleSound() { state.sound = !state.sound; document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF"; save(); }
     
-    // Ежесекундное обновление
-    setInterval(() => { 
-        if (!isLoaded) return; 
-        state.score += (state.passiveLvl || 0); 
-        if (state.energy < 150) state.energy++; 
-        updateUI(); 
-    }, 1000);
-
-    // Фоновое сохранение раз в 10 секунд
+    setInterval(() => { if (!isLoaded) return; state.score += (state.passiveLvl || 0); if (state.energy < 150) state.energy++; updateUI(); }, 1000);
     setInterval(() => { if(isLoaded) save(); }, 10000);
 </script>
 </body>
