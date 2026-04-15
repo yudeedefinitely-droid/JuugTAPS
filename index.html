@@ -292,7 +292,7 @@ margin-bottom:20px; font-weight:900;">GEAR</h2>
     ];
     let currentTrackIndex = Math.floor(Math.random() * bgTracks.length); // Рандомный трек при старте
     const bgMusic = new Audio();
-    bgMusic.volume = 0.02; // Очень тихая фоновая музыка (2%)
+    bgMusic.volume = 0.005; // Очень тихая фоновая музыка (2%)
 
     function playNextTrack() {
         if (!state.sound) return;
@@ -303,9 +303,9 @@ margin-bottom:20px; font-weight:900;">GEAR</h2>
     bgMusic.onended = playNextTrack;
 
     // Звуки эффектов (SFX)
-    const sfxTap = new Audio('sounds/tap.mp3'); sfxTap.volume = 0.6;
-    const sfxBuy = new Audio('sounds/buy.mp3'); sfxBuy.volume = 0.8;
-    const sfxBtn = new Audio('sounds/btn.mp3'); sfxBtn.volume = 0.6;
+    const sfxTap = new Audio('sounds/tap.mp3'); sfxTap.volume = 0.2;
+    const sfxBuy = new Audio('sounds/buy.mp3'); sfxBuy.volume = 0.4;
+    const sfxBtn = new Audio('sounds/btn.mp3'); sfxBtn.volume = 0.2;
 
     function playSound(type) {
         if (!state.sound) return;
