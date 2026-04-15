@@ -354,11 +354,11 @@ const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 if (diff < 86400000) {
                 const h = Math.floor((diff / 3600000) % 24);
 const m = Math.floor((diff / 60000) % 60); const s = Math.floor((diff / 1000) % 60);
-sync.innerText = `END IN: ${h}h ${m}m ${s}s`; sync.style.color = "var(--red)";
+sync.innerText = `END IN: ${h}h ${m}m ${s}s`; sync.style.color = "#555";
 } else {
                 const months = Math.floor(days / 30);
 const remDays = days % 30;
-                sync.innerText = `EVENT: ${months}M ${remDays}D`; sync.style.color = "var(--green)";
+                sync.innerText = `EVENT: ${months}M ${remDays}D`; sync.style.color = "#555";
 }
         } else {
             sync.innerText = "ИВЕНТ ЗАКРЫТ";
