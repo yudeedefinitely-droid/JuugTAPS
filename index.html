@@ -18,9 +18,7 @@
         .loader-progress { width: 60%; height: 100%; background: #fff; box-shadow: 0 0 15px #fff; position: absolute; animation: loadAnim 1.5s infinite ease-in-out; }
         @keyframes loadAnim { 0% { left: -100%; } 100% { left: 100%; } }
 
-        /* Техперерыв */
         #maint-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; }
-
         #particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
         #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; position: relative; height: 100%; z-index: 1; overflow: hidden; }
 
@@ -38,15 +36,16 @@
         .tap-effect { position: absolute; pointer-events: none; color: #fff; font-weight: 900; font-size: 26px; animation: floatUp 0.6s ease-out forwards; z-index: 10; }
         @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120px); opacity: 0; } }
 
-        /* КРАСИВАЯ ПОЛОСКА ЭНЕРГИИ */
         .energy-box { width: 100%; text-align: center; margin-bottom: 20px; position: relative; }
-        .bar-bg { height: 26px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 13px; margin: 15px 0; overflow: hidden; position: relative; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
-        #e-fill { height: 100%; width: 100%; background: linear-gradient(90deg, var(--green) 0%, #00b3ff 100%); transition: width 0.2s ease-out; box-shadow: 0 0 15px rgba(0,255,136,0.4); border-radius: 13px; }
-        #e-text { position: absolute; width: 100%; left: 0; top: 50%; transform: translateY(-50%); font-size: 11px; font-weight: 900; letter-spacing: 1px; color: var(--w); text-shadow: 0 1px 3px rgba(0,0,0,0.8); z-index: 10; }
+        /* ЧБ стильная полоска энергии */
+        .bar-bg { height: 24px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; margin: 15px 0; overflow: hidden; position: relative; backdrop-filter: blur(5px); }
+        #e-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #555 0%, #fff 100%); transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 0 10px rgba(255,255,255,0.3); position: relative; }
+        #e-text { position: absolute; width: 100%; left: 0; top: 50%; transform: translateY(-50%); font-size: 10px; font-weight: 900; letter-spacing: 1px; color: var(--w); text-shadow: 0 0 5px #000; z-index: 10; mix-blend-mode: difference; }
 
         .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 18px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
         .card:active { transform: scale(0.98); background: #151515; }
         .card.special { border: 1px solid rgba(255,255,255,0.3); background: linear-gradient(145deg, #111, #050505); }
+        .card.stars { border: 1px solid #ffd700; background: linear-gradient(145deg, #221d00, #000); }
         .case-icon { font-size: 24px; margin-right: 15px; }
         .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 900; min-width: 80px; cursor: pointer; }
         .buy-btn:disabled { background: #333; color: #555; cursor: not-allowed; }
@@ -59,7 +58,6 @@
         
         .settings-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 12px; border: 1px solid var(--sg); background: var(--g); color: #fff; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
 
-        /* Admin Modal */
         #admin-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .admin-content { background: #111; width: 100%; max-width: 400px; border-radius: 20px; padding: 20px; border: 1px solid #333; max-height: 80vh; overflow-y: auto; }
         .admin-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 10px; border: none; font-weight: 800; cursor: pointer; color: #fff; }
@@ -67,49 +65,45 @@
         .btn-danger { background: var(--red); }
         .btn-neutral { background: #222; }
 
-        /* КРАСИВАЯ ТАБЛИЦА ПОБЕДИТЕЛЕЙ (Glassmorphism) */
+        /* Таблица Победителей */
         #winners-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); z-index: 25000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .winners-content { background: rgba(20, 20, 20, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 30px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.6); color: #fff; }
         .winner-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 16px; font-weight: 700; }
         .winner-row:last-child { border: none; }
         #show-winners-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 15px; border-radius: 12px; width: 100%; margin-bottom: 20px; font-weight: 800; display: none; cursor: pointer; backdrop-filter: blur(5px); }
+        
+        .my-rank-row { background: rgba(255,255,255,0.1); border: 1px solid #fff; border-radius: 12px; margin-top: 15px; padding: 15px; display: flex; justify-content: space-between; font-weight: 900; }
     </style>
 </head>
 <body>
 
 <div id="loading-screen">
-    <img src="data:image/png;base64,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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABhgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABS2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABTywAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABzzx0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACTzyyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQwAAAAAAAAAAAAAAADzzzzwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQyQAAAAAAAAAAAAABjzzzzzkgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABDyyQAAAAAAAAAAAADzzzzzywAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATzyzwgAAAAAAAAABBzzzzzzwEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADzzzzwyQAAAAAAAABTzzzzzzywgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADjzzzzywwAAAAAAADzzzzzzzzzwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABTzzzzzygAAAAAABRTzzzzzzzxSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABTzzzzzywAAAAAABzzzzzzzzzwgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARTzzzzzyQAAAAAAAzzzzzzzzhgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADTzzzzzyAAAAAAAADDzzzzzzAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABDjTzzzygAAAAAAABRTzzzzyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBTTzzyAAAAAAAAADTTzzxAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABDTzwgAAAAAAAABDDTyCgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADDSyAAAAAAAAAQBhTwwQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAwgAAAAhjzyzzzzzxwQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADxzzzzzzzDzzzyggAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADzzzzzzzzzzzzzzywwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABRzzzzzzzzzzzzzzzwwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADTzzzzzzzzyjTzzzzzygAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADzzzzzzzzzzzzzzzzzzwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABzzzzzzzzBjTzzzzzzzzwgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASTzzzzzzwBCzzwzzzzzzzwgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjzzzjDRAAAABDzzzzzzzyggAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABDTzBCCAAAAAAADTDTzzzzzygAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADBAAAAAAAAAAAAADRzzzzzzxwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADjzzzzywAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABRzzzzyyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATDzzzwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABRjzzzAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADRDzwwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBDywgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABDjygAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABCQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/xAAWEQADAAAAAAAAAAAAAAAAAAABoMD/2gAIAQMBAT8QdgMNB//EABQRAQAAAAAAAAAAAAAAAAAAAMD/2gAIAQIBAT8QSAf/xAAqEAEAAgECBQQDAAMBAQAAAAABABEhMUEwQGBhcCBR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" alt="Logo" class="loader-logo" id="logo-img">
     <div class="loader-bar"><div class="loader-progress"></div></div>
 </div>
 
 <div id="maint-screen">
     <h1 style="font-size: 50px;">🔧</h1>
     <h2 style="margin: 15px 0;">ТЕХ ПЕРЕРЫВ</h2>
-    <p style="color: #666;">Извините, мы проводим технические работы.<br>Скоро вернемся!</p>
 </div>
 
 <div id="winners-popup">
     <div class="winners-content">
-        <h2 style="margin-bottom: 10px; font-weight: 900; letter-spacing: 1px; color: var(--green);">🏆 ИВЕНТ ЗАВЕРШЕН</h2>
-        <p style="font-size: 14px; color: #aaa; margin-bottom: 20px;">Наши чемпионы:</p>
+        <h2 style="margin-bottom: 10px; font-weight: 900; letter-spacing: 1px; color: var(--w);">🏆 EVENT CHAMPIONS</h2>
         <div id="winners-list" style="margin-bottom: 25px;"></div>
-        <button class="admin-btn btn-start" style="color:#000; box-shadow: 0 0 15px var(--green);" onclick="playSound('btn'); document.getElementById('winners-popup').style.display='none'">КРУТО!</button>
+        <button class="admin-btn btn-start" style="color:#000; background:#fff; box-shadow: 0 0 15px #fff;" onclick="playSound('btn'); document.getElementById('winners-popup').style.display='none'">AWESOME!</button>
     </div>
 </div>
 
 <div id="admin-modal">
     <div class="admin-content">
-        <h3 style="margin-bottom: 20px; text-align: center; letter-spacing: 2px;">ADMIN PANEL</h3>
+        <h3 style="margin-bottom: 20px; text-align: center;">ADMIN PANEL</h3>
         <button id="event-toggle-btn" class="admin-btn btn-start" onclick="toggleEvent()">НАЧАТЬ ИВЕНТ</button>
-        <button class="admin-btn btn-danger" onclick="adminClearWinners()">ОЧИСТИТЬ ПОБЕДИТЕЛЕЙ И ЗАКРЫТЬ ИВЕНТ</button>
-        <button id="event-rush-btn" class="admin-btn btn-neutral hidden" onclick="rushEvent()">ЗАКОНЧИТЬ ДОСРОЧНО</button>
+        <button class="admin-btn btn-danger" onclick="adminClearWinners()">ОЧИСТИТЬ ПОБЕДИТЕЛЕЙ (СБРОС)</button>
         <button class="admin-btn btn-neutral" onclick="toggleMaint()">ТЕХ ПЕРЕРЫВ: <span id="maint-status">OFF</span></button>
         <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
         <button class="admin-btn btn-danger" onclick="resetAllPlayers()">ОБНУЛИТЬ ВСЕХ ИГРОКОВ</button>
-        
         <div style="background: #222; padding: 15px; border-radius: 12px; margin-top: 10px;">
-            <p style="font-size: 10px; margin-bottom: 8px; font-weight: 800; color: #888;">СБРОС ПО USERNAME</p>
-            <input type="text" id="target-user" placeholder="username без @" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius:8px; margin-bottom:10px; outline: none;">
+            <input type="text" id="target-user" placeholder="username" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius:8px; margin-bottom:10px; outline: none;">
             <button class="admin-btn btn-neutral" style="margin:0; background: #333;" onclick="resetSpecificPlayer()">ОБНУЛИТЬ</button>
         </div>
         <button class="admin-btn btn-neutral" style="margin-top:20px;" onclick="closeAdmin()">ЗАКРЫТЬ</button>
@@ -120,10 +114,7 @@
 
 <div id="app">
     <section id="s-game" class="screen active">
-        <div class="header">
-            <span id="p-name">@loading</span>
-            <span id="sync-text" style="color: #555 !important;">ИВЕНТ ЗАКРЫТ</span>
-        </div>
+        <div class="header"><span id="p-name">@loading</span><span id="sync-text">ИВЕНТ ЗАКРЫТ</span></div>
         <p id="t-score-label" style="font-size:10px; font-weight:800; letter-spacing:3px; color: #444;">SCORE</p>
         <div id="score">0</div>
         <div id="passive-display" style="color:#666; font-size:11px; font-weight:800; margin-top: 5px;">Passive: 0/sec</div>
@@ -138,14 +129,21 @@
     </section>
 
     <section id="s-top" class="screen">
-        <h2 id="t-top-title" style="align-self:flex-start; margin-bottom:20px; font-weight:900;">TOP JUUG'ERS</h2>
+        <h2 id="t-top-title" style="align-self:flex-start; margin-bottom:20px; font-weight:900;">TOP 5 JUUG'ERS</h2>
         <button id="show-winners-btn" onclick="showWinnersManual()">🏆 LAST WINNERS</button>
         <div id="leaderboard-list" style="width:100%;"></div>
+        <div id="my-rank-container" style="width:100%;"></div>
     </section>
 
     <section id="s-shop" class="screen">
         <h2 id="t-shop-title" style="align-self:flex-start; margin-bottom:20px; font-weight:900;">SHOP</h2>
         <div id="shop-main" style="width:100%;">
+            
+            <div class="card stars" onclick="buyStars()">
+                <div style="flex:1"><b id="t-stars-up" style="font-size: 18px; font-weight: 900; color:#ffd700;">BUY 5M POINTS</b><br><span style="font-size:12px; color:#888;">Instant boost</span></div>
+                <button class="buy-btn" style="background:#ffd700; color:#000;">50 ⭐️</button>
+            </div>
+
             <div class="card special" id="case-card" onclick="openDailyCase()">
                 <div style="display:flex; align-items:center;">
                     <div class="case-icon">📦</div>
@@ -154,19 +152,22 @@
                 <button class="buy-btn" id="case-btn">OPEN</button>
             </div>
             
-            <div class="card" onclick="openUpgrade('click')" style="background: linear-gradient(145deg, #1a1a1a, #0f0f0f); border: 1px solid #333; padding: 20px; border-radius: 16px;">
-                <div style="flex:1"><b id="t-click-up" style="font-size: 18px; font-weight: 900; letter-spacing: -0.5px;">CLICK UPGRADES</b><br><span id="t-click-desc" style="font-size:12px; color:#888; font-weight: 600;">Increase tap income</span></div>
-                <span style="color: var(--green); font-size: 20px; font-weight: 900;">➔</span>
+            <div class="card" onclick="openUpgrade('click')">
+                <div style="flex:1"><b id="t-click-up" style="font-size: 18px; font-weight: 900;">CLICK UPGRADES</b><br><span id="t-click-desc" style="font-size:12px; color:#888;">Increase tap income</span></div>
+                <span style="color: var(--w); font-size: 20px; font-weight: 900;">➔</span>
             </div>
-            <div class="card" onclick="openUpgrade('passive')" style="background: linear-gradient(145deg, #1a1a1a, #0f0f0f); border: 1px solid #333; padding: 20px; border-radius: 16px;">
-                <div style="flex:1"><b id="t-pass-up" style="font-size: 18px; font-weight: 900; letter-spacing: -0.5px;">PASSIVE INCOME</b><br><span id="t-pass-desc" style="font-size:12px; color:#888; font-weight: 600;">Automatic income</span></div>
-                <span style="color: var(--green); font-size: 20px; font-weight: 900;">➔</span>
+            <div class="card" onclick="openUpgrade('passive')">
+                <div style="flex:1"><b id="t-pass-up" style="font-size: 18px; font-weight: 900;">PASSIVE INCOME</b><br><span id="t-pass-desc" style="font-size:12px; color:#888;">Automatic income</span></div>
+                <span style="color: var(--w); font-size: 20px; font-weight: 900;">➔</span>
             </div>
-            <div class="card" onclick="openUpgrade('energy')" style="background: linear-gradient(145deg, #1a1a1a, #0f0f0f); border: 1px solid #333; padding: 20px; border-radius: 16px;">
-                <div style="flex:1"><b id="t-energy-up" style="font-size: 18px; font-weight: 900; letter-spacing: -0.5px;">MAX STAMINA</b><br><span id="t-energy-desc" style="font-size:12px; color:#888; font-weight: 600;">More taps per session</span></div>
-                <span style="color: var(--green); font-size: 20px; font-weight: 900;">➔</span>
+            <div class="card" onclick="openUpgrade('energy')">
+                <div style="flex:1"><b id="t-nrg-up" style="font-size: 18px; font-weight: 900;">MAX STAMINA</b><br><span id="t-nrg-desc" style="font-size:12px; color:#888;">Increase energy cap</span></div>
+                <span style="color: var(--w); font-size: 20px; font-weight: 900;">➔</span>
             </div>
-
+            <div class="card" onclick="openUpgrade('regen')">
+                <div style="flex:1"><b id="t-reg-up" style="font-size: 18px; font-weight: 900;">STAMINA REGEN</b><br><span id="t-reg-desc" style="font-size:12px; color:#888;">Faster recovery</span></div>
+                <span style="color: var(--w); font-size: 20px; font-weight: 900;">➔</span>
+            </div>
         </div>
         <div id="shop-detail" class="hidden" style="width:100%;">
             <button id="t-back" onclick="backToShop()" style="background:none; border:none; color:#fff; font-weight:800; margin-bottom:15px; cursor:pointer; display:flex; align-items:center; gap:5px;">← BACK</button>
@@ -175,7 +176,10 @@
     </section>
 
     <section id="s-gear" class="screen">
-        <h2 id="t-gear-title" style="align-self:flex-start; margin-bottom:20px; font-weight:900;">GEAR</h2>
+        <h2 id="t-gear-title" style="align-self:flex-start; margin-bottom:20px; font-weight:900;">SETTINGS</h2>
+        <div class="settings-btn" style="cursor:pointer" onclick="copyRefLink()">
+            <span id="t-ref-label">Referral Link</span><span style="color:#888">COPY</span>
+        </div>
         <button class="settings-btn" onclick="toggleLang()">
             <span id="t-lang-label">Language</span><span id="cur-lang" style="color:#888">English</span>
         </button>
@@ -189,7 +193,7 @@
         <div class="nav-item" id="n-top" onclick="show('s-top')"><span>🏆</span><p id="t-nav-top">TOP</p></div>
         <div class="nav-item active" id="n-game" onclick="show('s-game')"><span>💎</span><p id="t-nav-game">GAME</p></div>
         <div class="nav-item" id="n-shop" onclick="show('s-shop')"><span>🛒</span><p id="t-nav-shop">SHOP</p></div>
-        <div class="nav-item" id="n-gear" onclick="show('s-gear')"><span>⚙️</span><p id="t-nav-gear">GEAR</p></div>
+        <div class="nav-item" id="n-gear" onclick="show('s-gear')"><span>⚙️</span><p id="t-nav-gear">SETTINGS</p></div>
     </nav>
 </div>
 
@@ -209,49 +213,37 @@
     tg.expand();
 
     // ==========================================
-    // ОПТИМИЗИРОВАННАЯ ЛОГИКА МУЗЫКИ И ЗВУКОВ
+    // ОПТИМИЗИРОВАННАЯ МУЗЫКА И ЗВУКИ
     // ==========================================
-    const bgTracks = [
-        'music/track1.mp3', 'music/track2.mp3', 'music/track3.mp3', 
-        'music/track4.mp3', 'music/track5.mp3', 'music/track6.mp3', 
-        'music/track7.mp3', 'music/track8.mp3', 'music/track9.mp3', 
-        'music/track10.mp3'
-    ];
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    const bgTracks = ['music/track1.mp3', 'music/track2.mp3', 'music/track3.mp3'];
     let currentTrackIndex = Math.floor(Math.random() * bgTracks.length);
     const bgMusic = new Audio();
-    bgMusic.volume = 0.02;
+    bgMusic.volume = 0.05;
 
     function playNextTrack() {
-        if (!state.sound) return;
+        if (!state.sound || isMobile) return; // На мобилках фоновую музыку отключаем для оптимизации
         currentTrackIndex = Math.floor(Math.random() * bgTracks.length);
         bgMusic.src = bgTracks[currentTrackIndex];
-        bgMusic.play().catch(e => console.log("Autoplay waiting"));
+        bgMusic.play().catch(()=>{});
     }
     bgMusic.onended = playNextTrack;
 
-    // ПУЛ АУДИО ДЛЯ ТАПА (Искореняет лаги при быстрых кликах)
-    const tapPool = [];
-    for(let i=0; i<5; i++) {
-        let a = new Audio('sounds/tap.mp3');
-        a.volume = 0.5;
-        tapPool.push(a);
-    }
-    let tapPoolIdx = 0;
+    // SFX (Легкие звуки)
+    const sfxTap = new Audio('sounds/tap.mp3');
+    const sfxBuy = new Audio('sounds/buy.mp3');
+    const sfxBtn = new Audio('sounds/btn.mp3');
 
-    const sfxBuy = new Audio('sounds/buy.mp3'); sfxBuy.volume = 0.8;
-    const sfxBtn = new Audio('sounds/btn.mp3'); sfxBtn.volume = 0.6;
-
+    // ОПТИМИЗАЦИЯ: Легкое воспроизведение без лагов
     function playSound(type) {
         if (!state.sound) return;
-        if (type === 'tap') {
-            tapPool[tapPoolIdx].currentTime = 0;
-            tapPool[tapPoolIdx].play().catch(()=>{});
-            tapPoolIdx = (tapPoolIdx + 1) % 5;
-        } else {
-            let audio = type === 'buy' ? sfxBuy : sfxBtn;
+        try {
+            let audio = type === 'tap' ? sfxTap : type === 'buy' ? sfxBuy : sfxBtn;
             audio.currentTime = 0;
+            audio.volume = type === 'tap' ? 0.1 : 0.3; // Тихие звуки
             audio.play().catch(()=>{});
-        }
+        } catch(e){}
     }
     // ==========================================
 
@@ -261,20 +253,58 @@
     
     let isLoaded = false;
     let leaderboardInterval = null;
-    
-    // ДОБАВЛЕНО state.energyLvl И id
-    let state = { id: currentId, score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, energyLvl: 0, lastUpdate: Date.now(), lastCaseTime: 0, username: "Guest", lang: 'en', sound: true };
+    let state = { 
+        score: 0, energy: 150, tapLvl: 1, passiveLvl: 0, 
+        maxEnergyLvl: 0, regenLvl: 0, isInfiniteEnergy: false,
+        lastUpdate: Date.now(), lastCaseTime: 0, username: "Guest", lang: 'en', sound: true 
+    };
     let globalData = { eventEnd: 0, isMaint: false };
 
     const langData = {
-        en: { sync: "LIVE", scoreL: "SCORE", tapL: "TAP TO EARN", passL: "Passive", topT: "TOP JUUG'ERS", shopT: "SHOP", clUp: "CLICK UPGRADES", clDe: "Increase tap income", psUp: "PASSIVE INCOME", psDe: "Automatic income", enUp: "MAX STAMINA", enDe: "More taps per session", back: "BACK", gearT: "GEAR", langL: "Language", soundL: "Sound", navTop: "TOP", navGame: "GAME", navShop: "SHOP", navGear: "GEAR", ranks: ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"], caseName: "DAILY CASE", caseOpen: "OPEN", caseReady: "Ready to open!" },
-        ru: { sync: "В СЕТИ", scoreL: "СЧЕТ", tapL: "ТАПАЙ ЧТОБЫ ЗАРАБОТАТЬ", passL: "Пассив", topT: "ТОП ДЖУГЕРОВ", shopT: "МАГАЗИН", clUp: "ПРОКАЧКА КЛИКА", clDe: "Увеличить доход за тап", psUp: "ПАССИВНЫЙ ДОХОД", psDe: "Автоматический доход", enUp: "МАКС ЭНЕРГИЯ", enDe: "Больше тапов подряд", back: "НАЗАД", gearT: "МЕНЮ", langL: "Язык", soundL: "Звук", navTop: "ТОП", navGame: "ИГРА", navShop: "МАГАЗИН", navGear: "МЕНЮ", ranks: ["Нуб Джугер", "Обычный Джугер", "Про Джугер", "Хакер Джугер", "Бог Джугер"], caseName: "ДНЕВНОЙ КЕЙС", caseOpen: "ОТКРЫТЬ", caseReady: "Можно открыть!" }
+        en: { scoreL: "SCORE", tapL: "TAP TO EARN", passL: "Passive", topT: "TOP 5 JUUG'ERS", shopT: "SHOP", gearT: "SETTINGS", langL: "Language", soundL: "Sound", navTop: "TOP", navGame: "GAME", navShop: "SHOP", navGear: "SETTINGS" },
+        ru: { scoreL: "СЧЕТ", tapL: "ТАПАЙ ЧТОБЫ ЗАРАБОТАТЬ", passL: "Пассив", topT: "ТОП 5 ДЖУГЕРОВ", shopT: "МАГАЗИН", gearT: "НАСТРОЙКИ", langL: "Язык", soundL: "Звук", navTop: "ТОП", navGame: "ИГРА", navShop: "МАГАЗИН", navGear: "НАСТРОЙКИ" }
     };
 
-    // РАСЧЕТ МАКСИМАЛЬНОЙ ЭНЕРГИИ (150 -> 10000 -> Infinity)
-    function getMaxEnergy() {
-        if (state.energyLvl >= 197) return "Infinity";
-        return 150 + (state.energyLvl * 50); // Уровень 197 даст ровно 10,000
+    // Определение стоимости и значений прокачки
+    function getUpgradeInfo(type) {
+        const lvl = state[type === 'click' ? 'tapLvl' : type === 'passive' ? 'passiveLvl' : type === 'energy' ? 'maxEnergyLvl' : 'regenLvl'];
+        
+        if (type === 'click') return { cost: Math.floor(100 * Math.pow(1.4, lvl)), val: lvl, next: lvl+1 };
+        if (type === 'passive') return { cost: Math.floor(100 * Math.pow(1.4, lvl+1)), val: lvl, next: lvl+1 };
+        
+        if (type === 'energy') {
+            if (lvl >= 20) return { cost: 500000000000, val: '10000', next: '∞', isMax: state.isInfiniteEnergy };
+            let currentE = 150 + (lvl * 492); // к 20 лвл будет ~10000
+            let nextE = 150 + ((lvl+1) * 492);
+            let cost = Math.floor(2000000 * Math.pow(1.5, lvl)); // Начинается с 2 миллионов
+            return { cost: cost, val: currentE, next: nextE };
+        }
+        if (type === 'regen') {
+            let cost = Math.floor(5000000 * Math.pow(1.8, lvl)); // Начинается с 5 миллионов
+            return { cost: cost, val: 1 + lvl, next: 2 + lvl };
+        }
+    }
+
+    function getMaxEnergyReal() {
+        if (state.isInfiniteEnergy) return '∞';
+        return 150 + (state.maxEnergyLvl * 492);
+    }
+    function getRegenReal() {
+        return 1 + state.regenLvl;
+    }
+
+    function copyRefLink() {
+        playSound('btn');
+        const link = `https://t.me/твой_бот_юзернейм?startapp=ref_${currentId}`;
+        navigator.clipboard.writeText(link);
+        tg.showAlert(state.lang === 'ru' ? "Ссылка скопирована!" : "Link copied!");
+    }
+
+    function buyStars() {
+        playSound('btn');
+        // Отправляем боту команду на генерацию Invoice
+        tg.sendData(JSON.stringify({ action: 'buy_stars_5m' }));
+        tg.showAlert(state.lang === 'ru' ? "Счет отправлен в чат с ботом!" : "Invoice sent to bot chat!");
     }
 
     // --- ADMIN ACTIONS ---
@@ -286,14 +316,21 @@
         if (globalData.eventEnd > Date.now()) { db.ref('global').update({ eventEnd: 0 }); } 
         else { const threeMonths = Date.now() + (90 * 24 * 60 * 60 * 1000); db.ref('global').update({ eventEnd: threeMonths }); }
     }
-    function rushEvent() { playSound('btn'); db.ref('global').update({ eventEnd: Date.now() + 3000 }); }
+    function adminClearWinners() {
+        playSound('btn');
+        if(confirm("Очистить победителей и закрыть ивент?")) {
+            db.ref('lastWinners').remove();
+            db.ref('global').update({ eventEnd: 0 });
+            document.getElementById('show-winners-btn').style.display = 'none';
+        }
+    }
     function resetAllPlayers() {
         playSound('btn');
-        if (!confirm("Внимание! Это обнулит ВСЕХ игроков. Продолжить?")) return;
+        if (!confirm("Внимание! Обнулить ВСЕХ?")) return;
         db.ref('users').once('value', snap => {
             const users = snap.val();
-            for (let id in users) { db.ref(`users/${id}`).update({ score: 0, tapLvl: 1, passiveLvl: 0, energyLvl: 0 }); }
-            alert("Все игроки сброшены!");
+            for (let id in users) { db.ref(`users/${id}`).update({ score: 0, tapLvl: 1, passiveLvl: 0, maxEnergyLvl:0, regenLvl:0, isInfiniteEnergy:false }); }
+            alert("Сброшено!");
         });
     }
     function resetSpecificPlayer() {
@@ -304,48 +341,48 @@
             const users = snap.val(); let found = false;
             for (let id in users) {
                 if (users[id].username === target) {
-                    db.ref(`users/${id}`).update({ score: 0, tapLvl: 1, passiveLvl: 0, energyLvl: 0 }); found = true; break;
+                    db.ref(`users/${id}`).update({ score: 0, tapLvl: 1, passiveLvl: 0, maxEnergyLvl:0, regenLvl:0, isInfiniteEnergy:false }); found = true; break;
                 }
             }
-            alert(found ? `Игрок @${target} сброшен.` : "Игрок не найден.");
+            alert(found ? `Сброшен.` : "Не найден.");
         });
     }
-    
-    // НОВАЯ ФУНКЦИЯ АДМИНКИ: Очистить победителей и закрыть ивент
-    window.adminClearWinners = () => {
-        playSound('btn');
-        if(!confirm("Точно удалить победителей и закрыть ивент?")) return;
-        db.ref('lastWinners').remove();
-        db.ref('global').update({ eventEnd: 0 });
-        alert("Таблица победителей очищена!");
-    };
 
     // --- ЛОГИКА ТАБЛИЦЫ ПОБЕДИТЕЛЕЙ ---
+    function captureWinners() {
+        // Подсчет с учетом оффлайн дохода
+        db.ref('users').once('value', snap => {
+            const data = snap.val();
+            const now = Date.now();
+            let players = Object.values(data).filter(p => p && p.username && p.username !== "Guest")
+                .map(p => { 
+                    const offTime = Math.floor((now - (p.lastUpdate || now)) / 1000); 
+                    return { username: p.username, score: (p.score || 0) + (offTime * (p.passiveLvl || 0)) }; 
+                })
+                .sort((a,b) => b.score - a.score).slice(0,3);
+            db.ref('lastWinners').set(players);
+        });
+    }
+
     function renderWinnersTable(players) {
         const list = document.getElementById('winners-list'); list.innerHTML = "";
         const medals = ['🥇', '🥈', '🥉'];
         players.forEach((p, i) => { 
             list.innerHTML += `
             <div class="winner-row">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:24px;">${medals[i]}</span>
-                    <span>@${p.username}</span>
-                </div>
-                <span style="color:var(--green); font-family:monospace; font-size:16px;">${format(p.score)}</span>
+                <div style="display:flex; align-items:center; gap:10px;"><span style="font-size:24px;">${medals[i]}</span><span>@${p.username}</span></div>
+                <span style="color:var(--w); font-family:monospace; font-size:16px;">${format(p.score)}</span>
             </div>`; 
         });
     }
 
     function fetchAndShowWinners(isAutoLaunch = false) {
-        db.ref('users').once('value', snap => {
-            const players = Object.values(snap.val())
-                .filter(p => p && p.username && p.username !== "Guest")
-                .sort((a,b) => b.score - a.score).slice(0,3); // Ровно Топ-3
-            
-            renderWinnersTable(players);
-            
-            if (isAutoLaunch) {
-                document.getElementById('winners-popup').style.display = 'flex';
+        db.ref('lastWinners').once('value', snap => {
+            const players = snap.val();
+            if (players) {
+                renderWinnersTable(players);
+                if (isAutoLaunch) document.getElementById('winners-popup').style.display = 'flex';
+                document.getElementById('show-winners-btn').style.display = 'block';
             }
         });
     }
@@ -361,58 +398,46 @@
         globalData = snap.val() || { eventEnd: 0, isMaint: false };
         const isMaint = globalData.isMaint && Number(currentId) !== MY_ID;
         document.getElementById('maint-screen').style.display = isMaint ? 'flex' : 'none';
-        document.getElementById('maint-status').innerText = globalData.isMaint ? 'ON' : 'OFF';
 
-        const eBtn = document.getElementById('event-toggle-btn');
-        const rBtn = document.getElementById('event-rush-btn');
         if (globalData.eventEnd > Date.now()) {
-            eBtn.innerText = "ЗАКРЫТЬ ИВЕНТ"; eBtn.classList.replace('btn-start', 'btn-danger'); rBtn.classList.remove('hidden');
+            document.getElementById('event-toggle-btn').innerText = "ЗАКРЫТЬ ИВЕНТ"; 
         } else {
-            eBtn.innerText = "НАЧАТЬ ИВЕНТ"; eBtn.classList.replace('btn-danger', 'btn-start'); rBtn.classList.add('hidden');
+            document.getElementById('event-toggle-btn').innerText = "НАЧАТЬ ИВЕНТ"; 
         }
     });
     
-    // СИНХРОНИЗАЦИЯ ПОБЕДИТЕЛЕЙ ЧТОБЫ КНОПКА ИСЧЕЗАЛА АВТОМАТИЧЕСКИ
-    db.ref('lastWinners').on('value', snap => {
-        const hasWinners = snap.exists();
-        document.getElementById('show-winners-btn').style.display = hasWinners ? 'block' : 'none';
-        if(!hasWinners) {
-            document.getElementById('winners-popup').style.display = 'none';
-        }
-    });
-    
+    let wasEvent = false;
     function updateEventTimer() {
         const sync = document.getElementById('sync-text');
         const now = Date.now();
-        sync.style.color = "#555"; // ЦВЕТ ВСЕГДА ТЕМНО-СЕРЫЙ
+        const isEventActive = globalData.eventEnd > now;
         
-        if (globalData.eventEnd > now) {
+        if (wasEvent && !isEventActive && globalData.eventEnd !== 0) {
+            captureWinners();
+        }
+        wasEvent = isEventActive;
+
+        if (isEventActive) {
+            document.getElementById('show-winners-btn').style.display = 'none';
             const diff = globalData.eventEnd - now;
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const days = Math.floor(diff / 86400000);
             if (diff < 86400000) {
                 const h = Math.floor((diff / 3600000) % 24);
                 const m = Math.floor((diff / 60000) % 60); const s = Math.floor((diff / 1000) % 60);
-                sync.innerText = `END IN: ${h}h ${m}m ${s}s`;
+                sync.innerText = `END IN: ${h}h ${m}m ${s}s`; sync.style.color = "#555";
             } else {
-                const months = Math.floor(days / 30);
-                const remDays = days % 30;
-                sync.innerText = `EVENT: ${months}M ${remDays}D`;
+                sync.innerText = `EVENT: ${days} DAYS`; sync.style.color = "#555";
             }
         } else if (globalData.eventEnd > 0 && globalData.eventEnd <= now) {
-            sync.innerText = "ИВЕНТ ЗАВЕРШЕН";
-            
-            // Если ивент только что закончился
+            sync.innerText = "ИВЕНТ ЗАВЕРШЕН"; sync.style.color = "#555";
             if (isLoaded && !window.winnersShownThisSession) {
-                // Создаем слепок победителей в базу
-                db.ref('users').once('value', snap => {
-                    const players = Object.values(snap.val()).sort((a,b) => b.score - a.score).slice(0,3);
-                    db.ref('lastWinners').set(players);
-                });
                 fetchAndShowWinners(true);
                 window.winnersShownThisSession = true;
             }
+            document.getElementById('show-winners-btn').style.display = 'block';
         } else {
-            sync.innerText = "ИВЕНТ ЗАКРЫТ";
+            sync.innerText = "ИВЕНТ ЗАКРЫТ"; sync.style.color = "#555";
+            document.getElementById('show-winners-btn').style.display = 'none';
         }
     }
     setInterval(updateEventTimer, 1000);
@@ -435,30 +460,22 @@
             this.x += this.speedX; this.y += this.speedY;
             if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
         } 
-        draw() { 
-            ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
-        } 
+        draw() { ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); } 
     }
-    
     for (let i = 0; i < 40; i++) bgParticles.push(new BgP());
     function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); bgParticles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
     animate();
     
     const tapBtn = document.getElementById('tapBtn');
     tapBtn.addEventListener('pointerdown', (e) => {
-        if (!isLoaded) return;
-        if (state.energy !== "Infinity" && state.energy <= 0) return;
+        if (!isLoaded || (state.energy <= 0 && !state.isInfiniteEnergy)) return;
         
-        if (state.sound && bgMusic.paused && bgMusic.src === "") {
-            bgMusic.src = bgTracks[currentTrackIndex];
-            bgMusic.play().catch(e => console.log("Play blocked"));
-        }
-        
+        if (state.sound && bgMusic.paused && bgMusic.src === "" && !isMobile) playNextTrack();
         playSound('tap');
+        
         tapBtn.classList.add('is-active');
         state.score += state.tapLvl; 
-        
-        if (state.energy !== "Infinity") state.energy--;
+        if(!state.isInfiniteEnergy) state.energy--;
         
         updateUI(); 
         if(state.sound && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
@@ -469,80 +486,58 @@
     });
     window.addEventListener('pointerup', () => tapBtn.classList.remove('is-active'));
     
-    function updateCaseUI() {
-        const btn = document.getElementById('case-btn'); const status = document.getElementById('case-status');
-        const now = Date.now(); const nextTime = (state.lastCaseTime || 0) + (24 * 60 * 60 * 1000);
-        if (now >= nextTime) { 
-            btn.disabled = false; status.innerText = langData[state.lang].caseReady; status.style.color = "rgba(255,255,255,0.8)";
-        } else { 
-            btn.disabled = true;
-            const diff = nextTime - now;
-            const h = Math.floor(diff / 3600000); const m = Math.floor((diff % 3600000) / 60000);
-            const s = Math.floor((diff % 60000) / 1000);
-            status.innerText = `${h}h ${m}m ${s}s`; status.style.color = "#555";
-        }
-    }
-    
     window.openDailyCase = () => {
         playSound('btn');
         const now = Date.now();
         if (now < (state.lastCaseTime || 0) + (24 * 60 * 60 * 1000)) return;
-        const reward = Math.floor(Math.random() * (10000 - 100 + 1)) + 100;
+        const reward = Math.floor(Math.random() * 9901) + 100;
         state.score += reward; state.lastCaseTime = now;
         playSound('buy');
-        if(state.sound && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         alert((state.lang === 'ru' ? "Вы получили: " : "You received: ") + reward + " pts!");
-        updateUI(); updateCaseUI(); save();
+        updateUI(); save();
     };
     
-    // БЛОКИРОВКА СБРОСА ПРОГРЕССА
     function save() { 
         if (isLoaded && currentId !== 0) { 
-            state.lastUpdate = Date.now(); 
-            db.ref(`users/${currentId}`).update(state);
+            state.lastUpdate = Date.now(); db.ref(`users/${currentId}`).update(state);
         } 
     }
 
     db.ref(`users/${currentId}`).once('value', (snap) => {
-        if (snap.exists()) {
-            const data = snap.val();
+        const data = snap.val();
+        
+        // РЕФЕРАЛЬНАЯ СИСТЕМА
+        const startParam = tg.initDataUnsafe?.start_param;
+        let isNewRef = false;
+        
+        if (data) {
+            // Блокировка перезаписи пустой датой
             const now = Date.now(); const offTime = Math.floor((now - (data.lastUpdate || now)) / 1000);
-            
-            state = { ...state, ...data };
-            state.score = (data.score || 0) + (offTime * (data.passiveLvl || 0));
-            
-            if (state.energyLvl >= 197) {
-                state.energy = "Infinity";
-            } else {
-                state.energy = Math.min(150 + (state.energyLvl * 50), (data.energy || 150) + offTime);
+            const rE = data.isInfiniteEnergy ? '∞' : Math.min(150 + ((data.maxEnergyLvl||0)*492), (data.energy || 150) + (offTime * (1+(data.regenLvl||0))));
+            state = { ...state, ...data, score: (data.score || 0) + (offTime * (data.passiveLvl || 0)), energy: rE };
+        } else {
+            // Новый игрок, проверяем рефку
+            if (startParam && startParam.startsWith('ref_')) {
+                state.tapLvl = 3;
+                state.score = 25000;
+                isNewRef = true;
             }
         }
-        state.id = currentId;
-        state.username = user.username || state.username || `User_${currentId}`;
         
-        // РАЗРЕШАЕМ СОХРАНЕНИЯ ТОЛЬКО ПОСЛЕ УСПЕШНОГО ЧТЕНИЯ
-        isLoaded = true; 
+        state.username = user.username || data?.username || `User_${currentId}`;
+        isLoaded = true;
         
-        if (state.sound) {
-            bgMusic.src = bgTracks[currentTrackIndex];
-            bgMusic.play().catch(() => console.log("Waiting tap to play"));
-        }
-
-        // Проверяем таблицу при входе
-        db.ref('lastWinners').once('value', wSnap => {
-            if (wSnap.exists() && !window.winnersShownThisSession) {
-                fetchAndShowWinners(true);
-                window.winnersShownThisSession = true;
-            }
-        });
+        if (state.sound && !isMobile) playNextTrack();
 
         document.getElementById('loading-screen').style.opacity = '0';
-        setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 500);
+        setTimeout(() => {
+            document.getElementById('loading-screen').style.display = 'none';
+            if (isNewRef) tg.showAlert(state.lang === 'ru' ? "Вы пришли по ссылке! +25000 очков и 3 Ур. Клика!" : "Referral bonus! +25000 pts & Lvl 3 Click!");
+        }, 500);
+        
         document.getElementById('p-name').innerText = "@" + state.username;
-        if (Number(currentId) === MY_ID) { 
-            document.getElementById('admin-container').innerHTML = `<button class="admin-btn btn-neutral" style="border: 1px solid #fff; margin-top: 10px;" onclick="openAdmin()">ОТКРЫТЬ</button>`; 
-        }
-        updateLangUI(); updateUI(); updateCaseUI(); setInterval(updateCaseUI, 1000);
+        if (Number(currentId) === MY_ID) { document.getElementById('admin-container').innerHTML = `<button class="admin-btn btn-neutral" style="border: 1px solid #fff; margin-top: 10px;" onclick="openAdmin()">ОТКРЫТЬ АДМИНКУ</button>`; }
+        updateLangUI(); updateUI();
     });
     
     window.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') save(); });
@@ -551,44 +546,34 @@
         document.getElementById('score').innerText = format(state.score);
         document.getElementById('passive-display').innerText = `${langData[state.lang].passL}: ${state.passiveLvl}/sec`;
         
-        const maxE = getMaxEnergy();
-        if (maxE === "Infinity") {
-            document.getElementById('e-text').innerText = `∞ / ∞`;
-            document.getElementById('e-fill').style.width = '100%';
-        } else {
-            document.getElementById('e-text').innerText = `${Math.floor(state.energy)} / ${maxE}`;
-            document.getElementById('e-fill').style.width = (state.energy / maxE * 100) + '%';
-        }
+        const mE = getMaxEnergyReal();
+        document.getElementById('e-text').innerText = `${state.isInfiniteEnergy ? '∞' : Math.floor(state.energy)} / ${mE}`;
+        document.getElementById('e-fill').style.width = state.isInfiniteEnergy ? '100%' : ((state.energy / mE) * 100) + '%';
     }
 
-    function format(n) { return n >= 1e6 ? (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? (n/1e3).toFixed(1) + 'K' : Math.floor(n); }
-    function getRank(lvl) { return langData[state.lang].ranks[Math.min(Math.floor((lvl || 1) / 10), 4)]; }
+    function format(n) { return n >= 1e9 ? (n/1e9).toFixed(2)+'B' : n >= 1e6 ? (n/1e6).toFixed(2)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'K' : Math.floor(n); }
 
-    // ЛИДЕРБОРД С ПОДСВЕТКОЙ СВОЕГО МЕСТА
     function loadLeaderboard() {
         const list = document.getElementById('leaderboard-list');
+        const myRankCont = document.getElementById('my-rank-container');
+        
         db.ref('users').once('value', (snap) => {
             const data = snap.val(); if (!data) return;
             const now = Date.now();
-            let players = Object.values(data)
-                .filter(p => p && p.username && p.username !== "Guest" && p.id)
-                .map(p => { const offTime = Math.floor((now - (p.lastUpdate || now)) / 1000); return { ...p, currentScore: (p.score || 0) + (offTime * (p.passiveLvl || 0)) }; })
-                .sort((a, b) => b.currentScore - a.currentScore);
+            let players = Object.values(data).filter(p => p && p.username && p.username !== "Guest")
+            .map(p => { const offTime = Math.floor((now - (p.lastUpdate || now)) / 1000); return { ...p, currentScore: (p.score || 0) + (offTime * (p.passiveLvl || 0)) }; })
+            .sort((a, b) => b.currentScore - a.currentScore);
             
             list.innerHTML = "";
-            const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-            const top5 = players.slice(0, 5);
+            let top5 = players.slice(0, 5);
+            top5.forEach((p, i) => { const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']; list.innerHTML += `<div class="card" style="${p.username === state.username ? 'border-color: #fff;' : ''}"><div style="font-size:20px; min-width:40px;">${medals[i]}</div><div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">Lvl ${p.tapLvl || 1}</div></div><div style="font-weight:900;">${format(p.currentScore)}</div></div>`; });
             
-            top5.forEach((p, i) => { 
-                list.innerHTML += `<div class="card" style="${p.id == currentId ? 'border-color: var(--green); box-shadow: 0 0 10px rgba(0,255,136,0.2);' : ''}"><div style="font-size:20px; min-width:40px;">${medals[i]}</div><div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${getRank(p.tapLvl)} (Lvl ${p.tapLvl || 1})</div></div><div style="font-weight:900;">${format(p.currentScore)}</div></div>`; 
-            });
-
-            // Показываем себя, если мы не в Топ 5
-            const myIndex = players.findIndex(p => p.id == currentId);
+            // СВОЕ МЕСТО (Если не в Топ 5)
+            let myIndex = players.findIndex(p => p.username === state.username);
             if (myIndex > 4) {
-                list.innerHTML += `<div style="text-align:center; color:#555; font-size: 24px; margin: 10px 0;">•••</div>`;
-                const p = players[myIndex];
-                list.innerHTML += `<div class="card" style="border-color: var(--green); box-shadow: 0 0 10px rgba(0,255,136,0.2);"><div style="font-size:20px; min-width:40px; font-weight:900; color:#888;">#${myIndex + 1}</div><div style="flex:1"><div style="font-weight:900;">@${p.username}</div><div style="font-size:10px; color:#555">${getRank(p.tapLvl)} (Lvl ${p.tapLvl || 1})</div></div><div style="font-weight:900;">${format(p.currentScore)}</div></div>`; 
+                myRankCont.innerHTML = `<div class="my-rank-row"><div>#${myIndex + 1} @${state.username}</div><div>${format(players[myIndex].currentScore)}</div></div>`;
+            } else {
+                myRankCont.innerHTML = "";
             }
         });
     }
@@ -599,8 +584,7 @@
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
         document.getElementById(id).classList.add('active'); 
         document.getElementById('n-' + id.split('-')[1]).classList.add('active'); 
-        if (leaderboardInterval) clearInterval(leaderboardInterval);
-        if (id === 's-top') { loadLeaderboard(); leaderboardInterval = setInterval(loadLeaderboard, 5000); } 
+        if (id === 's-top') { loadLeaderboard(); } 
     };
 
     window.openUpgrade = (type) => { playSound('btn'); document.getElementById('shop-main').classList.add('hidden'); document.getElementById('shop-detail').classList.remove('hidden'); renderUpgradeItems(type); };
@@ -608,42 +592,20 @@
     
     function renderUpgradeItems(type) {
         const cont = document.getElementById('upgrade-items');
-        let lvl, price, isInfinity = false;
+        const info = getUpgradeInfo(type);
         
-        if (type === 'click') {
-            lvl = state.tapLvl;
-            price = Math.floor(100 * Math.pow(1.4, lvl));
-        } else if (type === 'passive') {
-            lvl = state.passiveLvl;
-            price = Math.floor(100 * Math.pow(1.4, lvl + 1));
-        } else if (type === 'energy') {
-            lvl = state.energyLvl;
-            if (lvl >= 197) {
-                price = 1000000000000; // 1 Триллион за бесконечность
-                isInfinity = true;
-                if (lvl >= 198) price = Infinity; // Уже куплено
-            } else {
-                price = Math.floor(150 * Math.pow(1.15, lvl)); // Растет плавно
-            }
-        }
+        let buyBtnHtml = info.isMax ? 
+            `<button class="buy-btn" disabled style="background:#333; color:#555;">MAX</button>` : 
+            `<button class="buy-btn" ${state.score < info.cost ? 'disabled' : ''} onclick="buy('${type}', ${info.cost})" style="min-width: 90px;">${format(info.cost)}</button>`;
 
-        const rankName = getRank(lvl);
-        const lvlDisplay = isInfinity ? (lvl >= 198 ? "INFINITY" : "God Juug'er") : `Level ${lvl}`;
-        const nextDisplay = isInfinity ? "∞" : `→ ${lvl+1}`;
-        
         cont.innerHTML = `
-            <div class="card" style="cursor:default; flex-direction: column; align-items: flex-start; gap: 10px; padding: 20px; background: linear-gradient(145deg, #161616, #0a0a0a); border: 1px solid #333; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="card" style="cursor:default; flex-direction: column; align-items: flex-start; gap: 10px; padding: 20px; background: linear-gradient(145deg, #161616, #0a0a0a); border: 1px solid #333; border-radius: 16px;">
                 <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <div style="font-size: 11px; color: var(--green); font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px;">${rankName}</div>
-                        <div style="font-size: 22px; font-weight: 900; color: #fff; letter-spacing: -0.5px;">${lvlDisplay} <span style="color: #666; font-size: 16px; font-weight: 700;">${nextDisplay}</span></div>
+                        <div style="font-size: 11px; color: var(--w); font-weight: 900; text-transform: uppercase;">UPGRADE</div>
+                        <div style="font-size: 22px; font-weight: 900; color: #fff;">${info.val} <span style="color: #666; font-size: 16px;">→ ${info.next}</span></div>
                     </div>
-                    <button class="buy-btn" ${state.score < price ? 'disabled' : ''} onclick="buy('${type}', ${price})" style="min-width: 90px; height: 44px; border-radius: 12px; font-size: 16px; box-shadow: 0 4px 15px rgba(255,255,255,0.1);">
-                        ${price === Infinity ? 'MAXED' : format(price)}
-                    </button>
-                </div>
-                <div style="width: 100%; height: 6px; background: #222; border-radius: 3px; margin-top: 10px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);">
-                    <div style="width: ${(lvl % 10 || 10) * 10}%; height: 100%; background: linear-gradient(90deg, var(--green), #fff); box-shadow: 0 0 10px var(--green); transition: width 0.3s ease;"></div>
+                    ${buyBtnHtml}
                 </div>
             </div>
         `;
@@ -656,9 +618,11 @@
             if (type === 'click') state.tapLvl++; 
             else if (type === 'passive') state.passiveLvl++; 
             else if (type === 'energy') {
-                state.energyLvl++;
-                if (state.energyLvl >= 197) state.energy = "Infinity";
+                if(state.maxEnergyLvl >= 20) state.isInfiniteEnergy = true;
+                else state.maxEnergyLvl++;
             }
+            else if (type === 'regen') state.regenLvl++;
+            
             updateUI(); renderUpgradeItems(type); save(); 
             playSound('buy');
             if(state.sound && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success'); 
@@ -667,44 +631,31 @@
     
     function updateLangUI() {
         const l = langData[state.lang];
-        const map = { 't-score-label':'scoreL', 't-tap-label':'tapL', 't-top-title':'topT', 't-shop-title':'shopT', 't-click-up':'clUp', 't-click-desc':'clDe', 't-pass-up':'psUp', 't-pass-desc':'psDe', 't-energy-up':'enUp', 't-energy-desc':'enDe', 't-back':'back', 't-gear-title':'gearT', 't-lang-label':'langL', 't-sound-label':'soundL', 't-nav-top':'navTop', 't-nav-game':'navGame', 't-nav-shop':'navShop', 't-nav-gear':'navGear', 't-case-name':'caseName', 'case-btn':'caseOpen' };
-        for(let id in map) { const el = document.getElementById(id); if(el) el.innerText = l[map[id]]; }
+        document.getElementById('t-score-label').innerText = l.scoreL;
         document.getElementById('cur-lang').innerText = state.lang === 'en' ? "EN" : "RU";
         document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
-        updateCaseUI();
-    }
-    
-    function toggleLang() { 
-        playSound('btn');
-        state.lang = state.lang === 'en' ? 'ru' : 'en'; 
-        updateLangUI(); updateUI(); save(); 
-    }
-    
-    function toggleSound() { 
-        playSound('btn');
-        state.sound = !state.sound;
-        document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
         
-        if (state.sound) {
-            if (!bgMusic.src || bgMusic.src.includes(window.location.href)) {
-                bgMusic.src = bgTracks[currentTrackIndex];
-            }
-            bgMusic.play().catch(e => console.log("Play blocked"));
-        } else {
-            bgMusic.pause();
-        }
+        const map = { 't-nav-gear': 'navGear', 't-gear-title':'gearT' };
+        for(let id in map) { const el = document.getElementById(id); if(el) el.innerText = l[map[id]]; }
+    }
+    
+    function toggleLang() { playSound('btn'); state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); updateUI(); save(); }
+    function toggleSound() { 
+        playSound('btn'); state.sound = !state.sound; document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
+        if (!state.sound) bgMusic.pause(); else if(!isMobile) playNextTrack();
         save(); 
     }
     
     setInterval(() => { 
         if (!isLoaded) return; 
         state.score += (state.passiveLvl || 0); 
-        if (state.energy !== "Infinity" && state.energy < getMaxEnergy()) {
-            state.energy++; 
+        if (!state.isInfiniteEnergy) {
+            const mE = getMaxEnergyReal();
+            const rG = getRegenReal();
+            if (state.energy < mE) state.energy = Math.min(mE, state.energy + rG); 
         }
         updateUI(); 
     }, 1000);
-    
     setInterval(() => { if(isLoaded) save(); }, 10000);
 </script>
 </body>
