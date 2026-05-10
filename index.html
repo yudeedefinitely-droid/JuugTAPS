@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --b: #000; --w: #fff; --g: #111; --sg: #222; --accent: rgba(255,255,255,0.8); --red: #ff4444; --green: #00ff88; }
+        :root { --b: #000; --w: #fff; --g: #111; --sg: #222; }
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { background: var(--b); color: var(--w); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
         
@@ -36,18 +36,18 @@
         .tap-effect { position: absolute; pointer-events: none; color: #fff; font-weight: 900; font-size: 26px; animation: floatUp 0.6s ease-out forwards; z-index: 10; }
         @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120px); opacity: 0; } }
 
+        /* ИСПРАВЛЕНО: Энергия (плавная линейная анимация, без лагов) */
         .energy-box { width: 100%; text-align: center; margin-bottom: 20px; position: relative; }
         .bar-bg { height: 26px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 13px; margin: 15px 0; overflow: hidden; position: relative; backdrop-filter: blur(5px); box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
-        #e-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #333 0%, #fff 100%); transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; animation: pulseGlow 2s infinite alternate; }
-        @keyframes pulseGlow { 0% { box-shadow: 0 0 5px rgba(255,255,255,0.2); } 100% { box-shadow: 0 0 15px rgba(255,255,255,0.6); } }
+        #e-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #333 0%, #fff 100%); transition: width 1s linear; position: relative; }
         #e-text { position: absolute; width: 100%; left: 0; top: 50%; transform: translateY(-50%); font-family: 'Courier New', monospace; font-size: 13px; font-weight: 900; letter-spacing: 2px; color: var(--w); text-shadow: 1px 1px 2px #000, 0 0 10px rgba(0,0,0,0.8); z-index: 10; mix-blend-mode: normal; }
 
         .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 18px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
         .card:active { transform: scale(0.98); background: #151515; }
         .card.special { border: 1px solid rgba(255,255,255,0.3); background: linear-gradient(145deg, #111, #050505); }
-        .card.stars { border: 1px solid #ffd700; background: linear-gradient(145deg, #221d00, #000); }
+        .card.stars { border: 1px solid #555; background: linear-gradient(145deg, #222, #000); }
         .case-icon { font-size: 24px; margin-right: 15px; }
-        .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 900; min-width: 80px; cursor: pointer; }
+        .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 900; min-width: 80px; cursor: pointer; text-transform: uppercase; }
         .buy-btn:disabled { background: #333; color: #555; cursor: not-allowed; }
 
         nav { position: absolute; bottom: 0; width: 100%; display: flex; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); border-top: 1px solid var(--sg); padding: 15px 0 35px; z-index: 100; }
@@ -58,19 +58,16 @@
         
         .settings-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 12px; border: 1px solid var(--sg); background: var(--g); color: #fff; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
 
-        #admin-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .admin-content { background: #111; width: 100%; max-width: 400px; border-radius: 20px; padding: 20px; border: 1px solid #333; max-height: 80vh; overflow-y: auto; }
-        .admin-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 10px; border: none; font-weight: 800; cursor: pointer; color: #fff; }
-        .btn-start { background: var(--green); color: #000; box-shadow: 0 0 15px var(--green); }
-        .btn-danger { background: var(--red); }
-        .btn-neutral { background: #222; }
+        #admin-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 20px; flex-direction: column; overflow-y: auto;}
+        .admin-content { background: #111; width: 100%; max-width: 400px; border-radius: 20px; padding: 20px; border: 1px solid #333; }
+        .admin-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #fff; font-weight: 800; cursor: pointer; color: #000; background: #fff; }
+        .btn-danger { background: transparent; border-color: #555; color: #fff; }
 
         #winners-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); z-index: 25000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .winners-content { background: rgba(20, 20, 20, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 30px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.6); color: #fff; }
         .winner-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 16px; font-weight: 700; }
         .winner-row:last-child { border: none; }
         #show-winners-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 15px; border-radius: 12px; width: 100%; margin-bottom: 20px; font-weight: 800; display: none; cursor: pointer; backdrop-filter: blur(5px); }
-        
         .my-rank-row { background: rgba(255,255,255,0.1); border: 1px solid #fff; border-radius: 12px; margin-top: 15px; padding: 15px; display: flex; justify-content: space-between; font-weight: 900; }
     </style>
 </head>
@@ -83,30 +80,32 @@
 
 <div id="maint-screen">
     <h1 style="font-size: 50px;">🔧</h1>
-    <h2 style="margin: 15px 0;">ТЕХ ПЕРЕРЫВ</h2>
+    <h2 style="margin: 15px 0;">MAINTENANCE</h2>
 </div>
 
 <div id="winners-popup">
     <div class="winners-content">
         <h2 style="margin-bottom: 10px; font-weight: 900; letter-spacing: 1px; color: var(--w);">🏆 EVENT CHAMPIONS</h2>
         <div id="winners-list" style="margin-bottom: 25px;"></div>
-        <button class="admin-btn btn-start" style="color:#000; background:#fff; box-shadow: 0 0 15px #fff;" onclick="playSound('btn'); document.getElementById('winners-popup').style.display='none'">AWESOME!</button>
+        <button class="admin-btn" onclick="playSound('btn'); document.getElementById('winners-popup').style.display='none'">AWESOME!</button>
     </div>
 </div>
 
 <div id="admin-modal">
     <div class="admin-content">
         <h3 style="margin-bottom: 20px; text-align: center;">ADMIN PANEL</h3>
-        <button id="event-toggle-btn" class="admin-btn btn-start" onclick="toggleEvent()">НАЧАТЬ ИВЕНТ</button>
-        <button class="admin-btn btn-danger" onclick="adminClearWinners()">ОЧИСТИТЬ ПОБЕДИТЕЛЕЙ (СБРОС)</button>
-        <button class="admin-btn btn-neutral" onclick="toggleMaint()">ТЕХ ПЕРЕРЫВ: <span id="maint-status">OFF</span></button>
+        <button id="event-toggle-btn" class="admin-btn" onclick="toggleEvent()">НАЧАТЬ ИВЕНТ</button>
+        <button id="event-rush-btn" class="admin-btn btn-danger hidden" onclick="endEventEarly()">ЗАКОНЧИТЬ ДОСРОЧНО</button>
+        <button class="admin-btn btn-danger" onclick="adminClearWinners()">ОЧИСТИТЬ ПОБЕДИТЕЛЕЙ</button>
+        <button class="admin-btn btn-danger" onclick="toggleMaint()">ТЕХ ПЕРЕРЫВ: <span id="maint-status">OFF</span></button>
         <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
         <button class="admin-btn btn-danger" onclick="resetAllPlayers()">ОБНУЛИТЬ ВСЕХ ИГРОКОВ</button>
+      
         <div style="background: #222; padding: 15px; border-radius: 12px; margin-top: 10px;">
             <input type="text" id="target-user" placeholder="username" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius:8px; margin-bottom:10px; outline: none;">
-            <button class="admin-btn btn-neutral" style="margin:0; background: #333;" onclick="resetSpecificPlayer()">ОБНУЛИТЬ</button>
+            <button class="admin-btn btn-danger" style="margin:0;" onclick="resetSpecificPlayer()">ОБНУЛИТЬ ОДНОГО</button>
         </div>
-        <button class="admin-btn btn-neutral" style="margin-top:20px;" onclick="closeAdmin()">ЗАКРЫТЬ</button>
+        <button class="admin-btn btn-danger" style="margin-top:20px;" onclick="closeAdmin()">ЗАКРЫТЬ</button>
     </div>
 </div>
 
@@ -140,8 +139,8 @@
         <div id="shop-main" style="width:100%;">
             
             <div class="card stars" onclick="buyStars()">
-                <div style="flex:1"><b id="t-stars-up" style="font-size: 18px; font-weight: 900; color:#ffd700;">BUY 5M POINTS</b><br><span style="font-size:12px; color:#888;">Instant boost</span></div>
-                <button class="buy-btn" style="background:#ffd700; color:#000;">50 ⭐️</button>
+                <div style="flex:1"><b id="t-stars-up" style="font-size: 18px; font-weight: 900; color:#fff;">BUY 5M POINTS</b><br><span id="t-stars-desc" style="font-size:12px; color:#888;">Instant boost</span></div>
+                <button class="buy-btn" style="background:#fff; color:#000;">50 ⭐️</button>
             </div>
 
             <div class="card special" id="case-card" onclick="openDailyCase()">
@@ -178,7 +177,7 @@
     <section id="s-gear" class="screen">
         <h2 id="t-gear-title" style="align-self:flex-start; margin-bottom:20px; font-weight:900;">SETTINGS</h2>
         <div class="settings-btn" style="cursor:pointer" onclick="copyRefLink()">
-            <span id="t-ref-label">Referral Link</span><span style="color:#888">COPY</span>
+            <span id="t-ref-label">Referral Link</span><span id="t-copy-label" style="color:#888">COPY</span>
         </div>
         <button class="settings-btn" onclick="toggleLang()">
             <span id="t-lang-label">Language</span><span id="cur-lang" style="color:#888">English</span>
@@ -198,6 +197,7 @@
 </div>
 
 <script>
+    // --- ТВОИ ДАННЫЕ FIREBASE ---
     const firebaseConfig = {
         apiKey: "AIzaSyDcUMfQAd9QnoPUVxfM9SWp_lHBc2CaRKY",
         authDomain: "juugtaaap.firebaseapp.com",
@@ -214,6 +214,7 @@
 
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
+    // --- ЗВУКИ ---
     const bgTracks = ['music/track1.mp3', 'music/track2.mp3', 'music/track3.mp3'];
     let currentTrackIndex = Math.floor(Math.random() * bgTracks.length);
     const bgMusic = new Audio();
@@ -241,6 +242,7 @@
         } catch(e){}
     }
 
+    // --- ДАННЫЕ ИГРОКА ---
     const MY_ID = 5291965471;
     const user = tg.initDataUnsafe?.user || { id: 0, username: "Guest" };
     const currentId = user.id || 999999;
@@ -254,12 +256,41 @@
     };
     let globalData = { eventEnd: 0, isMaint: false };
 
+    // --- ПЕРЕВОД (ИСПРАВЛЕНО) ---
     const langData = {
-        en: { scoreL: "SCORE", tapL: "STAMINA", passL: "Passive", topT: "TOP 5 JUUG'ERS", shopT: "SHOP", gearT: "SETTINGS", langL: "Language", soundL: "Sound", navTop: "TOP", navGame: "GAME", navShop: "SHOP", navGear: "SETTINGS", clUp: "CLICK UPGRADES", clDe: "Increase tap income", psUp: "PASSIVE INCOME", psDe: "Automatic income", caseName: "DAILY CASE", caseOpen: "OPEN", caseReady: "Ready to open!", back: "BACK" },
-        ru: { scoreL: "СЧЕТ", tapL: "ЭНЕРГИЯ", passL: "Пассив", topT: "ТОП 5 ДЖУГЕРОВ", shopT: "МАГАЗИН", gearT: "НАСТРОЙКИ", langL: "Язык", soundL: "Звук", navTop: "ТОП", navGame: "ИГРА", navShop: "МАГАЗИН", navGear: "НАСТРОЙКИ", clUp: "ПРОКАЧКА КЛИКА", clDe: "Увеличить доход", psUp: "ПАССИВНЫЙ ДОХОД", psDe: "Авто-доход", caseName: "ДНЕВНОЙ КЕЙС", caseOpen: "ОТКРЫТЬ", caseReady: "Можно открыть!", back: "НАЗАД" }
+        en: { scoreL: "SCORE", tapL: "STAMINA", passL: "Passive", topT: "TOP 5 JUUG'ERS", shopT: "SHOP", gearT: "SETTINGS", langL: "Language", soundL: "Sound", navTop: "TOP", navGame: "GAME", navShop: "SHOP", navGear: "SETTINGS", clUp: "CLICK UPGRADES", clDe: "Increase tap income", psUp: "PASSIVE INCOME", psDe: "Automatic income", nrgUp: "MAX STAMINA", nrgDe: "Increase energy cap", regUp: "STAMINA REGEN", regDe: "Faster recovery", caseName: "DAILY CASE", caseOpen: "OPEN", caseReady: "Ready to open!", back: "BACK", refL: "Referral Link", cpL: "COPY", starsUp: "BUY 5M POINTS", starsDe: "Instant boost" },
+        ru: { scoreL: "СЧЕТ", tapL: "ЭНЕРГИЯ", passL: "Пассив", topT: "ТОП 5 ДЖУГЕРОВ", shopT: "МАГАЗИН", gearT: "НАСТРОЙКИ", langL: "Язык", soundL: "Звук", navTop: "ТОП", navGame: "ИГРА", navShop: "МАГАЗИН", navGear: "НАСТРОЙКИ", clUp: "ПРОКАЧКА КЛИКА", clDe: "Увеличить доход", psUp: "ПАССИВНЫЙ ДОХОД", psDe: "Авто-доход", nrgUp: "МАКС ЭНЕРГИЯ", nrgDe: "Больше лимит", regUp: "РЕГЕН ЭНЕРГИИ", regDe: "Быстрое восстановление", caseName: "ДНЕВНОЙ КЕЙС", caseOpen: "ОТКРЫТЬ", caseReady: "Можно открыть!", back: "НАЗАД", refL: "Реферальная Ссылка", cpL: "КОПИРОВАТЬ", starsUp: "КУПИТЬ 5M ОЧКОВ", starsDe: "Быстрый буст" }
     };
 
-    // ВОЗВРАЩЕНИЕ РАНГОВ
+    function updateLangUI() {
+        const l = langData[state.lang];
+        document.getElementById('t-score-label').innerText = l.scoreL;
+        document.getElementById('cur-lang').innerText = state.lang === 'en' ? "EN" : "RU";
+        document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
+        
+        const map = { 
+            't-nav-gear': 'navGear', 't-gear-title':'gearT', 't-tap-label':'tapL', 
+            't-top-title':'topT', 't-shop-title':'shopT', 't-click-up':'clUp', 
+            't-click-desc':'clDe', 't-pass-up':'psUp', 't-pass-desc':'psDe', 
+            't-nrg-up':'nrgUp', 't-nrg-desc':'nrgDe', 't-reg-up':'regUp', 't-reg-desc':'regDe',
+            't-back':'back', 't-lang-label':'langL', 't-sound-label':'soundL', 
+            't-nav-top':'navTop', 't-nav-game':'navGame', 't-nav-shop':'navShop', 
+            't-case-name':'caseName', 'case-btn':'caseOpen', 't-ref-label':'refL', 
+            't-copy-label':'cpL', 't-stars-up':'starsUp', 't-stars-desc':'starsDe'
+        };
+        for(let id in map) { const el = document.getElementById(id); if(el) el.innerText = l[map[id]]; }
+        
+        if(document.getElementById('passive-display')) document.getElementById('passive-display').innerText = `${l.passL}: ${state.passiveLvl}/sec`;
+        updateCaseUI();
+    }
+    
+    function toggleLang() { playSound('btn'); state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); updateUI(); save(); }
+    function toggleSound() { 
+        playSound('btn'); state.sound = !state.sound; document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
+        if (!state.sound) bgMusic.pause(); else if(!isMobile) playNextTrack();
+        save(); 
+    }
+
     function getRank(lvl) { 
         const ranks = ["Noob Juug'er", "Default Juug'er", "Pro Juug'er", "Hacker Juug'er", "God Juug'er"];
         return ranks[Math.min(Math.floor((lvl || 1) / 10), 4)]; 
@@ -270,11 +301,9 @@
         
         if (type === 'click') return { cost: Math.floor(100 * Math.pow(1.4, lvl)), val: lvl, next: lvl+1 };
         if (type === 'passive') return { cost: Math.floor(100 * Math.pow(1.4, lvl+1)), val: lvl, next: lvl+1 };
-        
         if (type === 'energy') {
             if (lvl >= 20) return { cost: 500000000000, val: '10000', next: '∞', isMax: state.isInfiniteEnergy };
-            let currentE = 150 + (lvl * 492);
-            let nextE = 150 + ((lvl+1) * 492);
+            let currentE = 150 + (lvl * 492); let nextE = 150 + ((lvl+1) * 492);
             let cost = Math.floor(2000000 * Math.pow(1.5, lvl));
             return { cost: cost, val: currentE, next: nextE };
         }
@@ -284,17 +313,12 @@
         }
     }
 
-    function getMaxEnergyReal() {
-        if (state.isInfiniteEnergy) return '∞';
-        return 150 + (state.maxEnergyLvl * 492);
-    }
-    function getRegenReal() {
-        return 1 + state.regenLvl;
-    }
+    function getMaxEnergyReal() { return state.isInfiniteEnergy ? '∞' : 150 + (state.maxEnergyLvl * 492); }
+    function getRegenReal() { return 1 + state.regenLvl; }
 
     function copyRefLink() {
         playSound('btn');
-        const link = `https://t.me/твой_бот_юзернейм?startapp=ref_${currentId}`;
+        const link = `https://t.me/ТВОЙ_БОТ_USERNAME?startapp=ref_${currentId}`;
         navigator.clipboard.writeText(link);
         tg.showAlert(state.lang === 'ru' ? "Ссылка скопирована!" : "Link copied!");
     }
@@ -305,14 +329,24 @@
         tg.showAlert(state.lang === 'ru' ? "Счет отправлен в чат с ботом!" : "Invoice sent to bot chat!");
     }
 
+    // --- АДМИНКА ---
     function openAdmin() { playSound('btn'); document.getElementById('admin-modal').style.display = 'flex'; }
     function closeAdmin() { playSound('btn'); document.getElementById('admin-modal').style.display = 'none'; }
     function toggleMaint() { playSound('btn'); db.ref('global').update({ isMaint: !globalData.isMaint }); }
+    
     function toggleEvent() {
         playSound('btn');
         if (globalData.eventEnd > Date.now()) { db.ref('global').update({ eventEnd: 0 }); } 
         else { const threeMonths = Date.now() + (90 * 24 * 60 * 60 * 1000); db.ref('global').update({ eventEnd: threeMonths }); }
     }
+    
+    function endEventEarly() {
+        playSound('btn');
+        if(confirm("Закончить ивент досрочно прямо сейчас?")) {
+            db.ref('global').update({ eventEnd: Date.now() - 10000 });
+        }
+    }
+
     function adminClearWinners() {
         playSound('btn');
         if(confirm("Очистить победителей и закрыть ивент?")) {
@@ -345,6 +379,7 @@
         });
     }
 
+    // --- ЛОГИКА ТАБЛИЦЫ ПОБЕДИТЕЛЕЙ ---
     function captureWinners() {
         db.ref('users').once('value', snap => {
             const data = snap.val();
@@ -352,7 +387,9 @@
             let players = Object.values(data).filter(p => p && p.username && p.username !== "Guest")
                 .map(p => { 
                     const offTime = Math.floor((now - (p.lastUpdate || now)) / 1000); 
-                    return { username: p.username, score: (p.score || 0) + (offTime * (p.passiveLvl || 0)) }; 
+                    // Итоговый счет: монеты + влияние прокачки
+                    const totalScore = (p.score || 0) + (offTime * (p.passiveLvl || 0)) + ((p.tapLvl || 0)*100) + ((p.passiveLvl || 0)*500);
+                    return { username: p.username, score: totalScore }; 
                 })
                 .sort((a,b) => b.score - a.score).slice(0,3);
             db.ref('lastWinners').set(players);
@@ -388,15 +425,23 @@
         fetchAndShowWinners(false);
     };
 
+    // --- GLOBAL SYNC И ТАЙМЕР ---
     db.ref('global').on('value', snap => {
         globalData = snap.val() || { eventEnd: 0, isMaint: false };
+        
+        // Исправленная логика обновления текста ON/OFF в админке
+        const maintStatusElement = document.getElementById('maint-status');
+        if (maintStatusElement) maintStatusElement.innerText = globalData.isMaint ? 'ON' : 'OFF';
+
         const isMaint = globalData.isMaint && Number(currentId) !== MY_ID;
         document.getElementById('maint-screen').style.display = isMaint ? 'flex' : 'none';
 
         if (globalData.eventEnd > Date.now()) {
             document.getElementById('event-toggle-btn').innerText = "ЗАКРЫТЬ ИВЕНТ"; 
+            document.getElementById('event-rush-btn').classList.remove('hidden');
         } else {
             document.getElementById('event-toggle-btn').innerText = "НАЧАТЬ ИВЕНТ"; 
+            document.getElementById('event-rush-btn').classList.add('hidden');
         }
     });
     
@@ -414,13 +459,23 @@
         if (isEventActive) {
             document.getElementById('show-winners-btn').style.display = 'none';
             const diff = globalData.eventEnd - now;
-            const days = Math.floor(diff / 86400000);
+            
+            // Расчет месяцев, дней, часов
+            const totalDays = Math.floor(diff / 86400000);
+            const months = Math.floor(totalDays / 30);
+            const days = totalDays % 30;
+
             if (diff < 86400000) {
                 const h = Math.floor((diff / 3600000) % 24);
                 const m = Math.floor((diff / 60000) % 60); const s = Math.floor((diff / 1000) % 60);
                 sync.innerText = `END IN: ${h}h ${m}m ${s}s`; sync.style.color = "#555";
             } else {
-                sync.innerText = `EVENT: ${days} DAYS`; sync.style.color = "#555";
+                if (months > 0) {
+                    sync.innerText = `EVENT: ${months}M ${days}D`; 
+                } else {
+                    sync.innerText = `EVENT: ${days} DAYS`; 
+                }
+                sync.style.color = "#555";
             }
         } else if (globalData.eventEnd > 0 && globalData.eventEnd <= now) {
             sync.innerText = "ИВЕНТ ЗАВЕРШЕН"; sync.style.color = "#555";
@@ -512,6 +567,8 @@
 
     db.ref(`users/${currentId}`).once('value', (snap) => {
         const data = snap.val();
+        
+        // РЕФЕРАЛЬНАЯ СИСТЕМА
         const startParam = tg.initDataUnsafe?.start_param;
         let isNewRef = false;
         
@@ -551,6 +608,8 @@
         
         const mE = getMaxEnergyReal();
         document.getElementById('e-text').innerText = `${state.isInfiniteEnergy ? '∞' : Math.floor(state.energy)} / ${mE}`;
+        
+        // Исправлено: ширина полоски обновляется плавно
         document.getElementById('e-fill').style.width = state.isInfiniteEnergy ? '100%' : ((state.energy / mE) * 100) + '%';
     }
 
@@ -570,7 +629,6 @@
             list.innerHTML = "";
             let top5 = players.slice(0, 5);
             
-            // ВЕРНУЛИ РАНГИ В ТОП 5
             top5.forEach((p, i) => { 
                 const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']; 
                 const rankName = getRank(p.tapLvl);
@@ -606,14 +664,14 @@
             `<button class="buy-btn" disabled style="background:#333; color:#555;">MAX</button>` : 
             `<button class="buy-btn" ${state.score < info.cost ? 'disabled' : ''} onclick="buy('${type}', ${info.cost})" style="min-width: 90px;">${format(info.cost)}</button>`;
 
-        // ВЕРНУЛИ РАНГ В МАГАЗИН ПРОКАЧЕК
-        const rankName = type === 'click' ? getRank(state.tapLvl) : "UPGRADE";
+        // Ранг отображается корректно для любой открытой прокачки
+        const rankName = getRank(info.val);
 
         cont.innerHTML = `
             <div class="card" style="cursor:default; flex-direction: column; align-items: flex-start; gap: 10px; padding: 20px; background: linear-gradient(145deg, #161616, #0a0a0a); border: 1px solid #333; border-radius: 16px;">
                 <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <div style="font-size: 11px; color: var(--green); font-weight: 900; text-transform: uppercase; margin-bottom: 5px;">${rankName}</div>
+                        <div style="font-size: 11px; color: #fff; font-weight: 900; text-transform: uppercase; margin-bottom: 5px;">${rankName}</div>
                         <div style="font-size: 22px; font-weight: 900; color: #fff;">${info.val} <span style="color: #666; font-size: 16px;">→ ${info.next}</span></div>
                     </div>
                     ${buyBtnHtml}
@@ -639,33 +697,6 @@
             if(state.sound && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success'); 
         } 
     };
-    
-    function updateLangUI() {
-        const l = langData[state.lang];
-        document.getElementById('t-score-label').innerText = l.scoreL;
-        document.getElementById('cur-lang').innerText = state.lang === 'en' ? "EN" : "RU";
-        document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
-        
-        const map = { 
-            't-nav-gear': 'navGear', 't-gear-title':'gearT', 't-tap-label':'tapL', 
-            't-top-title':'topT', 't-shop-title':'shopT', 't-click-up':'clUp', 
-            't-click-desc':'clDe', 't-pass-up':'psUp', 't-pass-desc':'psDe', 
-            't-back':'back', 't-lang-label':'langL', 't-sound-label':'soundL', 
-            't-nav-top':'navTop', 't-nav-game':'navGame', 't-nav-shop':'navShop', 
-            't-case-name':'caseName', 'case-btn':'caseOpen' 
-        };
-        for(let id in map) { const el = document.getElementById(id); if(el) el.innerText = l[map[id]]; }
-        
-        if(document.getElementById('passive-display')) document.getElementById('passive-display').innerText = `${l.passL}: ${state.passiveLvl}/sec`;
-        updateCaseUI();
-    }
-    
-    function toggleLang() { playSound('btn'); state.lang = state.lang === 'en' ? 'ru' : 'en'; updateLangUI(); updateUI(); save(); }
-    function toggleSound() { 
-        playSound('btn'); state.sound = !state.sound; document.getElementById('cur-sound').innerText = state.sound ? "ON" : "OFF";
-        if (!state.sound) bgMusic.pause(); else if(!isMobile) playNextTrack();
-        save(); 
-    }
     
     setInterval(() => { 
         if (!isLoaded) return; 
