@@ -1324,7 +1324,7 @@
             font-weight:900;
         "
     >
-        MINI-GAMES
+        mini-games
     </h2>
 
     <div class="token-display">
@@ -1758,7 +1758,7 @@
         onclick="show('s-games')"
     >
         <span>🎮</span>
-        <p id="t-nav-games">mini-games</p>
+        <p id="t-nav-games">MINI-GAMES</p>
     </div>
 
     <div
@@ -1894,6 +1894,31 @@ document.addEventListener(
         passive: true
     }
 );
+
+/* Try to start music immediately on mobile when the game loads.
+   Some mobile browsers allow this inside Telegram; if the browser blocks
+   autoplay, the existing first-touch fallback above still unlocks it. */
+window.addEventListener('load', () => {
+    if (isMobile && state.sound) {
+        unlockMobileMusic();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (isMobile && state.sound) {
+        unlockMobileMusic();
+    }
+});
+
+document.addEventListener('visibilitychange', () => {
+    if (
+        document.visibilityState === 'visible' &&
+        isMobile &&
+        state.sound
+    ) {
+        unlockMobileMusic();
+    }
+});
 
 
 const sfxTap =
@@ -2113,13 +2138,13 @@ const langData = {
             "SHOP",
 
         navGames:
-            "mini-games",
+            "MINI-GAMES",
 
         navGear:
             "SETTINGS",
 
         gamesTitle:
-            "mini-games",
+            "MINI-GAMES",
 
         token:
             "🎟️ TOKENS",
@@ -2260,13 +2285,13 @@ const langData = {
             "МАГАЗИН",
 
         navGames:
-            "мини-игры",
+            "МИНИ-ИГРЫ",
 
         navGear:
             "НАСТРОЙКИ",
 
         gamesTitle:
-            "мини-игры",
+            "МИНИ-ИГРЫ",
 
         token:
             "🎟️ ЖЕТОНЫ",
@@ -7060,17 +7085,27 @@ function startQuickGame() {
     const level =
         miniGameState.level;
 
-    let rounds =
-        5 +
-        level;
+    /*
+        В каждом уровне нужно реально нажать кнопку.
+        Без нажатия уровень НЕ может завершиться успешно.
+    */
 
-    let current =
+    const requiredTaps =
+        5 + level;
+
+    let successfulTaps =
         0;
 
-    let waiting =
+    let waitingForSignal =
+        true;
+
+    let signalVisible =
         false;
 
     let timeout =
+        null;
+
+    let signalTimer =
         null;
 
     stage.innerHTML =
@@ -7079,6 +7114,7 @@ function startQuickGame() {
             id="quick-screen"
             style="
                 display:flex;
+                flex-direction:column;
                 align-items:center;
                 justify-content:center;
                 height:100%;
@@ -7088,7 +7124,27 @@ function startQuickGame() {
                 text-align:center;
             "
         >
-            READY
+
+            <div id="quick-progress">
+                0 / ${requiredTaps}
+            </div>
+
+            <div
+                id="quick-hint"
+                style="
+                    font-size:11px;
+                    color:#666;
+                    margin-top:14px;
+                    letter-spacing:1px;
+                "
+            >
+                ${
+                    ru
+                        ? "ЖДИ СИГНАЛ"
+                        : "WAIT FOR SIGNAL"
+                }
+            </div>
+
         </div>
         `;
 
@@ -7097,11 +7153,12 @@ function startQuickGame() {
         <button
             class="mg-control"
             id="quick-button"
+            disabled
         >
             ${
                 ru
-                    ? "НАЖАТЬ"
-                    : "TAP"
+                    ? "ЖДИ"
+                    : "WAIT"
             }
         </button>
 
@@ -7118,72 +7175,162 @@ function startQuickGame() {
             "quick-screen"
         );
 
-    function nextRound() {
+    const progress =
+        document.getElementById(
+            "quick-progress"
+        );
+
+    const hint =
+        document.getElementById(
+            "quick-hint"
+        );
+
+    const button =
+        document.getElementById(
+            "quick-button"
+        );
+
+    function clearTimers() {
+
+        if (
+            timeout
+        ) {
+
+            clearTimeout(
+                timeout
+            );
+
+            timeout = null;
+        }
+
+        if (
+            signalTimer
+        ) {
+
+            clearTimeout(
+                signalTimer
+            );
+
+            signalTimer = null;
+        }
+    }
+
+    function failBecauseNoTap() {
+
+        clearTimers();
+
+        loseMiniGame(
+            "quick"
+        );
+    }
+
+    function prepareRound() {
 
         if (
             !miniGameState.running
         ) return;
 
-        current++;
+        clearTimers();
 
-        if (
-            current >
-            rounds
-        ) {
+        waitingForSignal =
+            true;
 
-            finishMiniGame(
-                "quick",
-                rounds
-            );
+        signalVisible =
+            false;
 
-            return;
-        }
+        button.disabled =
+            true;
 
-        waiting =
-            Math.random() <
-            .38;
+        button.innerText =
+            ru
+                ? "ЖДИ"
+                : "WAIT";
 
         screen.innerText =
-            waiting
-                ? (
-                    ru
-                        ? "ЖДИ"
-                        : "WAIT"
-                )
-                : (
-                    ru
-                        ? "ЖМИ"
-                        : "TAP"
-                );
+            `${successfulTaps} / ${requiredTaps}`;
 
-        timeout =
+        hint.innerText =
+            ru
+                ? "ЖДИ СИГНАЛ"
+                : "WAIT FOR SIGNAL";
+
+        /*
+            Сигнал появляется после небольшой случайной паузы.
+        */
+
+        signalTimer =
             setTimeout(
-                nextRound,
+                () => {
+
+                    if (
+                        !miniGameState.running
+                    ) return;
+
+                    waitingForSignal =
+                        false;
+
+                    signalVisible =
+                        true;
+
+                    button.disabled =
+                        false;
+
+                    button.innerText =
+                        ru
+                            ? "НАЖАТЬ"
+                            : "TAP";
+
+                    screen.innerText =
+                        `${successfulTaps} / ${requiredTaps}`;
+
+                    hint.innerText =
+                        ru
+                            ? "ЖМИ СЕЙЧАС"
+                            : "TAP NOW";
+
+                    /*
+                        Если игрок вообще не нажал,
+                        раунд считается проигранным.
+                    */
+
+                    timeout =
+                        setTimeout(
+                            failBecauseNoTap,
+                            Math.max(
+                                650,
+                                1200 -
+                                level *
+                                35
+                            )
+                        );
+
+                },
                 Math.max(
-                    470,
-                    1150 -
+                    350,
+                    800 -
                     level *
-                    40
-                )
+                    20
+                ) +
+                Math.random() *
+                500
             );
     }
 
-    document.getElementById(
-        "quick-button"
-    ).onclick =
+    button.onclick =
         () => {
 
             if (
                 !miniGameState.running
             ) return;
 
-            if (
-                waiting
-            ) {
+            /*
+                Раннее нажатие = ошибка.
+            */
 
-                clearTimeout(
-                    timeout
-                );
+            if (
+                waitingForSignal ||
+                !signalVisible
+            ) {
 
                 loseMiniGame(
                     "quick"
@@ -7192,11 +7339,27 @@ function startQuickGame() {
                 return;
             }
 
-            clearTimeout(
-                timeout
-            );
+            clearTimers();
 
-            nextRound();
+            successfulTaps++;
+
+            progress.innerText =
+                `${successfulTaps} / ${requiredTaps}`;
+
+            if (
+                successfulTaps >=
+                requiredTaps
+            ) {
+
+                finishMiniGame(
+                    "quick",
+                    successfulTaps
+                );
+
+                return;
+            }
+
+            prepareRound();
         };
 
     document.getElementById(
@@ -7204,20 +7367,13 @@ function startQuickGame() {
     ).onclick =
         restartMiniGame;
 
-    nextRound();
-
     miniGameState.cleanup =
         () => {
 
-            if (
-                timeout
-            ) {
-
-                clearTimeout(
-                    timeout
-                );
-            }
+            clearTimers();
         };
+
+    prepareRound();
 }
 
 /* ============================= */
