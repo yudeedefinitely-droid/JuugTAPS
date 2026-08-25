@@ -1871,7 +1871,10 @@ function playSound(
     type
 ) {
 
+    /* SFX are disabled on mobile.
+       On PC they obey the Sound setting. */
     if (
+        isMobile ||
         !state.sound
     ) return;
 
@@ -2210,7 +2213,7 @@ const langData = {
             "МАГАЗИН",
 
         navGames:
-            "ИГРЫ",
+            "MINI-GAMES",
 
         navGear:
             "НАСТРОЙКИ",
