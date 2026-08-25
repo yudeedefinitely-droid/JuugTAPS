@@ -1324,7 +1324,7 @@
             font-weight:900;
         "
     >
-        MINI GAMES
+        MINI-GAMES
     </h2>
 
     <div class="token-display">
@@ -1825,8 +1825,7 @@ bgMusic.volume =
 function playNextTrack() {
 
     if (
-        !state.sound ||
-        isMobile
+        !state.sound
     ) return;
 
     currentTrackIndex =
@@ -1848,6 +1847,54 @@ function playNextTrack() {
 
 bgMusic.onended =
     playNextTrack;
+
+/* Mobile browsers require a user gesture before audio can play.
+   On mobile this unlocks MUSIC only; playSound() already disables SFX. */
+function unlockMobileMusic() {
+
+    if (
+        !isMobile ||
+        !state.sound
+    ) return;
+
+    if (
+        !bgMusic.src
+    ) {
+
+        currentTrackIndex =
+            Math.floor(
+                Math.random() *
+                bgTracks.length
+            );
+
+        bgMusic.src =
+            bgTracks[
+                currentTrackIndex
+            ];
+    }
+
+    bgMusic.play()
+        .catch(() => {});
+}
+
+document.addEventListener(
+    'pointerdown',
+    unlockMobileMusic,
+    {
+        once: true,
+        passive: true
+    }
+);
+
+document.addEventListener(
+    'touchstart',
+    unlockMobileMusic,
+    {
+        once: true,
+        passive: true
+    }
+);
+
 
 const sfxTap =
     new Audio(
@@ -2066,7 +2113,7 @@ const langData = {
             "SHOP",
 
         navGames:
-            "MINI-GAMES",
+            "МИНИ-ИГРЫ",
 
         navGear:
             "SETTINGS",
@@ -2213,7 +2260,7 @@ const langData = {
             "МАГАЗИН",
 
         navGames:
-            "MINI-GAMES",
+            "МИНИ-ИГРЫ",
 
         navGear:
             "НАСТРОЙКИ",
@@ -2585,9 +2632,7 @@ function toggleSound() {
 
         bgMusic.pause();
 
-    } else if (
-        !isMobile
-    ) {
+    } else {
 
         playNextTrack();
     }
