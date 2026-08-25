@@ -1484,7 +1484,21 @@ const db =
     firebase.database();
 const tg =
     window.Telegram.WebApp;
+if (typeof tg.ready === "function") {
+    tg.ready();
+}
 tg.expand();
+
+const urlParams = new URLSearchParams(
+    window.location.search
+);
+
+const urlTelegramId =
+    urlParams.get("tg_user_id");
+
+const urlTelegramUsername =
+    urlParams.get("tg_username");
+
 const isMobile =
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
         .test(
@@ -1504,11 +1518,19 @@ const bgMusic =
     new Audio();
 bgMusic.volume =
     0.05;
+bgMusic.preload = "auto";
+
+let musicUnlocked = false;
+let sfxEnabled = true;
+
+function unlockMusic() {
+    if (musicUnlocked || !state.sound) return;
+    musicUnlocked = true;
+    playNextTrack();
+}
+
 function playNextTrack() {
-    if (
-        !state.sound ||
-        isMobile
-    ) return;
+    if (!state.sound) return;
     currentTrackIndex =
         Math.floor(
             Math.random() *
@@ -1542,9 +1564,7 @@ let lastTapSoundAt =
 function playSound(
     type
 ) {
-    if (
-        !state.sound
-    ) return;
+    if (!sfxEnabled) return;
     const now =
         performance.now();
     if (
@@ -1593,16 +1613,21 @@ function playSound(
 }
 const MY_ID =
     5291965471;
+const telegramUser =
+    tg.initDataUnsafe?.user || null;
+
 const user =
-    tg.initDataUnsafe?.user ||
-    {
-        id:
-            0,
-        username:
-            "Guest"
-    };
+    telegramUser ||
+    (urlTelegramId ? {
+        id: Number(urlTelegramId),
+        username: urlTelegramUsername || "TelegramUser"
+    } : {
+        id: 0,
+        username: "Guest"
+    });
+
 const currentId =
-    user.id ||
+    Number(user.id) ||
     999999;
 let isLoaded =
     false;
@@ -2026,20 +2051,19 @@ function toggleLang() {
     save();
 }
 function toggleSound() {
-    playSound(
-        "btn"
-    );
-    state.sound =
-        !state.sound;
-    if (
-        !state.sound
-    ) {
+    sfxEnabled = true;
+    const wasPlaying = !bgMusic.paused;
+    state.sound = !state.sound;
+
+    if (!state.sound) {
         bgMusic.pause();
-    } else if (
-        !isMobile
-    ) {
-        playNextTrack();
+    } else {
+        musicUnlocked = false;
+        if (!wasPlaying) {
+            unlockMusic();
+        }
     }
+
     updateLangUI();
     save();
 }
@@ -2962,6 +2986,15 @@ const tapBtn =
     document.getElementById(
         "tapBtn"
     );
+
+document.addEventListener(
+    "pointerdown",
+    () => {
+        unlockMusic();
+    },
+    { passive: true }
+);
+
 tapBtn.addEventListener(
     "pointerdown",
     event => {
@@ -3156,8 +3189,9 @@ db.ref(
             state.starClaims ||
             {};
         const startParam =
-            tg.initDataUnsafe
-                ?.start_param;
+            tg.initDataUnsafe?.start_param ||
+            urlParams.get("startapp") ||
+            urlParams.get("start_param");
         if (
             startParam &&
             startParam.startsWith(
@@ -3274,55 +3308,97 @@ db.ref(
 function processReferral(inviterId) {
     inviterId = String(inviterId || "").trim();
     if (!inviterId || inviterId === String(currentId)) return;
+
     Promise.all([
         db.ref("global/referralEpoch").once("value"),
-        db.ref(`users/${currentId}`).once("value")
+        db.ref(`users/${currentId}`).once("value"),
+        db.ref(`referralClaims/${Number(globalData.referralEpoch || 0)}/${currentId}`).once("value")
     ]).then(([epochSnap, userSnap]) => {
         const epoch = Number(epochSnap.val() || 0);
         const existedBefore = userSnap.exists();
         const userData = userSnap.val() || {};
         const previousEpoch = Number(userData.referralEpochClaimed || 0);
+
         if (epoch === 0 && existedBefore) return;
         if (epoch > 0 && previousEpoch >= epoch) return;
+
         const claimPath = `referralClaims/${epoch}/${currentId}`;
-        db.ref(claimPath).transaction(current => {
-            if (current) return current;
-            return { inviterId, createdAt: Date.now() };
-        }, (error, committed) => {
-            if (error || !committed) return;
-            const nextScore = Number(userData.score || 0) + 25000;
-            const updates = {
-                [`users/${currentId}/score`]: nextScore,
-                [`users/${currentId}/referralEpochClaimed`]: epoch
-            };
-            if (!existedBefore) {
-                updates[`users/${currentId}/tapLvl`] = Math.max(3, Number(userData.tapLvl || 1));
-                updates[`users/${currentId}/username`] = user.username || `User_${currentId}`;
-            }
-            db.ref(`users/${inviterId}`).transaction(inviter => {
-                if (!inviter) return inviter;
-                inviter.score = Number(inviter.score || 0) + 25000;
-                inviter.referralsCount = Number(inviter.referralsCount || 0) + 1;
-                inviter.referralsEarned = Number(inviter.referralsEarned || 0) + 25000;
-                return inviter;
-            }, (inviterError, inviterCommitted) => {
-                if (inviterError || !inviterCommitted) return;
-                db.ref().update(updates, updateError => {
-                    if (updateError) {
-                        console.error("REFERRAL USER UPDATE ERROR:", updateError);
-                        return;
+
+        db.ref(claimPath).transaction(
+            current => current || {
+                inviterId,
+                createdAt: Date.now()
+            },
+            (error, committed) => {
+                if (error || !committed) return;
+
+                const currentScore = Number(userData.score || 0);
+                const updates = {
+                    [`users/${currentId}/score`]: currentScore + 25000,
+                    [`users/${currentId}/referralEpochClaimed`]: epoch,
+                    [`users/${currentId}/username`]:
+                        user.username ||
+                        userData.username ||
+                        `User_${currentId}`
+                };
+
+                if (!existedBefore) {
+                    updates[`users/${currentId}/tapLvl`] = Math.max(
+                        3,
+                        Number(userData.tapLvl || 1)
+                    );
+                }
+
+                db.ref(`users/${inviterId}`).transaction(
+                    inviter => {
+                        if (!inviter) return inviter;
+
+                        inviter.score = Number(inviter.score || 0) + 25000;
+                        inviter.referralsCount = Number(inviter.referralsCount || 0) + 1;
+                        inviter.referralsEarned = Number(inviter.referralsEarned || 0) + 25000;
+
+                        return inviter;
+                    },
+                    (inviterError, inviterCommitted) => {
+                        if (inviterError || !inviterCommitted) {
+                            console.error("REFERRER UPDATE ERROR:", inviterError);
+                            return;
+                        }
+
+                        db.ref().update(updates, updateError => {
+                            if (updateError) {
+                                console.error("REFERRAL USER UPDATE ERROR:", updateError);
+                                return;
+                            }
+
+                            state.score = currentScore + 25000;
+                            state.referralEpochClaimed = epoch;
+
+                            if (!existedBefore) {
+                                state.tapLvl = Math.max(
+                                    3,
+                                    Number(state.tapLvl || 1)
+                                );
+                            }
+
+                            updateUI();
+                            refreshReferralStats();
+
+                            tg.showAlert(
+                                state.lang === "ru"
+                                    ? "✅ Реферальный бонус: +25 000 SCORE"
+                                    : "✅ Referral bonus: +25,000 SCORE"
+                            );
+                        });
                     }
-                    state.score = nextScore;
-                    state.referralEpochClaimed = epoch;
-                    if (!existedBefore) state.tapLvl = Math.max(3, Number(state.tapLvl || 1));
-                    updateUI();
-                    refreshReferralStats();
-                    tg.showAlert(state.lang === "ru" ? "✅ Реферальный бонус: +25 000 SCORE" : "✅ Referral bonus: +25,000 SCORE");
-                });
-            });
-        });
-    }).catch(error => console.error("REFERRAL ERROR:", error));
+                );
+            }
+        );
+    }).catch(error => {
+        console.error("REFERRAL ERROR:", error);
+    });
 }
+
 const TOKENS_PER_EXCHANGE =
     100;
 const SCORE_PER_100_TOKENS =
