@@ -4,110 +4,695 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>JuugTAPS</title>
+
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-        :root { --b: #000; --w: #fff; --g: #111; --sg: #222; }
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--b); color: var(--w); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
-        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.5s ease; }
-        .loader-logo { width: 150px; height: 150px; margin-bottom: 30px; object-fit: contain; }
-        .loader-bar { width: 180px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; position: relative; }
-        .loader-progress { width: 60%; height: 100%; background: #fff; box-shadow: 0 0 15px #fff; position: absolute; animation: loadAnim 1.5s infinite ease-in-out; }
-        @keyframes loadAnim { 0% { left: -100%; } 100% { left: 100%; } }
-        #maint-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; }
-        #particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-        #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; position: relative; height: 100%; z-index: 1; overflow: hidden; }
-        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; padding-bottom: 140px; opacity: 0; pointer-events: none; transform: translateY(15px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .screen.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
-        .hidden { display: none !important; }
-        .header { width: 100%; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 20px; color: #555; }
-        #score { font-size: 72px; font-weight: 900; margin-top: 5px; }
-        .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; min-height: 300px; }
-        .main-circle { width: 240px; height: 240px; border: 4px solid var(--w); border-radius: 50%; transition: transform 0.05s ease-out; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%); box-shadow: 0 0 20px rgba(255,255,255,0.05); position: relative; z-index: 2; touch-action: manipulation; }
-        .main-circle.is-active { transform: scale(0.92); background: rgba(255,255,255,0.15); }
-        .tap-effect { position: absolute; pointer-events: none; color: #fff; font-weight: 900; font-size: 26px; animation: floatUp 0.6s ease-out forwards; z-index: 10; }
-        @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120px); opacity: 0; } }
-        .energy-box { width: 100%; text-align: center; margin-bottom: 20px; position: relative; }
-        .bar-bg { height: 26px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 13px; margin: 15px 0; overflow: hidden; position: relative; backdrop-filter: blur(5px); box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
-        #e-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #333 0%, #fff 100%); transition: width 1s linear; position: relative; }
-        #e-text { position: absolute; width: 100%; left: 0; top: 50%; transform: translateY(-50%); font-family: 'Courier New', monospace; font-size: 13px; font-weight: 900; letter-spacing: 2px; color: var(--w); text-shadow: 1px 1px 2px #000, 0 0 10px rgba(0,0,0,0.8); z-index: 10; mix-blend-mode: normal; }
-        .card { width: 100%; background: var(--g); border: 1px solid var(--sg); padding: 18px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
-        .card:active { transform: scale(0.98); background: #151515; }
-        .card.special { border: 1px solid rgba(255,255,255,0.3); background: linear-gradient(145deg, #111, #050505); }
-        .card.stars { border: 1px solid #555; background: linear-gradient(145deg, #222, #000); }
-        .case-icon { font-size: 24px; margin-right: 15px; }
-        .buy-btn { background: var(--w); color: var(--b); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 900; min-width: 80px; cursor: pointer; text-transform: uppercase; }
-        .buy-btn:disabled { background: #333; color: #555; cursor: not-allowed; }
-        nav { position: absolute; bottom: 0; width: 100%; display: flex; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); border-top: 1px solid var(--sg); padding: 15px 0 35px; z-index: 100; }
-        .nav-item { flex: 1; text-align: center; color: #444; font-size: 10px; font-weight: 800; cursor: pointer; transition: 0.3s; }
-        .nav-item.active { color: var(--w); transform: translateY(-2px); }
-        .nav-item span { display: block; font-size: 24px; margin-bottom: 4px; filter: grayscale(1) brightness(2); transition: 0.3s; }
-        .nav-item.active span { filter: grayscale(0) brightness(1); color: #fff; }
-        .settings-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 12px; border: 1px solid var(--sg); background: var(--g); color: #fff; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
-        #admin-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 20px; flex-direction: column; overflow-y: auto;}
-        .admin-content { background: #111; width: 100%; max-width: 400px; border-radius: 20px; padding: 20px; border: 1px solid #333; }
-        .admin-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #fff; font-weight: 800; cursor: pointer; color: #000; background: #fff; }
-        .btn-danger { background: transparent; border-color: #555; color: #fff; }
-        #winners-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); z-index: 25000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .winners-content { background: rgba(20, 20, 20, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 30px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.6); color: #fff; }
-        .winner-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 16px; font-weight: 700; }
-        .winner-row:last-child { border: none; }
-        #show-winners-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 15px; border-radius: 12px; width: 100%; margin-bottom: 20px; font-weight: 800; display: none; cursor: pointer; backdrop-filter: blur(5px); }
-        .my-rank-row { background: rgba(255,255,255,0.1); border: 1px solid #fff; border-radius: 12px; margin-top: 15px; padding: 15px; display: flex; justify-content: space-between; font-weight: 900; }
+        :root {
+            --b: #000;
+            --w: #fff;
+            --g: #111;
+            --sg: #222;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--b);
+            color: var(--w);
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+        }
+
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader-logo {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 30px;
+            object-fit: contain;
+        }
+
+        .loader-bar {
+            width: 180px;
+            height: 3px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loader-progress {
+            width: 60%;
+            height: 100%;
+            background: #fff;
+            box-shadow: 0 0 15px #fff;
+            position: absolute;
+            animation: loadAnim 1.5s infinite ease-in-out;
+        }
+
+        @keyframes loadAnim {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        #maint-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+            padding-bottom: 140px;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(15px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .screen.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        #score {
+            font-size: 72px;
+            font-weight: 900;
+            margin-top: 5px;
+        }
+
+        .tap-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            min-height: 300px;
+        }
+
+        .main-circle {
+            width: 240px;
+            height: 240px;
+            border: 4px solid var(--w);
+            border-radius: 50%;
+            transition: transform 0.05s ease-out;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            box-shadow: 0 0 20px rgba(255,255,255,0.05);
+            position: relative;
+            z-index: 2;
+            touch-action: manipulation;
+        }
+
+        .main-circle.is-active {
+            transform: scale(0.92);
+            background: rgba(255,255,255,0.15);
+        }
+
+        .tap-effect {
+            position: absolute;
+            pointer-events: none;
+            color: #fff;
+            font-weight: 900;
+            font-size: 26px;
+            animation: floatUp 0.6s ease-out forwards;
+            z-index: 10;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-120px);
+                opacity: 0;
+            }
+        }
+
+        .energy-box {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .bar-bg {
+            height: 26px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 13px;
+            margin: 15px 0;
+            overflow: hidden;
+            position: relative;
+            backdrop-filter: blur(5px);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        #e-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #333 0%, #fff 100%);
+            transition: width 1s linear;
+            position: relative;
+        }
+
+        #e-text {
+            position: absolute;
+            width: 100%;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: var(--w);
+            text-shadow: 1px 1px 2px #000, 0 0 10px rgba(0,0,0,0.8);
+            z-index: 10;
+        }
+
+        .card {
+            width: 100%;
+            background: var(--g);
+            border: 1px solid var(--sg);
+            padding: 18px;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .card:active {
+            transform: scale(0.98);
+            background: #151515;
+        }
+
+        .card.special {
+            border: 1px solid rgba(255,255,255,0.3);
+            background: linear-gradient(145deg, #111, #050505);
+        }
+
+        .card.stars {
+            border: 1px solid #555;
+            background: linear-gradient(145deg, #222, #000);
+        }
+
+        .case-icon {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+
+        .buy-btn {
+            background: var(--w);
+            color: var(--b);
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 900;
+            min-width: 80px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .buy-btn:disabled {
+            background: #333;
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        nav {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+            background: rgba(0,0,0,0.94);
+            backdrop-filter: blur(15px);
+            border-top: 1px solid var(--sg);
+            padding: 10px 0 28px;
+            z-index: 100;
+        }
+
+        .nav-item {
+            flex: 1;
+            min-width: 0;
+            text-align: center;
+            color: #444;
+            font-size: 9px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .nav-item.active {
+            color: var(--w);
+            transform: translateY(-2px);
+        }
+
+        .nav-item span {
+            display: block;
+            font-size: 21px;
+            margin-bottom: 3px;
+            filter: grayscale(1) brightness(2);
+            transition: 0.3s;
+        }
+
+        .nav-item.active span {
+            filter: grayscale(0) brightness(1);
+            color: #fff;
+        }
+
+        .settings-btn {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            border: 1px solid var(--sg);
+            background: var(--g);
+            color: #fff;
+            font-weight: 800;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #admin-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 20000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .admin-content {
+            background: #111;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid #333;
+        }
+
+        .admin-btn {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border: 1px solid #fff;
+            font-weight: 800;
+            cursor: pointer;
+            color: #000;
+            background: #fff;
+        }
+
+        .btn-danger {
+            background: transparent;
+            border-color: #555;
+            color: #fff;
+        }
+
+        #winners-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            z-index: 25000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .winners-content {
+            background: rgba(20,20,20,0.85);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            color: #fff;
+        }
+
+        .winner-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .winner-row:last-child {
+            border: none;
+        }
+
+        #show-winners-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            width: 100%;
+            margin-bottom: 20px;
+            font-weight: 800;
+            display: none;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+        }
+
+        .my-rank-row {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #fff;
+            border-radius: 12px;
+            margin-top: 15px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 900;
+        }
+
+        /* MINI GAMES */
+        #minigame-modal {
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100vw !important;
+            height: 100dvh !important;
+            background: rgba(0,0,0,.97);
+            z-index: 999999 !important;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            overflow: hidden;
+        }
+
+        #minigame-box {
+            position: relative;
+            width: min(100%,520px);
+            max-width: 520px;
+            max-height: calc(100dvh - 24px);
+            background: #0b0b0b;
+            border: 1px solid #292929;
+            border-radius: 20px;
+            padding: 16px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-shadow: 0 20px 70px rgba(0,0,0,.85);
+        }
+
+        #mg-stage {
+            width: 100%;
+            min-height: 300px;
+            height: min(52dvh,390px);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #222;
+            border-radius: 14px;
+            background: #050505;
+        }
+
+        .mg-control {
+            flex: 1;
+            min-width: 120px;
+            min-height: 54px;
+            border: 1px solid #333;
+            background: #111;
+            color: #fff;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .mg-control:active {
+            transform: scale(.98);
+        }
+
+        .mini-games-grid {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            gap: 10px;
+        }
+
+        .mini-game-card {
+            background: linear-gradient(145deg,#141414,#080808);
+            border: 1px solid #292929;
+            border-radius: 15px;
+            padding: 16px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform .15s ease;
+        }
+
+        .mini-game-card:active {
+            transform: scale(.98);
+        }
+
+        .mg-icon {
+            font-size: 31px;
+        }
+
+        .mg-title {
+            font-size: 15px;
+            font-weight: 900;
+            margin-top: 8px;
+        }
+
+        .mg-desc {
+            font-size: 10px;
+            color: #707070;
+            margin-top: 4px;
+            line-height: 1.35;
+        }
+
+        .mg-reward {
+            font-size: 10px;
+            color: #aaa;
+            margin-top: 12px;
+        }
+
+        .token-display {
+            width: 100%;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 13px 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        @media (max-width:390px) {
+            .mini-games-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .mini-game-card {
+                min-height: 140px;
+                padding: 13px;
+            }
+
+            .nav-item {
+                font-size: 8px;
+            }
+
+            .nav-item span {
+                font-size: 20px;
+            }
+        }
     </style>
 </head>
+
 <body>
 
 <div id="loading-screen">
-    <img src="assets/loading.png" class="loader-logo" alt="JuugTAPS">
+    <img src="data:image/png;base64,PASTE_YOUR_EXISTING_LOADING_BASE64_HERE" class="loader-logo" alt="JuugTAPS">
     <div class="loader-bar">
         <div class="loader-progress"></div>
     </div>
 </div>
 
 <div id="maint-screen">
-    <h1 style="font-size: 50px;">🔧</h1>
-    <h2 style="margin: 15px 0;">MAINTENANCE</h2>
+    <h1 style="font-size:50px;">🔧</h1>
+    <h2 style="margin:15px 0;">MAINTENANCE</h2>
 </div>
 
 <div id="winners-popup">
     <div class="winners-content">
-        <h2 style="margin-bottom: 10px; font-weight: 900; letter-spacing: 1px; color: var(--w);">🏆 EVENT CHAMPIONS</h2>
-        <div id="winners-list" style="margin-bottom: 25px;"></div>
-        <button class="admin-btn" onclick="playSound('btn'); document.getElementById('winners-popup').style.display='none'">AWESOME!</button>
+        <h2 style="margin-bottom:10px;font-weight:900;letter-spacing:1px;color:var(--w);">
+            🏆 EVENT CHAMPIONS
+        </h2>
+        <div id="winners-list" style="margin-bottom:25px;"></div>
+        <button class="admin-btn" onclick="playSound('btn');document.getElementById('winners-popup').style.display='none'">
+            AWESOME!
+        </button>
     </div>
 </div>
 
 <div id="admin-modal">
     <div class="admin-content">
-        <h3 style="margin-bottom: 20px; text-align: center;">ADMIN PANEL</h3>
-        <button id="event-toggle-btn" class="admin-btn" onclick="toggleEvent()">НАЧАТЬ ИВЕНТ</button>
-        <button id="event-rush-btn" class="admin-btn btn-danger hidden" onclick="endEventEarly()">ЗАКОНЧИТЬ ДОСРОЧНО</button>
-        <button class="admin-btn btn-danger" onclick="adminClearWinners()">ОЧИСТИТЬ ПОБЕДИТЕЛЕЙ</button>
-        <button class="admin-btn btn-danger" onclick="toggleMaint()">ТЕХ ПЕРЕРЫВ: <span id="maint-status">OFF</span></button>
+        <h3 style="margin-bottom:20px;text-align:center;">ADMIN PANEL</h3>
+
+        <button id="event-toggle-btn" class="admin-btn" onclick="toggleEvent()">
+            НАЧАТЬ ИВЕНТ
+        </button>
+
+        <button id="event-rush-btn" class="admin-btn btn-danger hidden" onclick="endEventEarly()">
+            ЗАКОНЧИТЬ ДОСРОЧНО
+        </button>
+
+        <button class="admin-btn btn-danger" onclick="adminClearWinners()">
+            ОЧИСТИТЬ ПОБЕДИТЕЛЕЙ
+        </button>
+
+        <button class="admin-btn btn-danger" onclick="toggleMaint()">
+            ТЕХ ПЕРЕРЫВ: <span id="maint-status">OFF</span>
+        </button>
+
         <hr style="border:0;border-top:1px solid #333;margin:15px 0;">
-        <button class="admin-btn btn-danger" onclick="resetAllPlayers()">ОБНУЛИТЬ ВСЕХ ИГРОКОВ</button>
+
+        <button class="admin-btn btn-danger" onclick="resetAllPlayers()">
+            ОБНУЛИТЬ ВСЕХ ИГРОКОВ
+        </button>
 
         <div style="background:#222;padding:15px;border-radius:12px;margin-top:10px;">
-            <input type="text" id="target-user" placeholder="username или ID" style="width:100%;padding:12px;background:#000;border:1px solid #444;color:#fff;border-radius:8px;margin-bottom:10px;outline:none;">
-            <button class="admin-btn btn-danger" style="margin:0;" onclick="resetSpecificPlayer()">ОБНУЛИТЬ ОДНОГО</button>
+            <input
+                type="text"
+                id="target-user"
+                placeholder="username или ID"
+                style="width:100%;padding:12px;background:#000;border:1px solid #444;color:#fff;border-radius:8px;margin-bottom:10px;outline:none;"
+            >
+
+            <button class="admin-btn btn-danger" style="margin:0;" onclick="resetSpecificPlayer()">
+                ОБНУЛИТЬ ОДНОГО
+            </button>
         </div>
 
-        <button class="admin-btn btn-danger" style="margin-top:20px;" onclick="closeAdmin()">ЗАКРЫТЬ</button>
+        <button class="admin-btn btn-danger" style="margin-top:20px;" onclick="closeAdmin()">
+            ЗАКРЫТЬ
+        </button>
     </div>
 </div>
 
 <div id="minigame-modal">
-    <div id="minigame-box" style="width:100%;max-width:520px;background:#0d0d0d;border:1px solid #292929;border-radius:20px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.7);">
+    <div id="minigame-box">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
             <div>
                 <div id="mg-title" style="font-size:18px;font-weight:900;">MINI GAME</div>
                 <div id="mg-level" style="font-size:11px;color:#777;font-weight:800;">LEVEL 1</div>
             </div>
-            <button onclick="closeMiniGame()" style="border:1px solid #333;background:#111;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer;">CLOSE</button>
+
+            <button
+                class="mg-control"
+                style="flex:0 0 auto;min-width:70px;padding:8px 12px;"
+                onclick="closeMiniGame()"
+            >
+                CLOSE
+            </button>
         </div>
 
         <div style="display:flex;justify-content:space-between;background:#111;border:1px solid #222;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:11px;">
@@ -117,7 +702,7 @@
 
         <div id="mg-info" style="font-size:11px;color:#888;line-height:1.5;margin-bottom:12px;"></div>
 
-        <div id="mg-stage" style="width:100%;min-height:290px;position:relative;overflow:hidden;border:1px solid #222;border-radius:14px;background:#070707;"></div>
+        <div id="mg-stage"></div>
 
         <div id="mg-controls" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;"></div>
     </div>
@@ -133,7 +718,9 @@
         <span id="sync-text">ИВЕНТ ЗАКРЫТ</span>
     </div>
 
-    <p id="t-score-label" style="font-size:10px;font-weight:800;letter-spacing:3px;color:#444;">SCORE</p>
+    <p id="t-score-label" style="font-size:10px;font-weight:800;letter-spacing:3px;color:#444;">
+        SCORE
+    </p>
 
     <div id="score">0</div>
 
@@ -141,17 +728,14 @@
         Passive: 0/sec
     </div>
 
-    <div style="width:100%;background:#111;border:1px solid #222;border-radius:12px;padding:12px 15px;margin-top:10px;display:flex;justify-content:space-between;font-size:12px;font-weight:900;">
-        <span>🎟️ TOKENS</span>
-        <span id="token-score">0</span>
-    </div>
-
     <div class="tap-area">
         <div class="main-circle" id="tapBtn"></div>
     </div>
 
     <div class="energy-box">
-        <p id="t-tap-label" style="font-size:10px;font-weight:800;letter-spacing:1px;color:#444;">STAMINA</p>
+        <p id="t-tap-label" style="font-size:10px;font-weight:800;letter-spacing:1px;color:#444;">
+            STAMINA
+        </p>
 
         <div class="bar-bg">
             <div id="e-fill"></div>
@@ -185,7 +769,9 @@
                 <b id="t-stars-up" style="font-size:18px;font-weight:900;color:#fff;">
                     BUY 5M POINTS
                 </b>
+
                 <br>
+
                 <span id="t-stars-desc" style="font-size:12px;color:#888;">
                     Instant boost
                 </span>
@@ -203,7 +789,7 @@
                 <div>
                     <b id="t-case-name">DAILY CASE</b>
                     <br>
-                    <span id="case-status" style="font-size:11px;color:rgba(255,255,255,.5)">
+                    <span id="case-status" style="font-size:11px;color:rgba(255,255,255,0.5)">
                         100 - 10,000 pts
                     </span>
                 </div>
@@ -219,13 +805,17 @@
                 <b id="t-click-up" style="font-size:18px;font-weight:900;">
                     CLICK UPGRADES
                 </b>
+
                 <br>
+
                 <span id="t-click-desc" style="font-size:12px;color:#888;">
                     Increase tap income
                 </span>
             </div>
 
-            <span style="color:var(--w);font-size:20px;font-weight:900;">➔</span>
+            <span style="color:var(--w);font-size:20px;font-weight:900;">
+                ➔
+            </span>
         </div>
 
         <div class="card" onclick="openUpgrade('passive')">
@@ -233,13 +823,17 @@
                 <b id="t-pass-up" style="font-size:18px;font-weight:900;">
                     PASSIVE INCOME
                 </b>
+
                 <br>
+
                 <span id="t-pass-desc" style="font-size:12px;color:#888;">
                     Automatic income
                 </span>
             </div>
 
-            <span style="color:var(--w);font-size:20px;font-weight:900;">➔</span>
+            <span style="color:var(--w);font-size:20px;font-weight:900;">
+                ➔
+            </span>
         </div>
 
         <div class="card" onclick="openUpgrade('energy')">
@@ -247,13 +841,17 @@
                 <b id="t-nrg-up" style="font-size:18px;font-weight:900;">
                     MAX STAMINA
                 </b>
+
                 <br>
+
                 <span id="t-nrg-desc" style="font-size:12px;color:#888;">
                     Increase energy cap
                 </span>
             </div>
 
-            <span style="color:var(--w);font-size:20px;font-weight:900;">➔</span>
+            <span style="color:var(--w);font-size:20px;font-weight:900;">
+                ➔
+            </span>
         </div>
 
         <div class="card" onclick="openUpgrade('regen')">
@@ -261,18 +859,26 @@
                 <b id="t-reg-up" style="font-size:18px;font-weight:900;">
                     STAMINA REGEN
                 </b>
+
                 <br>
+
                 <span id="t-reg-desc" style="font-size:12px;color:#888;">
                     Faster recovery
                 </span>
             </div>
 
-            <span style="color:var(--w);font-size:20px;font-weight:900;">➔</span>
+            <span style="color:var(--w);font-size:20px;font-weight:900;">
+                ➔
+            </span>
         </div>
     </div>
 
     <div id="shop-detail" class="hidden" style="width:100%;">
-        <button id="t-back" onclick="backToShop()" style="background:none;border:none;color:#fff;font-weight:800;margin-bottom:15px;cursor:pointer;display:flex;align-items:center;gap:5px;">
+        <button
+            id="t-back"
+            onclick="backToShop()"
+            style="background:none;border:none;color:#fff;font-weight:800;margin-bottom:15px;cursor:pointer;display:flex;align-items:center;gap:5px;"
+        >
             ← BACK
         </button>
 
@@ -281,48 +887,87 @@
 </section>
 
 <section id="s-games" class="screen">
-    <h2 style="align-self:flex-start;margin-bottom:10px;font-weight:900;">MINI GAMES</h2>
+    <h2 style="align-self:flex-start;margin-bottom:10px;font-weight:900;">
+        MINI GAMES
+    </h2>
 
-    <div style="width:100%;background:#111;border:1px solid #222;border-radius:12px;padding:13px 15px;margin-bottom:10px;display:flex;justify-content:space-between;font-size:12px;font-weight:900;">
+    <div class="token-display">
         <span>🎟️ TOKENS</span>
         <span id="token-score-games">0</span>
     </div>
 
-    <div style="width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">
-        <div class="card" style="display:block;min-height:160px;" onclick="openMiniGame('night')">
-            <div style="font-size:30px;">🌙</div>
-            <div style="font-size:15px;font-weight:900;margin-top:8px;">NIGHT SHIFT</div>
-            <div style="font-size:10px;color:#707070;margin-top:4px;line-height:1.35;">FNAF-style. Watch rooms, manage power and survive.</div>
-            <div style="font-size:10px;color:#aaa;margin-top:12px;">Escalating difficulty</div>
+    <div class="mini-games-grid">
+
+        <div class="mini-game-card" onclick="openMiniGame('night')">
+            <div>
+                <div class="mg-icon">🌙</div>
+                <div class="mg-title">NIGHT SHIFT</div>
+                <div class="mg-desc">
+                    Simple FNAF-style survival. Check the room and close the door only when the monster is there.
+                </div>
+            </div>
+
+            <div class="mg-reward">
+                Easy tutorial → harder levels
+            </div>
         </div>
 
-        <div class="card" style="display:block;min-height:160px;" onclick="openMiniGame('dash')">
-            <div style="font-size:30px;">🔺</div>
-            <div style="font-size:15px;font-weight:900;margin-top:8px;">JUUG DASH</div>
-            <div style="font-size:10px;color:#707070;margin-top:4px;line-height:1.35;">Geometry Dash-style. Jump and avoid obstacles.</div>
-            <div style="font-size:10px;color:#aaa;margin-top:12px;">Gets faster</div>
+        <div class="mini-game-card" onclick="openMiniGame('dash')">
+            <div>
+                <div class="mg-icon">🔺</div>
+                <div class="mg-title">JUUG DASH</div>
+                <div class="mg-desc">
+                    Jump over obstacles and reach the finish.
+                </div>
+            </div>
+
+            <div class="mg-reward">
+                Gets faster
+            </div>
         </div>
 
-        <div class="card" style="display:block;min-height:160px;" onclick="openMiniGame('memory')">
-            <div style="font-size:30px;">🧠</div>
-            <div style="font-size:15px;font-weight:900;margin-top:8px;">MEMORY GRID</div>
-            <div style="font-size:10px;color:#707070;margin-top:4px;line-height:1.35;">Remember the highlighted cells and repeat them.</div>
-            <div style="font-size:10px;color:#aaa;margin-top:12px;">More cells each level</div>
+        <div class="mini-game-card" onclick="openMiniGame('memory')">
+            <div>
+                <div class="mg-icon">🧠</div>
+                <div class="mg-title">MEMORY GRID</div>
+                <div class="mg-desc">
+                    Remember highlighted cells and repeat them.
+                </div>
+            </div>
+
+            <div class="mg-reward">
+                More cells
+            </div>
         </div>
 
-        <div class="card" style="display:block;min-height:160px;" onclick="openMiniGame('quick')">
-            <div style="font-size:30px;">⚡</div>
-            <div style="font-size:15px;font-weight:900;margin-top:8px;">QUICK SWITCH</div>
-            <div style="font-size:10px;color:#707070;margin-top:4px;line-height:1.35;">React only when the game says TAP.</div>
-            <div style="font-size:10px;color:#aaa;margin-top:12px;">Gets quicker</div>
+        <div class="mini-game-card" onclick="openMiniGame('quick')">
+            <div>
+                <div class="mg-icon">⚡</div>
+                <div class="mg-title">QUICK SWITCH</div>
+                <div class="mg-desc">
+                    Tap only when the screen says TAP.
+                </div>
+            </div>
+
+            <div class="mg-reward">
+                Faster reactions
+            </div>
         </div>
 
-        <div class="card" style="display:block;min-height:160px;" onclick="openMiniGame('reactor')">
-            <div style="font-size:30px;">☢️</div>
-            <div style="font-size:15px;font-weight:900;margin-top:8px;">REACTOR</div>
-            <div style="font-size:10px;color:#707070;margin-top:4px;line-height:1.35;">Memorize the safe symbol sequence.</div>
-            <div style="font-size:10px;color:#aaa;margin-top:12px;">Longer sequences</div>
+        <div class="mini-game-card" onclick="openMiniGame('reactor')">
+            <div>
+                <div class="mg-icon">☢️</div>
+                <div class="mg-title">REACTOR</div>
+                <div class="mg-desc">
+                    Remember and repeat the safe symbol sequence.
+                </div>
+            </div>
+
+            <div class="mg-reward">
+                Longer sequence
+            </div>
         </div>
+
     </div>
 </section>
 
@@ -331,37 +976,58 @@
         SETTINGS
     </h2>
 
-    <div class="settings-btn" onclick="toggleLang()">
-        <span id="t-lang-label">Language</span>
-        <span id="cur-lang" style="color:#888">English</span>
-    </div>
-
-    <div class="settings-btn" onclick="toggleSound()">
-        <span id="t-sound-label">Sound</span>
-        <span id="cur-sound" style="color:#888">ON</span>
-    </div>
-
     <div id="referral-card" class="card" style="display:block;cursor:default;">
+
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+
             <div>
-                <div style="font-size:18px;font-weight:900;">🤝 REFERRALS</div>
-                <div style="font-size:11px;color:#777;margin-top:4px;">+25 000 points for each invited friend</div>
+                <div style="font-size:18px;font-weight:900;">
+                    🤝 REFERRALS
+                </div>
+
+                <div style="font-size:11px;color:#777;margin-top:4px;">
+                    +25 000 points for you and your invited friend
+                </div>
             </div>
+
             <div style="text-align:right;">
-                <div id="ref-count" style="font-size:20px;font-weight:900;">0</div>
-                <div style="font-size:9px;color:#666;">INVITED</div>
+                <div id="ref-count" style="font-size:20px;font-weight:900;">
+                    0
+                </div>
+
+                <div style="font-size:9px;color:#666;">
+                    INVITED
+                </div>
             </div>
+
         </div>
 
         <div style="display:flex;gap:8px;">
-            <button class="buy-btn" style="flex:1;" onclick="copyRefLink()">COPY</button>
-            <button class="buy-btn" style="flex:1;" onclick="shareRefLink()">SHARE</button>
+
+            <button class="buy-btn" style="flex:1;" onclick="copyRefLink()">
+                COPY
+            </button>
+
+            <button class="buy-btn" style="flex:1;" onclick="shareRefLink()">
+                SHARE
+            </button>
+
         </div>
 
         <div id="ref-earned" style="font-size:11px;color:#777;text-align:center;margin-top:10px;">
             Earned: 0 pts
         </div>
     </div>
+
+    <button class="settings-btn" onclick="toggleLang()">
+        <span id="t-lang-label">Language</span>
+        <span id="cur-lang" style="color:#888">English</span>
+    </button>
+
+    <button class="settings-btn" onclick="toggleSound()">
+        <span id="t-sound-label">Sound</span>
+        <span id="cur-sound" style="color:#888">ON</span>
+    </button>
 
     <div id="admin-container"></div>
 </section>
@@ -427,10 +1093,7 @@ let currentTrackIndex =
     Math.floor(Math.random() * bgTracks.length);
 
 const bgMusic = new Audio();
-bgMusic.preload = 'metadata';
 bgMusic.volume = 0.05;
-
-let lastTapSoundAt = 0;
 
 function playNextTrack() {
     if (!state.sound || isMobile) return;
@@ -446,20 +1109,14 @@ function playNextTrack() {
 
 bgMusic.onended = playNextTrack;
 
-const sfxTap =
-    new Audio('sounds/tap.mp3');
+const sfxTap = new Audio('sounds/tap.mp3');
+const sfxBuy = new Audio('sounds/buy.mp3');
+const sfxBtn = new Audio('sounds/btn.mp3');
 
-const sfxBuy =
-    new Audio('sounds/buy.mp3');
-
-const sfxBtn =
-    new Audio('sounds/btn.mp3');
-
-sfxTap.preload = 'auto';
-sfxBuy.preload = 'auto';
-sfxBtn.preload = 'auto';
+let lastTapSoundAt = 0;
 
 function playSound(type) {
+
     if (!state.sound) return;
 
     const now =
@@ -477,7 +1134,8 @@ function playSound(type) {
     }
 
     try {
-        let audio =
+
+        const audio =
             type === 'tap'
                 ? sfxTap
                 : type === 'buy'
@@ -485,20 +1143,24 @@ function playSound(type) {
                     : sfxBtn;
 
         if (type === 'tap') {
+
             audio.currentTime = 0;
+            audio.volume = 0.10;
             audio.play().catch(()=>{});
-            return;
+
+        } else {
+
+            const clone =
+                audio.cloneNode();
+
+            clone.volume =
+                type === 'buy'
+                    ? 0.25
+                    : 0.20;
+
+            clone.play().catch(()=>{});
         }
 
-        let clone =
-            audio.cloneNode();
-
-        clone.volume =
-            type === 'buy'
-                ? 0.3
-                : 0.2;
-
-        clone.play().catch(()=>{});
     } catch(e) {}
 }
 
@@ -537,9 +1199,6 @@ let globalData = {
     eventEnd: 0,
     isMaint: false
 };
-
-window.BOT_SERVER_URL =
-    'https://botlol-9x4v.onrender.com';
 
 const langData = {
     en: {
@@ -606,12 +1265,14 @@ const langData = {
 };
 
 function updateLangUI() {
+
     const l =
         langData[state.lang];
 
     document.getElementById(
         't-score-label'
-    ).innerText = l.scoreL;
+    ).innerText =
+        l.scoreL;
 
     document.getElementById(
         'cur-lang'
@@ -655,7 +1316,10 @@ function updateLangUI() {
         't-stars-desc': 'starsDe'
     };
 
-    for (let id in map) {
+    for (
+        let id in map
+    ) {
+
         const el =
             document.getElementById(id);
 
@@ -670,6 +1334,7 @@ function updateLangUI() {
             'passive-display'
         )
     ) {
+
         document.getElementById(
             'passive-display'
         ).innerText =
@@ -682,6 +1347,7 @@ function updateLangUI() {
 }
 
 function toggleLang() {
+
     playSound('btn');
 
     state.lang =
@@ -695,6 +1361,7 @@ function toggleLang() {
 }
 
 function toggleSound() {
+
     playSound('btn');
 
     state.sound =
@@ -717,6 +1384,7 @@ function toggleSound() {
 }
 
 function getRank(lvl) {
+
     const ranks = [
         "Noob Juug'er",
         "Default Juug'er",
@@ -749,6 +1417,7 @@ function getUpgradeInfo(type) {
         ];
 
     if (type === 'click') {
+
         return {
             cost:
                 Math.floor(
@@ -758,14 +1427,17 @@ function getUpgradeInfo(type) {
                         lvl
                     )
                 ),
+
             val:
                 lvl,
+
             next:
                 lvl + 1
         };
     }
 
     if (type === 'passive') {
+
         return {
             cost:
                 Math.floor(
@@ -775,8 +1447,10 @@ function getUpgradeInfo(type) {
                         lvl + 1
                     )
                 ),
+
             val:
                 lvl,
+
             next:
                 lvl + 1
         };
@@ -785,13 +1459,17 @@ function getUpgradeInfo(type) {
     if (type === 'energy') {
 
         if (lvl >= 20) {
+
             return {
                 cost:
                     500000000000,
+
                 val:
                     '10000',
+
                 next:
                     '∞',
+
                 isMax:
                     state.isInfiniteEnergy
             };
@@ -838,6 +1516,7 @@ function getUpgradeInfo(type) {
             cost,
             val:
                 1 + lvl,
+
             next:
                 2 + lvl
         };
@@ -856,15 +1535,19 @@ function getRegenReal() {
         state.regenLvl;
 }
 
-async function resolveBotUsername() {
-    if (window.cachedBotUsername) {
+async function getBotUsername() {
+
+    if (
+        window.cachedBotUsername
+    ) {
         return window.cachedBotUsername;
     }
 
     try {
+
         const response =
             await fetch(
-                `${window.BOT_SERVER_URL}/bot-info`,
+                'https://botlol-9x4v.onrender.com/bot-info',
                 {
                     cache:
                         'no-store'
@@ -878,13 +1561,15 @@ async function resolveBotUsername() {
             data &&
             data.username
         ) {
+
             window.cachedBotUsername =
                 data.username;
 
             return data.username;
         }
 
-    } catch(e) {
+    } catch (e) {
+
         console.warn(
             'bot-info error:',
             e
@@ -897,13 +1582,14 @@ async function resolveBotUsername() {
 async function getReferralLink() {
 
     const bot =
-        await resolveBotUsername();
+        await getBotUsername();
 
     if (
         !bot ||
         !currentId ||
         currentId === 0
     ) {
+
         return '';
     }
 
@@ -915,12 +1601,14 @@ async function getReferralLink() {
 }
 
 async function copyRefLink() {
+
     playSound('btn');
 
     const link =
         await getReferralLink();
 
     if (!link) {
+
         tg.showAlert(
             state.lang === 'ru'
                 ? 'Не удалось получить ссылку.'
@@ -931,6 +1619,7 @@ async function copyRefLink() {
     }
 
     try {
+
         await navigator.clipboard.writeText(
             link
         );
@@ -941,23 +1630,7 @@ async function copyRefLink() {
                 : 'Link copied!'
         );
 
-    } catch(e) {
-
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title:
-                        'JuugTAPS',
-                    text:
-                        link,
-                    url:
-                        link
-                });
-
-                return;
-
-            } catch(_) {}
-        }
+    } catch (e) {
 
         tg.showAlert(
             link
@@ -966,30 +1639,29 @@ async function copyRefLink() {
 }
 
 async function shareRefLink() {
+
     playSound('btn');
 
-    const bot =
-        await resolveBotUsername();
+    const link =
+        await getReferralLink();
 
-    if (!bot) {
+    if (!link) {
+
         tg.showAlert(
             state.lang === 'ru'
-                ? 'Не удалось получить ссылку. Попробуй ещё раз.'
-                : 'Could not get referral link. Try again.'
+                ? 'Не удалось получить ссылку.'
+                : 'Could not get referral link.'
         );
 
         return;
     }
-
-    const link =
-        `https://t.me/${bot}?startapp=ref_${currentId}`;
 
     const text =
         state.lang === 'ru'
             ? 'Заходи в JuugTAPS по моей ссылке и получай бонус!'
             : 'Join JuugTAPS through my link and get a bonus!';
 
-    const url =
+    const shareUrl =
         `https://t.me/share/url?url=` +
         `${encodeURIComponent(link)}` +
         `&text=` +
@@ -1001,21 +1673,26 @@ async function shareRefLink() {
             typeof tg.openTelegramLink ===
             'function'
         ) {
+
             tg.openTelegramLink(
-                url
+                shareUrl
             );
 
             return;
         }
 
-    } catch(e) {}
+    } catch (e) {}
 
-    if (navigator.share) {
+    if (
+        navigator.share
+    ) {
+
         try {
 
             await navigator.share({
                 title:
                     'JuugTAPS',
+
                 text,
                 url:
                     link
@@ -1023,7 +1700,7 @@ async function shareRefLink() {
 
             return;
 
-        } catch(_) {}
+        } catch (e) {}
     }
 
     await copyRefLink();
@@ -1033,13 +1710,11 @@ async function buyStars() {
 
     playSound('btn');
 
-    const server =
-        'https://botlol-9x4v.onrender.com';
-
     if (
         !currentId ||
         currentId === 0
     ) {
+
         tg.showAlert(
             state.lang === 'ru'
                 ? 'Не удалось определить Telegram аккаунт.'
@@ -1051,9 +1726,9 @@ async function buyStars() {
 
     try {
 
-        const res =
+        const response =
             await fetch(
-                `${server}/create-invoice?user_id=${encodeURIComponent(currentId)}`,
+                `https://botlol-9x4v.onrender.com/create-invoice?user_id=${encodeURIComponent(currentId)}`,
                 {
                     cache:
                         'no-store'
@@ -1061,15 +1736,16 @@ async function buyStars() {
             );
 
         const data =
-            await res.json();
+            await response.json();
 
         if (
             !data ||
             !data.url
         ) {
+
             throw new Error(
                 data?.error ||
-                'invoice'
+                'Invoice error'
             );
         }
 
@@ -1083,11 +1759,13 @@ async function buyStars() {
                 status => {
 
                     if (
-                        status === 'paid'
+                        status ===
+                        'paid'
                     ) {
+
                         tg.showAlert(
                             state.lang === 'ru'
-                                ? 'Оплата получена! Очки начисляются автоматически.'
+                                ? 'Оплата получена! Очки будут начислены автоматически.'
                                 : 'Payment received! Points will be added automatically.'
                         );
                     }
@@ -1111,11 +1789,11 @@ async function buyStars() {
             );
         }
 
-    } catch(e) {
+    } catch (error) {
 
         console.error(
-            'STARS',
-            e
+            'STARS ERROR:',
+            error
         );
 
         tg.showAlert(
@@ -1126,11 +1804,10 @@ async function buyStars() {
     }
 }
 
-// ================================
-// АДМИНКА
-// ================================
+// ADMIN
 
 function openAdmin() {
+
     playSound('btn');
 
     document.getElementById(
@@ -1140,6 +1817,7 @@ function openAdmin() {
 }
 
 function closeAdmin() {
+
     playSound('btn');
 
     document.getElementById(
@@ -1149,15 +1827,19 @@ function closeAdmin() {
 }
 
 function toggleMaint() {
+
     playSound('btn');
 
-    db.ref('global').update({
+    db.ref(
+        'global'
+    ).update({
         isMaint:
             !globalData.isMaint
     });
 }
 
 function toggleEvent() {
+
     playSound('btn');
 
     if (
@@ -1165,7 +1847,9 @@ function toggleEvent() {
         Date.now()
     ) {
 
-        db.ref('global').update({
+        db.ref(
+            'global'
+        ).update({
             eventEnd:
                 0
         });
@@ -1182,7 +1866,9 @@ function toggleEvent() {
                 1000
             );
 
-        db.ref('global').update({
+        db.ref(
+            'global'
+        ).update({
             eventEnd:
                 threeMonths
         });
@@ -1190,6 +1876,7 @@ function toggleEvent() {
 }
 
 function endEventEarly() {
+
     playSound('btn');
 
     if (
@@ -1198,14 +1885,18 @@ function endEventEarly() {
         )
     ) {
 
-        db.ref('global').update({
+        db.ref(
+            'global'
+        ).update({
             eventEnd:
-                Date.now() - 10000
+                Date.now() -
+                10000
         });
     }
 }
 
 function adminClearWinners() {
+
     playSound('btn');
 
     if (
@@ -1233,6 +1924,7 @@ function adminClearWinners() {
 }
 
 function resetAllPlayers() {
+
     playSound('btn');
 
     if (
@@ -1248,7 +1940,8 @@ function resetAllPlayers() {
         snap => {
 
             const users =
-                snap.val() || {};
+                snap.val() ||
+                {};
 
             for (
                 let id in users
@@ -1297,6 +1990,7 @@ function resetAllPlayers() {
 }
 
 function resetSpecificPlayer() {
+
     playSound('btn');
 
     const rawTarget =
@@ -1314,7 +2008,9 @@ function resetSpecificPlayer() {
             )
             .toLowerCase();
 
-    if (!target) return;
+    if (
+        !target
+    ) return;
 
     db.ref(
         'users'
@@ -1323,7 +2019,8 @@ function resetSpecificPlayer() {
         snap => {
 
             const users =
-                snap.val() || {};
+                snap.val() ||
+                {};
 
             let foundId =
                 null;
@@ -1344,9 +2041,12 @@ function resetSpecificPlayer() {
                     .toLowerCase();
 
                 if (
-                    String(id) === target ||
-                    username === target
+                    String(id) ===
+                        target ||
+                    username ===
+                        target
                 ) {
+
                     foundId =
                         id;
 
@@ -1354,7 +2054,9 @@ function resetSpecificPlayer() {
                 }
             }
 
-            if (!foundId) {
+            if (
+                !foundId
+            ) {
 
                 tg.showAlert(
                     state.lang === 'ru'
@@ -1416,9 +2118,7 @@ function resetSpecificPlayer() {
     );
 }
 
-// ================================
 // WINNERS
-// ================================
 
 function captureWinners() {
 
@@ -1456,7 +2156,8 @@ function captureWinners() {
                                         p.lastUpdate ||
                                         now
                                     )
-                                ) / 1000
+                                ) /
+                                1000
                             );
 
                         const totalScore =
@@ -1526,19 +2227,18 @@ function renderWinnersTable(
     list.innerHTML =
         "";
 
-    const medals =
-        [
-            '🥇',
-            '🥈',
-            '🥉'
-        ];
+    const medals = [
+        '🥇',
+        '🥈',
+        '🥉'
+    ];
 
     players.forEach(
         (p,i) => {
 
-            list.innerHTML +=
-                `
+            list.innerHTML += `
                 <div class="winner-row">
+
                     <div style="display:flex;align-items:center;gap:10px;">
                         <span style="font-size:24px;">
                             ${medals[i]}
@@ -1552,8 +2252,9 @@ function renderWinnersTable(
                     <span style="color:var(--w);font-family:monospace;font-size:16px;">
                         ${format(p.score)}
                     </span>
+
                 </div>
-                `;
+            `;
         }
     );
 }
@@ -1571,7 +2272,9 @@ function fetchAndShowWinners(
             const players =
                 snap.val();
 
-            if (players) {
+            if (
+                players
+            ) {
 
                 renderWinnersTable(
                     players
@@ -1611,9 +2314,7 @@ window.showWinnersManual =
         );
     };
 
-// ================================
 // GLOBAL
-// ================================
 
 db.ref(
     'global'
@@ -1631,13 +2332,16 @@ db.ref(
                     false
             };
 
-        const maintStatus =
+        const maintStatusElement =
             document.getElementById(
                 'maint-status'
             );
 
-        if (maintStatus) {
-            maintStatus.innerText =
+        if (
+            maintStatusElement
+        ) {
+
+            maintStatusElement.innerText =
                 globalData.isMaint
                     ? 'ON'
                     : 'OFF';
@@ -1707,7 +2411,8 @@ function updateEventTimer() {
     if (
         wasEvent &&
         !isEventActive &&
-        globalData.eventEnd !== 0
+        globalData.eventEnd !==
+            0
     ) {
 
         captureWinners();
@@ -1737,11 +2442,13 @@ function updateEventTimer() {
 
         const months =
             Math.floor(
-                totalDays / 30
+                totalDays /
+                30
             );
 
         const days =
-            totalDays % 30;
+            totalDays %
+            30;
 
         if (
             diff <
@@ -1753,7 +2460,8 @@ function updateEventTimer() {
                     (
                         diff /
                         3600000
-                    ) % 24
+                    ) %
+                    24
                 );
 
             const m =
@@ -1761,7 +2469,8 @@ function updateEventTimer() {
                     (
                         diff /
                         60000
-                    ) % 60
+                    ) %
+                    60
                 );
 
             const s =
@@ -1769,7 +2478,8 @@ function updateEventTimer() {
                     (
                         diff /
                         1000
-                    ) % 60
+                    ) %
+                    60
                 );
 
             sync.innerText =
@@ -1781,7 +2491,8 @@ function updateEventTimer() {
         } else {
 
             if (
-                months > 0
+                months >
+                0
             ) {
 
                 sync.innerText =
@@ -1798,8 +2509,10 @@ function updateEventTimer() {
         }
 
     } else if (
-        globalData.eventEnd > 0 &&
-        globalData.eventEnd <= now
+        globalData.eventEnd >
+            0 &&
+        globalData.eventEnd <=
+            now
     ) {
 
         sync.innerText =
@@ -1846,9 +2559,7 @@ setInterval(
     1000
 );
 
-// ================================
 // PARTICLES
-// ================================
 
 const canvas =
     document.getElementById(
@@ -1982,10 +2693,8 @@ function animate() {
 
     bgParticles.forEach(
         p => {
-
             p.update();
             p.draw();
-
         }
     );
 
@@ -1996,9 +2705,7 @@ function animate() {
 
 animate();
 
-// ================================
 // TAP
-// ================================
 
 function getClickPower() {
 
@@ -2036,13 +2743,16 @@ tapBtn.addEventListener(
         if (
             state.sound &&
             bgMusic.paused &&
+            bgMusic.src === "" &&
             !isMobile
         ) {
 
             playNextTrack();
         }
 
-        playSound('tap');
+        playSound(
+            'tap'
+        );
 
         tapBtn.classList.add(
             'is-active'
@@ -2056,8 +2766,10 @@ tapBtn.addEventListener(
 
         state.tokens =
             Number(
-                state.tokens || 0
-            ) + 1;
+                state.tokens ||
+                0
+            ) +
+            1;
 
         if (
             !state.isInfiniteEnergy
@@ -2091,10 +2803,12 @@ tapBtn.addEventListener(
             `+${clickPower}`;
 
         num.style.left =
-            e.clientX + 'px';
+            e.clientX +
+            'px';
 
         num.style.top =
-            e.clientY + 'px';
+            e.clientY +
+            'px';
 
         document.body.appendChild(
             num
@@ -2110,22 +2824,20 @@ tapBtn.addEventListener(
 
 window.addEventListener(
     'pointerup',
-    () => {
-
+    () =>
         tapBtn.classList.remove(
             'is-active'
-        );
-    }
+        )
 );
 
-// ================================
 // DAILY CASE
-// ================================
 
 window.openDailyCase =
     () => {
 
-        playSound('btn');
+        playSound(
+            'btn'
+        );
 
         const now =
             Date.now();
@@ -2157,11 +2869,14 @@ window.openDailyCase =
         state.lastCaseTime =
             now;
 
-        playSound('buy');
+        playSound(
+            'buy'
+        );
 
         alert(
             (
-                state.lang === 'ru'
+                state.lang ===
+                    'ru'
                     ? "Вы получили: "
                     : "You received: "
             ) +
@@ -2258,9 +2973,7 @@ function updateCaseUI() {
     }
 }
 
-// ================================
 // SAVE
-// ================================
 
 function save() {
 
@@ -2280,9 +2993,7 @@ function save() {
     }
 }
 
-// ================================
 // LOAD USER
-// ================================
 
 db.ref(
     `users/${currentId}`
@@ -2299,7 +3010,9 @@ db.ref(
         let isNewRef =
             false;
 
-        if (data) {
+        if (
+            data
+        ) {
 
             const now =
                 Date.now();
@@ -2417,28 +3130,23 @@ db.ref(
                     String(
                         currentId
                     ) &&
-                currentId !== 0
+                currentId !==
+                    0
             ) {
 
                 db.ref(
                     `referralClaims/${inviterId}/${currentId}`
                 ).transaction(
 
-                    claim => {
-
-                        if (claim) {
-                            return claim;
-                        }
-
-                        return {
-                            username:
-                                user.username ||
-                                'User',
-
+                    claim =>
+                        claim ||
+                        {
                             createdAt:
-                                Date.now()
-                        };
-                    },
+                                Date.now(),
+
+                            invitedId:
+                                currentId
+                        },
 
                     (
                         error,
@@ -2448,9 +3156,7 @@ db.ref(
                         if (
                             error ||
                             !committed
-                        ) {
-                            return;
-                        }
+                        ) return;
 
                         db.ref(
                             `users/${inviterId}`
@@ -2498,6 +3204,16 @@ db.ref(
             data?.username ||
             `User_${currentId}`;
 
+        state.tokens =
+            Number(
+                state.tokens ||
+                0
+            );
+
+        state.miniGames =
+            state.miniGames ||
+            {};
+
         isLoaded =
             true;
 
@@ -2505,6 +3221,7 @@ db.ref(
             state.sound &&
             !isMobile
         ) {
+
             playNextTrack();
         }
 
@@ -2526,11 +3243,15 @@ db.ref(
                 ) {
 
                     tg.showAlert(
-                        state.lang === 'ru'
+                        state.lang ===
+                            'ru'
+
                             ? "Вы пришли по ссылке! +25000 очков и 3 Ур. Клика!"
+
                             : "Referral bonus! +25000 pts & Lvl 3 Click!"
                     );
                 }
+
             },
             500
         );
@@ -2580,14 +3301,98 @@ window.addEventListener(
             document.visibilityState ===
             'hidden'
         ) {
+
             save();
         }
     }
 );
 
-// ================================
 // UI
-// ================================
+
+function refreshReferralStats() {
+
+    if (
+        !currentId ||
+        currentId ===
+            0
+    ) return;
+
+    db.ref(
+        `users/${currentId}`
+    ).once(
+        'value',
+        snap => {
+
+            const data =
+                snap.val() ||
+                {};
+
+            const countEl =
+                document.getElementById(
+                    'ref-count'
+                );
+
+            const earnedEl =
+                document.getElementById(
+                    'ref-earned'
+                );
+
+            if (
+                countEl
+            ) {
+
+                countEl.innerText =
+                    Number(
+                        data.referralsCount ||
+                        0
+                    );
+            }
+
+            if (
+                earnedEl
+            ) {
+
+                earnedEl.innerText =
+                    `${
+                        state.lang ===
+                            'ru'
+                            ? 'Заработано'
+                            : 'Earned'
+                    }: ${
+                        format(
+                            Number(
+                                data.referralsEarned ||
+                                0
+                            )
+                        )
+                    } pts`;
+            }
+        }
+    );
+}
+
+function updateTokenUI() {
+
+    const value =
+        format(
+            Number(
+                state.tokens ||
+                0
+            )
+        );
+
+    const a =
+        document.getElementById(
+            'token-score-games'
+        );
+
+    if (
+        a
+    ) {
+        a.innerText =
+            value;
+    }
+}
 
 function updateUI() {
 
@@ -2683,8 +3488,9 @@ function loadLeaderboard() {
             const data =
                 snap.val();
 
-            if (!data)
-                return;
+            if (
+                !data
+            ) return;
 
             const now =
                 Date.now();
@@ -2811,7 +3617,8 @@ function loadLeaderboard() {
                 );
 
             if (
-                myIndex > 4
+                myIndex >
+                4
             ) {
 
                 myRankCont.innerHTML =
@@ -2846,12 +3653,13 @@ function loadLeaderboard() {
 window.show =
     id => {
 
-        playSound('btn');
+        playSound(
+            'btn'
+        );
 
         document.querySelectorAll(
             '.screen'
-        )
-        .forEach(
+        ).forEach(
             s =>
                 s.classList.remove(
                     'active'
@@ -2860,8 +3668,7 @@ window.show =
 
         document.querySelectorAll(
             '.nav-item'
-        )
-        .forEach(
+        ).forEach(
             n =>
                 n.classList.remove(
                     'active'
@@ -2885,6 +3692,7 @@ window.show =
             id ===
             's-top'
         ) {
+
             loadLeaderboard();
         }
 
@@ -2892,6 +3700,7 @@ window.show =
             id ===
             's-games'
         ) {
+
             updateTokenUI();
         }
     };
@@ -2899,7 +3708,9 @@ window.show =
 window.openUpgrade =
     type => {
 
-        playSound('btn');
+        playSound(
+            'btn'
+        );
 
         document.getElementById(
             'shop-main'
@@ -2921,7 +3732,9 @@ window.openUpgrade =
 window.backToShop =
     () => {
 
-        playSound('btn');
+        playSound(
+            'btn'
+        );
 
         document.getElementById(
             'shop-main'
@@ -2972,7 +3785,7 @@ function renderUpgradeItems(
                             ? 'disabled'
                             : ''
                     }
-                    onclick="buy('${type}', ${info.cost})"
+                    onclick="buy('${type}',${info.cost})"
                     style="min-width:90px;"
                 >
                     ${format(
@@ -3059,7 +3872,9 @@ function renderUpgradeItems(
 window.buy =
     (type,p) => {
 
-        playSound('btn');
+        playSound(
+            'btn'
+        );
 
         if (
             state.score >=
@@ -3110,13 +3925,16 @@ window.buy =
             }
 
             updateUI();
+
             renderUpgradeItems(
                 type
             );
 
             save();
 
-            playSound('buy');
+            playSound(
+                'buy'
+            );
 
             if (
                 state.sound &&
@@ -3144,6 +3962,19 @@ setInterval(
                 0
             );
 
+        state.tokens =
+            Number(
+                state.tokens ||
+                0
+            ) +
+            Math.max(
+                0,
+                Number(
+                    state.passiveLvl ||
+                    0
+                )
+            );
+
         if (
             !state.isInfiniteEnergy
         ) {
@@ -3168,20 +3999,6 @@ setInterval(
             }
         }
 
-        if (
-            (
-                state.passiveLvl ||
-                0
-            ) > 0
-        ) {
-
-            state.tokens +=
-                Math.max(
-                    0,
-                    state.passiveLvl
-                );
-        }
-
         updateUI();
         updateTokenUI();
 
@@ -3194,90 +4011,23 @@ setInterval(
 
         if (
             isLoaded
-        ) save();
+        ) {
+
+            save();
+        }
 
     },
     10000
 );
 
-// ================================
-// REFERRAL
-// ================================
-
-function refreshReferralStats() {
-
-    if (
-        !currentId ||
-        currentId === 0
-    ) return;
-
-    db.ref(
-        `users/${currentId}`
-    ).once(
-        'value',
-        snap => {
-
-            const data =
-                snap.val() ||
-                {};
-
-            const c =
-                document.getElementById(
-                    'ref-count'
-                );
-
-            const e =
-                document.getElementById(
-                    'ref-earned'
-                );
-
-            if (c) {
-                c.innerText =
-                    Number(
-                        data.referralsCount ||
-                        0
-                    );
-            }
-
-            if (e) {
-
-                e.innerText =
-                    `${
-                        state.lang === 'ru'
-                            ? 'Заработано'
-                            : 'Earned'
-                    }: ${
-                        format(
-                            Number(
-                                data.referralsEarned ||
-                                0
-                            )
-                        )
-                    } pts`;
-            }
-        }
-    );
-}
-
-// ================================
 // MINI GAMES
-// ================================
 
 const miniGameTitles = {
-    night:
-        'NIGHT SHIFT',
-
-    dash:
-        'JUUG DASH',
-
-    memory:
-        'MEMORY GRID',
-
-    quick:
-        'QUICK SWITCH',
-
-    reactor:
-        'REACTOR'
+    night: 'NIGHT SHIFT',
+    dash: 'JUUG DASH',
+    memory: 'MEMORY GRID',
+    quick: 'QUICK SWITCH',
+    reactor: 'REACTOR'
 };
 
 let miniGameState = {
@@ -3307,7 +4057,7 @@ function getMiniLevel(
     type
 ) {
 
-    const data =
+    const entry =
         (
             state.miniGames &&
             state.miniGames[type]
@@ -3317,9 +4067,26 @@ function getMiniLevel(
     return Math.max(
         1,
         Number(
-            data.level ||
+            entry.level ||
             1
         )
+    );
+}
+
+function getMiniBest(
+    type
+) {
+
+    const entry =
+        (
+            state.miniGames &&
+            state.miniGames[type]
+        ) ||
+        {};
+
+    return Number(
+        entry.best ||
+        0
     );
 }
 
@@ -3339,58 +4106,7 @@ function getMiniReward(
     );
 }
 
-function getMiniBest(
-    type
-) {
-
-    return Number(
-        (
-            state.miniGames &&
-            state.miniGames[type] &&
-            state.miniGames[type].best
-        ) ||
-        0
-    );
-}
-
-function setMiniBest(
-    type,
-    score
-) {
-
-    if (
-        !state.miniGames
-    ) {
-
-        state.miniGames =
-            {};
-    }
-
-    if (
-        !state.miniGames[type]
-    ) {
-
-        state.miniGames[type] =
-            {
-                level:
-                    1,
-
-                best:
-                    0
-            };
-    }
-
-    state.miniGames[type].best =
-        Math.max(
-            Number(
-                state.miniGames[type].best ||
-                0
-            ),
-            score
-        );
-}
-
-function advanceMiniLevel(
+function ensureMiniEntry(
     type
 ) {
 
@@ -3416,57 +4132,37 @@ function advanceMiniLevel(
             };
     }
 
-    state.miniGames[type].level =
-        Number(
-            state.miniGames[type].level ||
-            1
-        ) +
-        1;
-
-    save();
+    return state.miniGames[type];
 }
 
-function updateTokenUI() {
-
-    const main =
-        document.getElementById(
-            'token-score'
-        );
-
-    const games =
-        document.getElementById(
-            'token-score-games'
-        );
-
-    const value =
-        format(
-            Number(
-                state.tokens ||
-                0
-            )
-        );
-
-    if (main) {
-        main.innerText =
-            value;
-    }
-
-    if (games) {
-        games.innerText =
-            value;
-    }
-}
-
-function addMiniReward(
-    amount,
+function miniWin(
     type,
-    successScore
+    scoreValue
 ) {
+
+    const entry =
+        ensureMiniEntry(
+            type
+        );
+
+    const base =
+        miniGameState.reward;
 
     const reward =
-        Number(
-            amount ||
-            0
+        Math.floor(
+            base *
+            (
+                1 +
+                Math.min(
+                    2,
+                    Math.max(
+                        0,
+                        scoreValue -
+                        1
+                    ) *
+                    .08
+                )
+            )
         );
 
     state.tokens =
@@ -3476,58 +4172,42 @@ function addMiniReward(
         ) +
         reward;
 
-    setMiniBest(
-        type,
-        successScore ||
-            reward
-    );
+    entry.best =
+        Math.max(
+            Number(
+                entry.best ||
+                0
+            ),
+            scoreValue
+        );
 
-    advanceMiniLevel(
-        type
-    );
+    entry.level =
+        Number(
+            entry.level ||
+            1
+        ) +
+        1;
 
     updateTokenUI();
     save();
 
     tg.showAlert(
-        state.lang === 'ru'
+        state.lang ===
+            'ru'
             ? `Победа! +${format(reward)} токенов`
             : `Victory! +${format(reward)} tokens`
     );
 }
 
-function failMiniGame(
-    type
-) {
-
-    if (
-        !state.miniGames
-    ) {
-
-        state.miniGames =
-            {};
-    }
-
-    if (
-        !state.miniGames[type]
-    ) {
-
-        state.miniGames[type] =
-            {
-                level:
-                    1,
-
-                best:
-                    0
-            };
-    }
+function miniFail() {
 
     save();
 
     tg.showAlert(
-        state.lang === 'ru'
-            ? 'Попытка неудачна. Уровень сохранён.'
-            : 'Attempt failed. Level stays the same.'
+        state.lang ===
+            'ru'
+            ? 'Неудача. Уровень не понижен.'
+            : 'Failed. Your level stays the same.'
     );
 }
 
@@ -3617,11 +4297,6 @@ window.openMiniGame =
 window.closeMiniGame =
     function() {
 
-        const modal =
-            document.getElementById(
-                'minigame-modal'
-            );
-
         if (
             miniGameState.timer
         ) {
@@ -3647,7 +4322,7 @@ window.closeMiniGame =
 
             try {
                 miniGameState.cleanup();
-            } catch(e) {}
+            } catch (e) {}
         }
 
         miniGameState =
@@ -3674,7 +4349,9 @@ window.closeMiniGame =
                     null
             };
 
-        modal.style.display =
+        document.getElementById(
+            'minigame-modal'
+        ).style.display =
             'none';
 
         document.getElementById(
@@ -3690,7 +4367,7 @@ window.closeMiniGame =
 
 function finishMiniGame(
     type,
-    score = 1
+    scoreValue = 1
 ) {
 
     if (
@@ -3718,26 +4395,9 @@ function finishMiniGame(
         );
     }
 
-    const reward =
-        Math.floor(
-            miniGameState.reward *
-            (
-                1 +
-                Math.min(
-                    2,
-                    (
-                        score -
-                        1
-                    ) *
-                    .08
-                )
-            )
-        );
-
-    addMiniReward(
-        reward,
+    miniWin(
         type,
-        score
+        scoreValue
     );
 }
 
@@ -3770,14 +4430,10 @@ function loseMiniGame(
         );
     }
 
-    failMiniGame(
-        type
-    );
+    miniFail();
 }
 
-// ================================
-// NIGHT SHIFT
-// ================================
+// NIGHT SHIFT — максимально простой FNAF-стиль
 
 function startNightGame() {
 
@@ -3795,131 +4451,167 @@ function startNightGame() {
         miniGameState.level;
 
     let power =
-        Math.max(
-            30,
-            100 -
-            (
-                level -
-                1
-            ) *
-            5
-        );
+        100;
 
-    let threat =
-        Math.max(
-            0,
-            25 +
-            (
-                level -
-                1
-            ) *
-            6
-        );
+    let monster =
+        'far';
 
-    let room =
-        Math.floor(
-            Math.random() *
-            3
-        );
-
-    let door =
+    let doorClosed =
         false;
 
-    let light =
-        false;
-
-    let elapsed =
+    let survived =
         0;
+
+    let moveTimer =
+        1.5;
 
     let last =
         performance.now();
+
+    const surviveFor =
+        14 +
+        Math.min(
+            20,
+            level * 2
+        );
 
     stage.innerHTML =
         `
         <div
             style="
                 position:absolute;
-                inset:12px;
-                border:1px solid #222;
-                border-radius:12px;
-                padding:14px;
+                inset:0;
+                display:flex;
+                flex-direction:column;
+                align-items:center;
+                justify-content:center;
+                padding:18px;
+                text-align:center;
             "
         >
 
             <div
                 style="
-                    display:flex;
-                    justify-content:space-between;
-                    margin-bottom:12px;
-                "
-            >
-                <span>
-                    POWER
-                </span>
-
-                <span id="night-power">
-                    ${power}%
-                </span>
-            </div>
-
-            <div
-                style="
-                    height:8px;
-                    background:#222;
-                    border-radius:8px;
-                    overflow:hidden;
-                    margin-bottom:16px;
-                "
-            >
-                <div
-                    id="night-power-bar"
-                    style="
-                        width:${power}%;
-                        height:100%;
-                        background:#fff;
-                    "
-                ></div>
-            </div>
-
-            <div
-                id="night-room"
-                style="
-                    font-size:34px;
-                    font-weight:900;
-                    text-align:center;
-                    margin:35px 0;
-                "
-            >
-                ROOM ${room + 1}
-            </div>
-
-            <div
-                style="
-                    text-align:center;
-                    color:#666;
                     font-size:12px;
+                    color:#777;
+                    font-weight:800;
+                    margin-bottom:14px;
                 "
             >
-                ${
-                    level === 1
-                        ? 'Learn the controls: lights reveal danger, doors stop an attack.'
-                        : 'Survive the shift. Higher levels drain power faster.'
-                }
+                NIGHT SHIFT
             </div>
 
             <div
-                id="night-status"
                 style="
-                    text-align:center;
-                    font-size:13px;
-                    margin-top:18px;
+                    width:min(100%,340px);
+                    aspect-ratio:16/10;
+                    border:2px solid #333;
+                    border-radius:16px;
+                    background:linear-gradient(180deg,#121212,#070707);
+                    display:flex;
+                    flex-direction:column;
+                    align-items:center;
+                    justify-content:center;
+                    position:relative;
+                    overflow:hidden;
                 "
             >
-                ${
-                    door
-                        ? 'DOOR CLOSED'
-                        : 'DOOR OPEN'
-                }
+
+                <div
+                    style="
+                        position:absolute;
+                        top:12px;
+                        left:14px;
+                        font-size:10px;
+                        color:#555;
+                        font-weight:900;
+                    "
+                >
+                    OFFICE
+                </div>
+
+                <div
+                    id="night-monster"
+                    style="
+                        font-size:58px;
+                        opacity:.07;
+                        transition:opacity .18s ease,transform .18s ease;
+                    "
+                >
+                    👤
+                </div>
+
+                <div
+                    id="night-door-status"
+                    style="
+                        margin-top:14px;
+                        font-size:13px;
+                        font-weight:900;
+                        color:#777;
+                    "
+                >
+                    ДВЕРЬ ОТКРЫТА
+                </div>
+
+            </div>
+
+            <div
+                style="
+                    width:min(100%,340px);
+                    margin-top:14px;
+                "
+            >
+
+                <div
+                    style="
+                        display:flex;
+                        justify-content:space-between;
+                        font-size:11px;
+                        color:#777;
+                        margin-bottom:7px;
+                    "
+                >
+                    <span>
+                        ЭНЕРГИЯ
+                    </span>
+
+                    <span id="night-power">
+                        100%
+                    </span>
+                </div>
+
+                <div
+                    style="
+                        height:9px;
+                        background:#1a1a1a;
+                        border-radius:9px;
+                        overflow:hidden;
+                    "
+                >
+
+                    <div
+                        id="night-power-bar"
+                        style="
+                            width:100%;
+                            height:100%;
+                            background:#fff;
+                        "
+                    ></div>
+
+                </div>
+            </div>
+
+            <div
+                id="night-message"
+                style="
+                    min-height:56px;
+                    margin-top:14px;
+                    font-size:14px;
+                    font-weight:900;
+                    line-height:1.4;
+                "
+            >
+                Нажми «ПРОВЕРИТЬ». Если увидишь 👤 — закрой дверь.
             </div>
 
         </div>
@@ -3927,22 +4619,49 @@ function startNightGame() {
 
     controls.innerHTML =
         `
-        <button class="admin-btn" id="night-light">
-            💡 LIGHT
+        <button
+            class="mg-control"
+            id="night-check"
+        >
+            💡 ПРОВЕРИТЬ
         </button>
 
-        <button class="admin-btn" id="night-door">
-            🚪 DOOR
-        </button>
-
-        <button class="admin-btn" id="night-next">
-            📹 CAMERA
+        <button
+            class="mg-control"
+            id="night-door"
+        >
+            🚪 ЗАКРЫТЬ ДВЕРЬ
         </button>
         `;
 
-    const lightBtn =
+    const monsterEl =
         document.getElementById(
-            'night-light'
+            'night-monster'
+        );
+
+    const messageEl =
+        document.getElementById(
+            'night-message'
+        );
+
+    const statusEl =
+        document.getElementById(
+            'night-door-status'
+        );
+
+    const powerEl =
+        document.getElementById(
+            'night-power'
+        );
+
+    const powerBar =
+        document.getElementById(
+            'night-power-bar'
+        );
+
+    const checkBtn =
+        document.getElementById(
+            'night-check'
         );
 
     const doorBtn =
@@ -3950,50 +4669,47 @@ function startNightGame() {
             'night-door'
         );
 
-    const nextBtn =
-        document.getElementById(
-            'night-next'
-        );
+    function checkMonster() {
 
-    lightBtn.onclick =
-        () => {
+        if (
+            !miniGameState.running
+        ) return;
 
-            if (
-                !miniGameState.running
-            ) return;
+        if (
+            monster ===
+            'door'
+        ) {
 
-            light =
-                !light;
+            monsterEl.style.opacity =
+                '1';
 
-            power -=
-                light
-                    ? 1 +
-                        level *
-                        .35
-                    : 0;
+            monsterEl.style.transform =
+                'scale(1.12)';
 
-            threat =
-                Math.max(
-                    0,
-                    threat -
-                        (
-                            light
-                                ? 18
-                                : 0
-                        )
-                );
+            messageEl.innerText =
+                '⚠️ МОНСТР У ДВЕРИ! ЗАКРОЙ ЕЁ!';
 
-            document.getElementById(
-                'night-status'
-            ).innerText =
-                light
-                    ? 'LIGHT ON — DANGER CHECKED'
-                    : (
-                        door
-                            ? 'DOOR CLOSED'
-                            : 'DOOR OPEN'
-                    );
-        };
+        } else {
+
+            monsterEl.style.opacity =
+                '.30';
+
+            monsterEl.style.transform =
+                'scale(1)';
+
+            messageEl.innerText =
+                '✅ Безопасно. Дверь пока можно оставить открытой.';
+        }
+
+        power =
+            Math.max(
+                0,
+                power - 1
+            );
+    }
+
+    checkBtn.onclick =
+        checkMonster;
 
     doorBtn.onclick =
         () => {
@@ -4002,57 +4718,109 @@ function startNightGame() {
                 !miniGameState.running
             ) return;
 
-            door =
-                !door;
-
-            document.getElementById(
-                'night-status'
-            ).innerText =
-                door
-                    ? 'DOOR CLOSED'
-                    : (
-                        light
-                            ? 'LIGHT ON — DANGER CHECKED'
-                            : 'DOOR OPEN'
-                    );
-
-            doorBtn.innerText =
-                door
-                    ? '🚪 OPEN DOOR'
-                    : '🚪 DOOR';
-        };
-
-    nextBtn.onclick =
-        () => {
+            doorClosed =
+                !doorClosed;
 
             if (
-                !miniGameState.running
-            ) return;
+                doorClosed
+            ) {
 
-            room =
-                Math.floor(
-                    Math.random() *
-                    3
-                );
+                statusEl.innerText =
+                    'ДВЕРЬ ЗАКРЫТА';
 
-            threat +=
-                Math.random() *
-                (
-                    5 +
-                    level *
-                    2
-                );
+                statusEl.style.color =
+                    '#fff';
 
-            document.getElementById(
-                'night-room'
-            ).innerText =
-                `ROOM ${room + 1}`;
+                doorBtn.innerText =
+                    '🚪 ОТКРЫТЬ ДВЕРЬ';
 
-            power -=
-                1 +
-                level *
-                .25;
+                messageEl.innerText =
+                    monster ===
+                        'door'
+
+                        ? '✅ Хорошо! Ты заблокировал монстра.'
+
+                        : 'Дверь закрыта, но она тратит энергию.';
+
+            } else {
+
+                statusEl.innerText =
+                    'ДВЕРЬ ОТКРЫТА';
+
+                statusEl.style.color =
+                    '#777';
+
+                doorBtn.innerText =
+                    '🚪 ЗАКРЫТЬ ДВЕРЬ';
+
+                messageEl.innerText =
+                    'Дверь открыта. Проверь комнату.';
+            }
         };
+
+    function moveMonster() {
+
+        const roll =
+            Math.random();
+
+        if (
+            monster ===
+            'far'
+        ) {
+
+            monster =
+                roll < .55
+                    ? 'middle'
+                    : 'far';
+
+        } else if (
+            monster ===
+            'middle'
+        ) {
+
+            monster =
+                roll <
+                Math.min(
+                    .82,
+                    .58 +
+                    level *
+                    .02
+                )
+                    ? 'door'
+                    : 'middle';
+
+        } else {
+
+            if (
+                doorClosed
+            ) {
+
+                monster =
+                    'far';
+
+                messageEl.innerText =
+                    '✅ Дверь спасла тебя. Монстр ушёл.';
+
+            } else {
+
+                loseMiniGame(
+                    'night'
+                );
+            }
+        }
+
+        if (
+            monster !==
+            'door'
+        ) {
+
+            monsterEl.style.opacity =
+                '.07';
+
+            monsterEl.style.transform =
+                'scale(.92)';
+        }
+    }
 
     function frame(
         now
@@ -4060,9 +4828,7 @@ function startNightGame() {
 
         if (
             !miniGameState.running
-        ) {
-            return;
-        }
+        ) return;
 
         const dt =
             Math.min(
@@ -4077,46 +4843,53 @@ function startNightGame() {
         last =
             now;
 
-        elapsed +=
+        survived +=
+            dt;
+
+        moveTimer -=
             dt;
 
         power -=
             dt *
             (
-                .55 +
-                level *
-                .08
+                doorClosed
+                    ? (
+                        .80 +
+                        level *
+                        .05
+                    )
+                    : .22
             );
 
         if (
-            !door &&
-            Math.random() <
-            (
-                dt *
-                (
-                    .05 +
+            moveTimer <=
+            0
+        ) {
+
+            moveMonster();
+
+            moveTimer =
+                Math.max(
+                    .65,
+                    1.8 -
                     level *
-                    .01
-                )
-            )
-        ) {
-
-            threat +=
-                3;
+                    .06
+                ) +
+                Math.random() *
+                .45;
         }
 
-        if (
-            threat >=
-            100 &&
-            !door
-        ) {
-
-            loseMiniGame(
-                'night'
+        power =
+            Math.max(
+                0,
+                power
             );
 
-            return;
-        }
+        powerEl.innerText =
+            `${Math.floor(power)}%`;
+
+        powerBar.style.width =
+            `${power}%`;
 
         if (
             power <=
@@ -4131,43 +4904,19 @@ function startNightGame() {
         }
 
         if (
-            elapsed >=
-            18 +
-            level *
-            2
+            survived >=
+            surviveFor
         ) {
 
             finishMiniGame(
                 'night',
                 Math.floor(
-                    elapsed
+                    survived
                 )
             );
 
             return;
         }
-
-        document.getElementById(
-            'night-power'
-        ).innerText =
-            `${
-                Math.max(
-                    0,
-                    Math.floor(
-                        power
-                    )
-                )
-            }%`;
-
-        document.getElementById(
-            'night-power-bar'
-        ).style.width =
-            `${
-                Math.max(
-                    0,
-                    power
-                )
-            }%`;
 
         miniGameState.animation =
             requestAnimationFrame(
@@ -4181,9 +4930,7 @@ function startNightGame() {
         );
 }
 
-// ================================
-// DASH
-// ================================
+// JUUG DASH
 
 function startDashGame() {
 
@@ -4200,10 +4947,10 @@ function startDashGame() {
     const level =
         miniGameState.level;
 
-    let playerY =
+    let y =
         0;
 
-    let velocityY =
+    let vy =
         0;
 
     let grounded =
@@ -4219,6 +4966,9 @@ function startDashGame() {
 
     let spikes =
         [];
+
+    let spawnTimer =
+        0;
 
     let last =
         performance.now();
@@ -4250,24 +5000,35 @@ function startDashGame() {
         ></div>
 
         <div
-            id="dash-distance"
+            id="dash-progress"
             style="
                 position:absolute;
                 top:12px;
                 right:12px;
                 font-size:11px;
                 color:#888;
-                z-index:3;
             "
         >
             0%
+        </div>
+
+        <div
+            style="
+                position:absolute;
+                top:12px;
+                left:12px;
+                font-size:11px;
+                color:#666;
+            "
+        >
+            SPACE / JUMP
         </div>
         `;
 
     controls.innerHTML =
         `
         <button
-            class="admin-btn"
+            class="mg-control"
             id="dash-jump"
         >
             JUMP
@@ -4291,7 +5052,7 @@ function startDashGame() {
             !grounded
         ) return;
 
-        velocityY =
+        vy =
             520;
 
         grounded =
@@ -4312,6 +5073,7 @@ function startDashGame() {
             ) {
 
                 e.preventDefault();
+
                 jump();
             }
         };
@@ -4374,18 +5136,13 @@ function startDashGame() {
         });
     }
 
-    let spawnTimer =
-        0;
-
     function frame(
         now
     ) {
 
         if (
             !miniGameState.running
-        ) {
-            return;
-        }
+        ) return;
 
         const dt =
             Math.min(
@@ -4400,23 +5157,23 @@ function startDashGame() {
         last =
             now;
 
-        velocityY -=
+        vy -=
             1180 *
             dt;
 
-        playerY +=
-            velocityY *
+        y +=
+            vy *
             dt;
 
         if (
-            playerY <=
+            y <=
             0
         ) {
 
-            playerY =
+            y =
                 0;
 
-            velocityY =
+            vy =
                 0;
 
             grounded =
@@ -4424,7 +5181,7 @@ function startDashGame() {
         }
 
         player.style.bottom =
-            `${47 + playerY}px`;
+            `${47 + y}px`;
 
         distance +=
             speed *
@@ -4442,12 +5199,12 @@ function startDashGame() {
 
             spawnTimer =
                 Math.max(
-                    .6,
-                    1.25 -
+                    .55,
+                    1.15 -
                     level *
-                    .04 -
+                    .03 -
                     Math.random() *
-                    .35
+                    .30
                 );
         }
 
@@ -4461,22 +5218,23 @@ function startDashGame() {
             i--
         ) {
 
-            const spike =
+            const sp =
                 spikes[i];
 
-            spike.x -=
+            sp.x -=
                 speed *
                 dt;
 
-            spike.el.style.left =
-                `${spike.x}px`;
+            sp.el.style.left =
+                `${sp.x}px`;
 
             if (
-                spike.x <
+                sp.x <
                 -40
             ) {
 
-                spike.el.remove();
+                sp.el.remove();
+
                 spikes.splice(
                     i,
                     1
@@ -4485,22 +5243,16 @@ function startDashGame() {
                 continue;
             }
 
-            const px =
-                38;
-
-            const py =
-                playerY +
-                47;
-
             const hitX =
-                spike.x <
-                    px + 25 &&
-                spike.x + 24 >
-                    px;
+                sp.x <
+                    63 &&
+                sp.x +
+                    24 >
+                    38;
 
             const hitY =
-                py <
-                73;
+                y <
+                26;
 
             if (
                 hitX &&
@@ -4533,7 +5285,7 @@ function startDashGame() {
             );
 
         document.getElementById(
-            'dash-distance'
+            'dash-progress'
         ).innerText =
             `${progress}%`;
 
@@ -4568,9 +5320,7 @@ function startDashGame() {
         );
 }
 
-// ================================
-// MEMORY
-// ================================
+// MEMORY GRID
 
 function startMemoryGame() {
 
@@ -4587,28 +5337,28 @@ function startMemoryGame() {
     const level =
         miniGameState.level;
 
-    const gridSize =
+    const size =
         level < 4
             ? 3
             : level < 8
                 ? 4
                 : 5;
 
+    const total =
+        size *
+        size;
+
     const count =
         Math.min(
-            gridSize *
-            gridSize -
-            1,
-
+            total - 1,
             2 +
             level
         );
 
-    const total =
-        gridSize *
-        gridSize;
-
     const pattern =
+        [];
+
+    let selected =
         [];
 
     while (
@@ -4623,14 +5373,16 @@ function startMemoryGame() {
             );
 
         if (
-            !pattern.includes(n)
+            !pattern.includes(
+                n
+            )
         ) {
-            pattern.push(n);
+
+            pattern.push(
+                n
+            );
         }
     }
-
-    let selected =
-        [];
 
     stage.innerHTML =
         `
@@ -4639,13 +5391,13 @@ function startMemoryGame() {
                 font-size:11px;
                 color:#666;
                 text-align:center;
-                padding:12px;
+                padding:10px 12px;
             "
         >
             ${
                 level === 1
-                    ? 'Запомни клетки, затем нажми их в том же порядке.'
-                    : 'Запомни порядок. С каждым уровнем клеток больше.'
+                    ? 'Запомни белые клетки, потом нажимай их в том же порядке.'
+                    : 'Повтори последовательность. Она становится длиннее.'
             }
         </div>
 
@@ -4653,7 +5405,7 @@ function startMemoryGame() {
             id="memory-grid"
             style="
                 display:grid;
-                grid-template-columns:repeat(${gridSize},1fr);
+                grid-template-columns:repeat(${size},1fr);
                 gap:8px;
                 padding:12px;
             "
@@ -4663,8 +5415,8 @@ function startMemoryGame() {
     controls.innerHTML =
         `
         <button
-            class="admin-btn"
-            id="memory-restart"
+            class="mg-control"
+            id="memory-reset"
         >
             RESET
         </button>
@@ -4689,6 +5441,9 @@ function startMemoryGame() {
                 'div'
             );
 
+        cell.dataset.index =
+            i;
+
         cell.style.aspectRatio =
             '1/1';
 
@@ -4700,9 +5455,6 @@ function startMemoryGame() {
 
         cell.style.borderRadius =
             '10px';
-
-        cell.dataset.index =
-            i;
 
         grid.appendChild(
             cell
@@ -4716,14 +5468,14 @@ function startMemoryGame() {
     const showTime =
         Math.max(
             600,
-            1300 -
+            1200 -
             Math.min(
-                700,
+                600,
                 (
                     level -
                     1
                 ) *
-                60
+                55
             )
         );
 
@@ -4736,10 +5488,13 @@ function startMemoryGame() {
             setTimeout(
                 () => {
 
-                    cells[
-                        index
-                    ].style.background =
-                        '#0f0f0f';
+                    if (
+                        cells[index]
+                    ) {
+
+                        cells[index].style.background =
+                            '#0f0f0f';
+                    }
 
                 },
                 showTime
@@ -4803,29 +5558,29 @@ function startMemoryGame() {
                             };
                     }
                 );
+
             },
             showTime +
-                count *
-                25 +
-                250
+            count *
+            20 +
+            250
         );
 
     document.getElementById(
-        'memory-restart'
+        'memory-reset'
     ).onclick =
         () => {
 
             if (
                 miniGameState.running
             ) {
+
                 startMemoryGame();
             }
         };
 }
 
-// ================================
 // QUICK SWITCH
-// ================================
 
 function startQuickGame() {
 
@@ -4864,7 +5619,7 @@ function startQuickGame() {
                 align-items:center;
                 justify-content:center;
                 height:100%;
-                min-height:290px;
+                min-height:300px;
                 font-size:42px;
                 font-weight:900;
                 text-align:center;
@@ -4877,7 +5632,7 @@ function startQuickGame() {
     controls.innerHTML =
         `
         <button
-            class="admin-btn"
+            class="mg-control"
             id="quick-button"
         >
             TAP
@@ -4931,10 +5686,10 @@ function startQuickGame() {
 
         const delay =
             Math.max(
-                500,
-                1200 -
+                470,
+                1150 -
                 level *
-                45
+                40
             );
 
         timeout =
@@ -4966,28 +5721,11 @@ function startQuickGame() {
                 return;
             }
 
-            if (
-                current >=
-                rounds
-            ) {
+            clearTimeout(
+                timeout
+            );
 
-                clearTimeout(
-                    timeout
-                );
-
-                finishMiniGame(
-                    'quick',
-                    rounds
-                );
-
-            } else {
-
-                clearTimeout(
-                    timeout
-                );
-
-                nextRound();
-            }
+            nextRound();
         };
 
     nextRound();
@@ -4998,6 +5736,7 @@ function startQuickGame() {
             if (
                 timeout
             ) {
+
                 clearTimeout(
                     timeout
                 );
@@ -5005,9 +5744,7 @@ function startQuickGame() {
         };
 }
 
-// ================================
 // REACTOR
-// ================================
 
 function startReactorGame() {
 
@@ -5070,7 +5807,7 @@ function startReactorGame() {
                 align-items:center;
                 justify-content:center;
                 height:100%;
-                min-height:290px;
+                min-height:300px;
                 font-size:38px;
                 font-weight:900;
                 letter-spacing:8px;
@@ -5082,11 +5819,11 @@ function startReactorGame() {
 
     controls.innerHTML =
         `
-        <button class="admin-btn" data-r="▲">▲</button>
-        <button class="admin-btn" data-r="■">■</button>
-        <button class="admin-btn" data-r="●">●</button>
-        <button class="admin-btn" data-r="◆">◆</button>
-        <button class="admin-btn" id="reactor-reset">RESET</button>
+        <button class="mg-control" data-reactor="▲">▲</button>
+        <button class="mg-control" data-reactor="■">■</button>
+        <button class="mg-control" data-reactor="●">●</button>
+        <button class="mg-control" data-reactor="◆">◆</button>
+        <button class="mg-control" id="reactor-reset">RESET</button>
         `;
 
     const display =
@@ -5097,9 +5834,9 @@ function startReactorGame() {
     const revealTime =
         Math.max(
             900,
-            1900 -
+            1800 -
             level *
-            90
+            80
         );
 
     miniGameState.timer =
@@ -5111,61 +5848,61 @@ function startReactorGame() {
                         ? 'ВВОД'
                         : 'INPUT';
 
-                document
-                    .querySelectorAll(
-                        '[data-r]'
-                    )
-                    .forEach(
-                        button => {
+                document.querySelectorAll(
+                    '[data-reactor]'
+                ).forEach(
+                    button => {
 
-                            button.onclick =
-                                () => {
+                        button.onclick =
+                            () => {
 
-                                    if (
-                                        !miniGameState.running
-                                    ) return;
+                                if (
+                                    !miniGameState.running
+                                ) return;
 
-                                    const value =
-                                        button.dataset.r;
+                                const value =
+                                    button.dataset.reactor;
 
-                                    input.push(
-                                        value
+                                const expected =
+                                    sequence[
+                                        input.length
+                                    ];
+
+                                if (
+                                    value !==
+                                    expected
+                                ) {
+
+                                    loseMiniGame(
+                                        'reactor'
                                     );
 
-                                    const pos =
-                                        input.length -
-                                        1;
+                                    return;
+                                }
 
-                                    if (
-                                        value !==
-                                        sequence[pos]
-                                    ) {
+                                input.push(
+                                    value
+                                );
 
-                                        loseMiniGame(
-                                            'reactor'
-                                        );
+                                display.innerText =
+                                    input.join(
+                                        ' '
+                                    );
 
-                                        return;
-                                    }
+                                if (
+                                    input.length ===
+                                    sequence.length
+                                ) {
 
-                                    display.innerText =
-                                        input.join(
-                                            ' '
-                                        );
-
-                                    if (
-                                        input.length ===
+                                    finishMiniGame(
+                                        'reactor',
                                         sequence.length
-                                    ) {
+                                    );
+                                }
+                            };
+                    }
+                );
 
-                                        finishMiniGame(
-                                            'reactor',
-                                            sequence.length
-                                        );
-                                    }
-                                };
-                        }
-                    );
             },
             revealTime
         );
@@ -5175,143 +5912,14 @@ function startReactorGame() {
     ).onclick =
         () => {
 
-            input = [];
+            input =
+                [];
 
             display.innerText =
                 state.lang === 'ru'
                     ? 'ВВОД'
                     : 'INPUT';
         };
-}
-
-function claimPendingStars() {
-
-    if (
-        !currentId ||
-        currentId === 0
-    ) return;
-
-    db.ref(
-        `users/${currentId}/pendingStars`
-    ).once(
-        'value',
-        snap => {
-
-            const items =
-                snap.val() ||
-                {};
-
-            Object.entries(
-                items
-            ).forEach(
-                (
-                    [chargeId,item]
-                ) => {
-
-                    if (
-                        !item ||
-                        item.claimed ||
-                        Number(
-                            item.points ||
-                            0
-                        ) <= 0
-                    ) {
-                        return;
-                    }
-
-                    const ref =
-                        db.ref(
-                            `users/${currentId}/pendingStars/${chargeId}`
-                        );
-
-                    ref.transaction(
-                        current => {
-
-                            if (
-                                !current ||
-                                current.claimed
-                            ) {
-                                return current;
-                            }
-
-                            return {
-                                ...current,
-
-                                claimed:
-                                    true,
-
-                                claimedAt:
-                                    Date.now()
-                            };
-                        },
-
-                        (
-                            error,
-                            committed,
-                            finalSnap
-                        ) => {
-
-                            if (
-                                error ||
-                                !committed
-                            ) {
-                                return;
-                            }
-
-                            const finalData =
-                                finalSnap.val() ||
-                                {};
-
-                            if (
-                                finalData.claimed &&
-                                finalData.points
-                            ) {
-
-                                state.score +=
-                                    Number(
-                                        finalData.points
-                                    );
-
-                                updateUI();
-                                save();
-                                playSound('buy');
-
-                                tg.showAlert(
-                                    state.lang === 'ru'
-                                        ? `Получено +${format(Number(finalData.points))} очков!`
-                                        : `Received +${format(Number(finalData.points))} points!`
-                                );
-                            }
-                        }
-                    );
-                }
-            );
-        }
-    );
-}
-
-setInterval(
-    claimPendingStars,
-    15000
-);
-
-claimPendingStars();
-
-if (isMobile) {
-
-    document.addEventListener(
-        'visibilitychange',
-        () => {
-
-            if (
-                document.visibilityState ===
-                'hidden'
-            ) {
-
-                bgMusic.pause();
-            }
-        }
-    );
 }
 </script>
 
