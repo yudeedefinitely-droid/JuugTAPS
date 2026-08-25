@@ -2150,38 +2150,37 @@ function getRegenReal() {
             0
         );
 }
+const JUUGTAPS_BOT_USERNAME = "juugtapsbot";
+
 async function getBotUsername() {
-    if (
-        window.cachedBotUsername
-    ) {
+    if (window.cachedBotUsername) {
         return window.cachedBotUsername;
     }
+
+    /*
+       Referral links do NOT depend on Render anymore.
+       The bot username is known and can be used directly.
+       Render /bot-info remains only a fallback check.
+    */
+    window.cachedBotUsername = JUUGTAPS_BOT_USERNAME;
+
     try {
-        const response =
-            await fetch(
-                "https://botlol-9x4v.onrender.com/bot-info",
-                {
-                    cache:
-                        "no-store"
-                }
-            );
-        const data =
-            await response.json();
-        if (
-            data &&
-            data.username
-        ) {
-            window.cachedBotUsername =
-                data.username;
-            return data.username;
-        }
-    } catch(e) {
-        console.warn(
-            "bot-info error",
-            e
+        const response = await fetch(
+            "https://botlol-9x4v.onrender.com/bot-info",
+            { cache: "no-store" }
         );
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data.username) {
+                window.cachedBotUsername = String(data.username).replace(/^@/, "");
+            }
+        }
+    } catch (e) {
+        console.warn("bot-info fallback:", e);
     }
-    return "";
+
+    return window.cachedBotUsername;
 }
 async function getReferralLink() {
     const bot = await getBotUsername();
