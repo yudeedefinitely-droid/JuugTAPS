@@ -1758,7 +1758,7 @@
         onclick="show('s-games')"
     >
         <span>🎮</span>
-        <p id="t-nav-games">GAMES</p>
+        <p id="t-nav-games">MINI-GAMES</p>
     </div>
 
     <div
@@ -1822,17 +1822,12 @@ const bgMusic =
 bgMusic.volume =
     0.05;
 
-/*
-    Музыка может запускаться и на телефоне,
-    но браузер разрешает autoplay только после
-    пользовательского действия. Поэтому первый тап
-    используется как разблокировка музыки.
-*/
-let musicUnlocked = false;
-
 function playNextTrack() {
 
-    if (!state.sound) return;
+    if (
+        !state.sound ||
+        isMobile
+    ) return;
 
     currentTrackIndex =
         Math.floor(
@@ -1846,59 +1841,13 @@ function playNextTrack() {
         ];
 
     bgMusic.play()
-        .then(() => {
-            musicUnlocked = true;
-        })
-        .catch(() => {});
+        .catch(
+            () => {}
+        );
 }
 
 bgMusic.onended =
     playNextTrack;
-
-function unlockMusic() {
-
-    if (!isMobile || musicUnlocked) return;
-
-    if (!state.sound) return;
-
-    if (!bgMusic.src) {
-        currentTrackIndex =
-            Math.floor(
-                Math.random() *
-                bgTracks.length
-            );
-
-        bgMusic.src =
-            bgTracks[
-                currentTrackIndex
-            ];
-    }
-
-    bgMusic.play()
-        .then(() => {
-            musicUnlocked = true;
-        })
-        .catch(() => {});
-}
-
-/* Первый пользовательский тап разблокирует музыку на телефоне. */
-document.addEventListener(
-    'pointerdown',
-    unlockMusic,
-    { passive: true }
-);
-
-document.addEventListener(
-    'touchstart',
-    unlockMusic,
-    { passive: true, once: true }
-);
-
-document.addEventListener(
-    'click',
-    unlockMusic,
-    { passive: true, once: true }
-);
 
 const sfxTap =
     new Audio(
@@ -1918,30 +1867,34 @@ const sfxBtn =
 let lastTapSoundAt =
     0;
 
-/* SFX разрешены только на ПК. */
-const sfxEnabled =
-    !isMobile;
+function playSound(
+    type
+) {
 
-function playSound(type) {
+    if (
+        !state.sound
+    ) return;
 
-    /* На телефоне звуки нажатий полностью выключены. */
-    if (isMobile) return;
-
-    /* На ПК SFX работают только когда Sound = ON. */
-    if (!state.sound) return;
-
-    const now = performance.now();
+    const now =
+        performance.now();
 
     if (
         type === 'tap' &&
-        now - lastTapSoundAt < 55
+        now -
+            lastTapSoundAt <
+            55
     ) return;
 
-    if (type === 'tap') {
-        lastTapSoundAt = now;
+    if (
+        type === 'tap'
+    ) {
+
+        lastTapSoundAt =
+            now;
     }
 
     try {
+
         const audio =
             type === 'tap'
                 ? sfxTap
@@ -1949,31 +1902,42 @@ function playSound(type) {
                     ? sfxBuy
                     : sfxBtn;
 
-        if (type === 'tap') {
-            audio.currentTime = 0;
-            audio.volume = 0.10;
-            audio.play().catch(() => {});
+        if (
+            type === 'tap'
+        ) {
+
+            audio.currentTime =
+                0;
+
+            audio.volume =
+                0.10;
+
+            audio.play()
+                .catch(
+                    () => {}
+                );
+
         } else {
-            const clone = audio.cloneNode();
-            clone.volume = type === 'buy' ? 0.25 : 0.20;
-            clone.play().catch(() => {});
+
+            const clone =
+                audio.cloneNode();
+
+            clone.volume =
+                type === 'buy'
+                    ? 0.25
+                    : 0.20;
+
+            clone.play()
+                .catch(
+                    () => {}
+                );
         }
-    } catch (e) {}
+
+    } catch(e) {}
 }
 
 const MY_ID =
     5291965471;
-
-const urlParams =
-    new URLSearchParams(
-        window.location.search
-    );
-
-const urlUserId =
-    Number(
-        urlParams.get("tg_user_id") ||
-        0
-    );
 
 const user =
     tg.initDataUnsafe?.user ||
@@ -1986,11 +1950,7 @@ const user =
     };
 
 const currentId =
-    Number(
-        user.id ||
-        urlUserId ||
-        0
-    ) ||
+    user.id ||
     999999;
 
 let isLoaded =
@@ -2103,13 +2063,13 @@ const langData = {
             "SHOP",
 
         navGames:
-            "GAMES",
+            "MINI-GAMES",
 
         navGear:
             "SETTINGS",
 
         gamesTitle:
-            "MINI GAMES",
+            "MINI-GAMES",
 
         token:
             "🎟️ TOKENS",
@@ -2609,20 +2569,24 @@ function toggleLang() {
 
 function toggleSound() {
 
+    playSound(
+        "btn"
+    );
+
     state.sound =
         !state.sound;
 
-    if (!state.sound) {
+    if (
+        !state.sound
+    ) {
 
         bgMusic.pause();
 
-    } else {
+    } else if (
+        !isMobile
+    ) {
 
-        /* На ПК запускаем сразу. На телефоне — после жеста,
-           либо прямо сейчас, если музыка уже разблокирована. */
-        if (!isMobile || musicUnlocked) {
-            playNextTrack();
-        }
+        playNextTrack();
     }
 
     updateLangUI();
@@ -2734,28 +2698,71 @@ function getRegenReal() {
 /* REFERRALS                    */
 /* ============================= */
 
-/* ============================= */
-/* REFERRALS                     */
-/* ============================= */
+async function getBotUsername() {
 
-/* Username бота фиксированный — /bot-info больше не нужен. */
-const JUUG_BOT_USERNAME =
-    'juugtapsbot';
+    if (
+        window.cachedBotUsername
+    ) {
+
+        return window.cachedBotUsername;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                "https://botlol-9x4v.onrender.com/bot-info",
+                {
+                    cache:
+                        "no-store"
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (
+            data &&
+            data.username
+        ) {
+
+            window.cachedBotUsername =
+                data.username;
+
+            return data.username;
+        }
+
+    } catch(e) {
+
+        console.warn(
+            "bot-info error",
+            e
+        );
+    }
+
+    return "";
+}
 
 async function getReferralLink() {
 
+    const bot =
+        await getBotUsername();
+
     if (
+        !bot ||
         !currentId ||
-        currentId === 0
+        currentId ===
+            0
     ) {
-        return '';
+
+        return "";
     }
 
     return (
-        'https://t.me/' +
-        JUUG_BOT_USERNAME +
-        '?start=ref_' +
-        encodeURIComponent(currentId)
+        "https://t.me/" +
+        bot +
+        "?startapp=ref_" +
+        currentId
     );
 }
 
@@ -2767,9 +2774,10 @@ async function copyRefLink() {
     if (!link) {
 
         tg.showAlert(
-            state.lang === 'ru'
-                ? 'Не удалось создать ссылку.'
-                : 'Could not create referral link.'
+            state.lang ===
+                "ru"
+                ? "Не удалось получить ссылку."
+                : "Could not get referral link."
         );
 
         return;
@@ -2777,36 +2785,22 @@ async function copyRefLink() {
 
     try {
 
-        if (navigator.clipboard) {
-
-            await navigator.clipboard.writeText(
-                link
-            );
-
-        } else {
-
-            const temp =
-                document.createElement('textarea');
-
-            temp.value = link;
-            temp.style.position = 'fixed';
-            temp.style.opacity = '0';
-
-            document.body.appendChild(temp);
-            temp.select();
-            document.execCommand('copy');
-            temp.remove();
-        }
-
-        tg.showAlert(
-            state.lang === 'ru'
-                ? 'Ссылка скопирована!'
-                : 'Link copied!'
+        await navigator.clipboard.writeText(
+            link
         );
 
-    } catch (e) {
+        tg.showAlert(
+            state.lang ===
+                "ru"
+                ? "Ссылка скопирована!"
+                : "Link copied!"
+        );
 
-        tg.showAlert(link);
+    } catch(e) {
+
+        tg.showAlert(
+            link
+        );
     }
 }
 
@@ -2818,30 +2812,36 @@ async function shareRefLink() {
     if (!link) {
 
         tg.showAlert(
-            state.lang === 'ru'
-                ? 'Не удалось создать ссылку.'
-                : 'Could not create referral link.'
+            state.lang ===
+                "ru"
+                ? "Не удалось получить ссылку."
+                : "Could not get referral link."
         );
 
         return;
     }
 
     const text =
-        state.lang === 'ru'
-            ? 'Заходи в JuugTAPS по моей ссылке и получай бонус!'
-            : 'Join JuugTAPS through my link and get a bonus!';
+        state.lang ===
+            "ru"
+            ? "Заходи в JuugTAPS по моей ссылке и получай бонус!"
+            : "Join JuugTAPS through my link and get a bonus!";
 
     const shareUrl =
-        'https://t.me/share/url?url=' +
-        encodeURIComponent(link) +
-        '&text=' +
-        encodeURIComponent(text);
+        "https://t.me/share/url?url=" +
+        encodeURIComponent(
+            link
+        ) +
+        "&text=" +
+        encodeURIComponent(
+            text
+        );
 
     try {
 
         if (
             typeof tg.openTelegramLink ===
-            'function'
+            "function"
         ) {
 
             tg.openTelegramLink(
@@ -2851,21 +2851,27 @@ async function shareRefLink() {
             return;
         }
 
-    } catch (e) {}
+    } catch(e) {}
 
-    if (navigator.share) {
+    if (
+        navigator.share
+    ) {
 
         try {
 
             await navigator.share({
-                title: 'JuugTAPS',
+                title:
+                    "JuugTAPS",
+
                 text,
-                url: link
+
+                url:
+                    link
             });
 
             return;
 
-        } catch (e) {}
+        } catch(e) {}
     }
 
     await copyRefLink();
@@ -2938,61 +2944,59 @@ function refreshReferralStats() {
 
 function resetReferrals() {
 
-    if (Number(currentId) !== Number(MY_ID)) return;
+    if (
+        Number(
+            currentId
+        ) !==
+        MY_ID
+    ) return;
 
-    if (!confirm(
-        state.lang === 'ru'
-            ? 'Сбросить рефералы? У всех INVITED и Earned станет 0.'
-            : 'Reset referrals? Everyone will have 0 INVITED and 0 Earned.'
-    )) return;
+    if (
+        !confirm(
+            state.lang ===
+                "ru"
 
-    Promise.all([
-        db.ref('global/referralEpoch').once('value'),
-        db.ref('users').once('value')
-    ]).then(([epochSnap, usersSnap]) => {
+                ? "Сбросить реферальные приглашения?"
 
-        const nextEpoch =
-            Number(epochSnap.val() || 0) + 1;
+                : "Reset referral invitations?"
+        )
+    ) return;
 
-        const users = usersSnap.val() || {};
-        const updates = {
-            'global/referralEpoch': nextEpoch
-        };
+    const nextEpoch =
+        Number(
+            globalData.referralEpoch ||
+            0
+        ) +
+        1;
 
-        Object.keys(users).forEach(id => {
-            updates[`users/${id}/referralsCount`] = 0;
-            updates[`users/${id}/referralsEarned`] = 0;
-        });
+    db.ref(
+        "global"
+    ).update({
 
-        db.ref().update(
-            updates,
-            error => {
+        referralEpoch:
+            nextEpoch
 
-                if (error) {
-                    console.error('REFERRAL RESET ERROR:', error);
-                    tg.showAlert(
-                        state.lang === 'ru'
-                            ? '❌ Ошибка сброса рефералов.'
-                            : '❌ Referral reset error.'
-                    );
-                    return;
-                }
+    }, error => {
 
-                globalData.referralEpoch = nextEpoch;
-                state.referralsCount = 0;
-                state.referralsEarned = 0;
-                refreshReferralStats();
+        if (
+            error
+        ) {
 
-                tg.showAlert(
-                    state.lang === 'ru'
-                        ? '✅ Рефералы сброшены. INVITED = 0.'
-                        : '✅ Referrals reset. INVITED = 0.'
-                );
-            }
+            tg.showAlert(
+                "Ошибка сброса рефералов."
+            );
+
+            return;
+        }
+
+        tg.showAlert(
+            state.lang ===
+                "ru"
+
+                ? "Рефералы сброшены. Каждый игрок снова может быть приглашён один раз."
+
+                : "Referrals reset. Every player can be invited once again."
         );
-    }).catch(error => {
-        console.error('REFERRAL RESET ERROR:', error);
-        tg.showAlert('Referral reset error.');
     });
 }
 
@@ -3002,39 +3006,76 @@ function resetReferrals() {
 
 async function buyStars() {
 
-    if (!currentId || currentId === 0 || currentId === 999999) {
+    playSound(
+        "btn"
+    );
+
+    if (
+        !currentId ||
+        currentId ===
+            0
+    ) {
+
         tg.showAlert(
-            state.lang === 'ru'
-                ? 'Не удалось определить Telegram аккаунт.'
-                : 'Could not detect Telegram account.'
+            state.lang ===
+                "ru"
+
+                ? "Не удалось определить Telegram аккаунт."
+
+                : "Could not detect Telegram account."
         );
+
         return;
     }
 
     try {
-        const response = await fetch(
-            `https://botlol-9x4v.onrender.com/create-invoice?user_id=${encodeURIComponent(currentId)}`,
-            { method: 'GET', cache: 'no-store' }
-        );
 
-        const data = await response.json();
+        const response =
+            await fetch(
+                `https://botlol-9x4v.onrender.com/create-invoice?user_id=${encodeURIComponent(currentId)}`,
+                {
+                    cache:
+                        "no-store"
+                }
+            );
 
-        if (!response.ok || !data?.url) {
+        const data =
+            await response.json();
+
+        if (
+            !data ||
+            !data.url
+        ) {
+
             throw new Error(
-                data?.error || `Invoice HTTP ${response.status}`
+                data?.error ||
+                "Invoice error"
             );
         }
 
-        console.log('JUUGTAPS INVOICE:', data.url);
-
-        if (typeof tg.openInvoice === 'function') {
+        if (
+            typeof tg.openInvoice ===
+            "function"
+        ) {
 
             tg.openInvoice(
                 data.url,
                 status => {
-                    console.log('STARS STATUS:', status);
 
-                    if (status === 'paid') {
+                    if (
+                        status ===
+                        "paid"
+                    ) {
+
+                        tg.showAlert(
+                            state.lang ===
+                                "ru"
+
+                                ? "Оплата получена! Очки скоро начислятся."
+
+                                : "Payment received! Points will be added shortly."
+                        );
+
                         setTimeout(
                             claimPendingStars,
                             1200
@@ -3043,24 +3084,37 @@ async function buyStars() {
                 }
             );
 
-            return;
+        } else if (
+            typeof tg.openTelegramLink ===
+            "function"
+        ) {
+
+            tg.openTelegramLink(
+                data.url
+            );
+
+        } else {
+
+            window.open(
+                data.url,
+                "_blank"
+            );
         }
 
-        if (typeof tg.openTelegramLink === 'function') {
-            tg.openTelegramLink(data.url);
-            return;
-        }
+    } catch(e) {
 
-        window.location.href = data.url;
-
-    } catch (error) {
-
-        console.error('STARS ERROR:', error);
+        console.error(
+            "STARS ERROR",
+            e
+        );
 
         tg.showAlert(
-            state.lang === 'ru'
-                ? '❌ Не удалось открыть оплату. Попробуйте ещё раз.'
-                : '❌ Could not open payment. Please try again.'
+            state.lang ===
+                "ru"
+
+                ? "Не удалось открыть оплату."
+
+                : "Could not open payment."
         );
     }
 }
@@ -3483,6 +3537,158 @@ function resetSpecificPlayer() {
 /* EVENT / GLOBAL                */
 /* ============================= */
 
+let wasEvent = false;
+
+function updateEventTimer() {
+
+    const sync =
+        document.getElementById(
+            "sync-text"
+        );
+
+    if (!sync) return;
+
+    const now =
+        Date.now();
+
+    const eventEnd =
+        Number(
+            globalData.eventEnd || 0
+        );
+
+    const isEventActive =
+        eventEnd > now;
+
+    /*
+       Точно как в первоначальной системе:
+       активный EVENT -> отсчёт,
+       законченный EVENT -> победители,
+       eventEnd = 0 -> EVENT ЗАКРЫТ.
+    */
+
+    if (
+        wasEvent &&
+        !isEventActive &&
+        eventEnd !== 0
+    ) {
+        captureWinners();
+    }
+
+    wasEvent =
+        isEventActive;
+
+    const winnersButton =
+        document.getElementById(
+            "show-winners-btn"
+        );
+
+    if (isEventActive) {
+
+        if (winnersButton) {
+            winnersButton.style.display =
+                "none";
+        }
+
+        const diff =
+            eventEnd - now;
+
+        const totalDays =
+            Math.floor(
+                diff / 86400000
+            );
+
+        const months =
+            Math.floor(
+                totalDays / 30
+            );
+
+        const days =
+            totalDays % 30;
+
+        if (diff < 86400000) {
+
+            const h =
+                Math.floor(
+                    (diff / 3600000) % 24
+                );
+
+            const m =
+                Math.floor(
+                    (diff / 60000) % 60
+                );
+
+            const s =
+                Math.floor(
+                    (diff / 1000) % 60
+                );
+
+            sync.innerText =
+                `END IN: ${h}h ${m}m ${s}s`;
+
+        } else if (months > 0) {
+
+            sync.innerText =
+                `EVENT: ${months}M ${days}D`;
+
+        } else {
+
+            sync.innerText =
+                `EVENT: ${days} DAYS`;
+        }
+
+        sync.style.color =
+            "#555";
+
+    } else if (
+        eventEnd > 0 &&
+        eventEnd <= now
+    ) {
+
+        sync.innerText =
+            "ИВЕНТ ЗАВЕРШЕН";
+
+        sync.style.color =
+            "#555";
+
+        if (
+            isLoaded &&
+            !window.winnersShownThisSession
+        ) {
+
+            fetchAndShowWinners(
+                true
+            );
+
+            window.winnersShownThisSession =
+                true;
+        }
+
+        if (winnersButton) {
+            winnersButton.style.display =
+                "block";
+        }
+
+    } else {
+
+        sync.innerText =
+            "ИВЕНТ ЗАКРЫТ";
+
+        sync.style.color =
+            "#555";
+
+        if (winnersButton) {
+            winnersButton.style.display =
+                "none";
+        }
+    }
+}
+
+/*
+   Синхронизация global из Firebase.
+   Сразу после получения данных вызываем таймер,
+   чтобы надпись менялась мгновенно после запуска EVENT.
+*/
+
 db.ref(
     "global"
 ).on(
@@ -3507,9 +3713,7 @@ db.ref(
                 "maint-status"
             );
 
-        if (
-            maintStatus
-        ) {
+        if (maintStatus) {
 
             maintStatus.innerText =
                 globalData.isMaint
@@ -3517,18 +3721,21 @@ db.ref(
                     : "OFF";
         }
 
-        document.getElementById(
-            "maint-screen"
-        ).style.display =
-            (
-                globalData.isMaint &&
-                Number(
-                    currentId
-                ) !==
-                    MY_ID
-            )
-                ? "flex"
-                : "none";
+        const maintScreen =
+            document.getElementById(
+                "maint-screen"
+            );
+
+        if (maintScreen) {
+
+            maintScreen.style.display =
+                (
+                    globalData.isMaint &&
+                    Number(currentId) !== MY_ID
+                )
+                    ? "flex"
+                    : "none";
+        }
 
         const eventButton =
             document.getElementById(
@@ -3546,8 +3753,9 @@ db.ref(
         ) {
 
             if (
-                globalData.eventEnd >
-                Date.now()
+                Number(
+                    globalData.eventEnd || 0
+                ) > Date.now()
             ) {
 
                 eventButton.innerText =
@@ -3567,7 +3775,14 @@ db.ref(
                 );
             }
         }
+
+        updateEventTimer();
     }
+);
+
+setInterval(
+    updateEventTimer,
+    1000
 );
 
 /* ============================= */
@@ -4015,33 +4230,20 @@ db.ref(
             tg.initDataUnsafe
                 ?.start_param;
 
-        const urlRef =
-            new URLSearchParams(
-                window.location.search
-            ).get('ref');
-
-        const urlStartApp =
-            new URLSearchParams(
-                window.location.search
-            ).get('startapp');
-
-        const referralParam =
-            (startParam && startParam.startsWith('ref_'))
-                ? startParam.slice(4)
-                : (
-                    urlRef ||
-                    (urlStartApp && urlStartApp.startsWith('ref_')
-                        ? urlStartApp.slice(4)
-                        : null)
-                );
-
         if (
-            referralParam &&
-            currentId !== 0
+            startParam &&
+            startParam.startsWith(
+                "ref_"
+            ) &&
+            currentId !==
+                0
         ) {
 
             processReferral(
-                referralParam
+                startParam
+                    .slice(
+                        4
+                    )
             );
         }
 
@@ -4166,118 +4368,261 @@ db.ref(
 /* REFERRAL PROCESS             */
 /* ============================= */
 
-function processReferral(inviterId) {
+function processReferral(
+    inviterId
+) {
 
     inviterId =
-        String(inviterId || '').trim();
+        String(
+            inviterId ||
+            ""
+        ).trim();
 
     if (
         !inviterId ||
-        inviterId === String(currentId) ||
-        currentId === 999999
+        inviterId ===
+            String(
+                currentId
+            )
     ) return;
 
-    Promise.all([
-        db.ref('global').once('value'),
-        db.ref(`users/${currentId}`).once('value'),
-        db.ref(`users/${inviterId}`).once('value')
-    ]).then(([globalSnap, userSnap, inviterSnap]) => {
-
-        const global = globalSnap.val() || {};
-        const userData = userSnap.val() || {};
-        const inviterData = inviterSnap.val();
-        const existingUser = userSnap.exists();
-        const epoch = Number(global.referralEpoch || 0);
-
-        if (!inviterData) return;
-
-        /* До первого сброса старые игроки не участвуют. */
-        if (existingUser && epoch === 0) return;
-
-        const claimPath =
-            `referralClaims/${epoch}/${currentId}`;
-
-        db.ref(claimPath).transaction(
-            current => current || {
-                inviterId: inviterId,
-                createdAt: Date.now()
-            },
-            (error, committed) => {
-
-                if (error || !committed) return;
-
-                const currentScore =
-                    Number(userData.score || 0);
-
-                const inviterScore =
-                    Number(inviterData.score || 0);
-
-                const updates = {};
-
-                updates[`users/${currentId}/score`] =
-                    currentScore + 25000;
-
-                updates[`users/${currentId}/referralEpochClaimed`] =
-                    epoch;
-
-                if (!existingUser) {
-
-                    updates[`users/${currentId}/tapLvl`] = 3;
-                    updates[`users/${currentId}/username`] =
-                        user.username || `User_${currentId}`;
-                }
-
-                updates[`users/${inviterId}/score`] =
-                    inviterScore + 25000;
-
-                updates[`users/${inviterId}/referralsCount`] =
-                    Number(inviterData.referralsCount || 0) + 1;
-
-                updates[`users/${inviterId}/referralsEarned`] =
-                    Number(inviterData.referralsEarned || 0) + 25000;
-
-                db.ref().update(
-                    updates,
-                    updateError => {
-
-                        if (updateError) {
-
-                            console.error(
-                                'REFERRAL UPDATE ERROR:',
-                                updateError
-                            );
-
-                            db.ref(claimPath).remove();
-                            return;
-                        }
-
-                        state.score = currentScore + 25000;
-                        state.referralEpochClaimed = epoch;
-
-                        if (!existingUser) {
-                            state.tapLvl = Math.max(
-                                3,
-                                Number(state.tapLvl || 1)
-                            );
-                        }
-
-                        updateUI();
-                        save();
-                        refreshReferralStats();
-
-                        tg.showAlert(
-                            state.lang === 'ru'
-                                ? '✅ Реферальный бонус: +25 000 SCORE'
-                                : '✅ Referral bonus: +25,000 SCORE'
-                        );
-                    }
-                );
-            }
+    const epoch =
+        Number(
+            globalData.referralEpoch ||
+            0
         );
-    }).catch(error => {
-        console.error('REFERRAL ERROR:', error);
-    });
+
+    /*
+        У каждого игрока хранится номер
+        последнего реферального этапа,
+        в котором он уже был приглашён.
+
+        Поэтому:
+
+        epoch 0:
+        старый пользователь повторно
+        пригласиться не может.
+
+        после сброса:
+        epoch 1,
+        любой игрок может быть приглашён
+        один раз.
+
+        после второго сброса:
+        epoch 2,
+        снова один раз.
+    */
+
+    if (
+        Number(
+            state.referralEpochClaimed ||
+            0
+        ) >=
+        epoch
+    ) {
+
+        /*
+            При epoch 0 уже существующий
+            игрок должен считаться
+            старым и повторно не приглашаться.
+        */
+
+        if (
+            epoch ===
+                0 &&
+            db
+        ) {
+
+            if (
+                window.__currentUserExists
+            ) {
+
+                return;
+            }
+        }
+
+        /*
+            Для нового пользователя
+            referralEpochClaimed = 0
+            и epoch = 0.
+            Поэтому допускаем его.
+        */
+    }
+
+    /*
+        Один claim на одного приглашённого
+        внутри одного epoch.
+    */
+
+    const claimPath =
+        `referralClaims/${epoch}/${currentId}`;
+
+    db.ref(
+        claimPath
+    ).transaction(
+        current => {
+
+            if (
+                current
+            ) {
+
+                return current;
+            }
+
+            return {
+
+                inviterId:
+                    inviterId,
+
+                createdAt:
+                    Date.now()
+            };
+        },
+
+        (
+            error,
+            committed
+        ) => {
+
+            if (
+                error ||
+                !committed
+            ) return;
+
+            /*
+                БОНУС ПРИГЛАШЁННОМУ
+            */
+
+            state.score +=
+                25000;
+
+            state.referralEpochClaimed =
+                epoch;
+
+            /*
+                Только совсем новому
+                пользователю даём стартовый
+                бонус уровня клика.
+            */
+
+            if (
+                !window.__currentUserExists
+            ) {
+
+                state.tapLvl =
+                    Math.max(
+                        3,
+                        Number(
+                            state.tapLvl ||
+                            1
+                        )
+                    );
+            }
+
+            save();
+
+            /*
+                БОНУС ПРИГЛАСИВШЕМУ
+            */
+
+            db.ref(
+                `users/${inviterId}`
+            ).transaction(
+                inviter => {
+
+                    if (
+                        !inviter
+                    ) {
+
+                        return inviter;
+                    }
+
+                    inviter.score =
+                        Number(
+                            inviter.score ||
+                            0
+                        ) +
+                        25000;
+
+                    inviter.referralsCount =
+                        Number(
+                            inviter.referralsCount ||
+                            0
+                        ) +
+                        1;
+
+                    inviter.referralsEarned =
+                        Number(
+                            inviter.referralsEarned ||
+                            0
+                        ) +
+                        25000;
+
+                    return inviter;
+                }
+            );
+
+            setTimeout(
+                () => {
+
+                    tg.showAlert(
+                        state.lang ===
+                            "ru"
+
+                            ? "✅ Реферальный бонус: +25 000 SCORE"
+
+                            : "✅ Referral bonus: +25,000 SCORE"
+                    );
+
+                    updateUI();
+                    refreshReferralStats();
+
+                },
+                500
+            );
+        }
+    );
 }
+
+/*
+    Отмечаем существование текущего
+    пользователя для рефералки.
+*/
+
+window.__currentUserExists =
+    Boolean(
+        snapValueExists()
+    );
+
+function snapValueExists() {
+    return Boolean(
+        window.__loadedUserExists
+    );
+}
+
+/*
+    Поддерживаем значение отдельно,
+    чтобы новый/старый пользователь
+    определялся правильно.
+*/
+
+window.__loadedUserExists =
+    false;
+
+db.ref(
+    `users/${currentId}`
+).once(
+    "value"
+).then(
+    snap => {
+
+        window.__loadedUserExists =
+            snap.exists();
+
+        window.__currentUserExists =
+            snap.exists();
+    }
+);
 
 /* ============================= */
 /* TOKEN EXCHANGE               */
@@ -7353,34 +7698,56 @@ function captureWinners() {
         "value",
         snap => {
 
-            const users =
-                snap.val() ||
-                {};
+            const data =
+                snap.val() || {};
+
+            const now =
+                Date.now();
 
             const players =
-                Object.values(
-                    users
-                )
+                Object.values(data)
                 .filter(
                     p =>
                         p &&
                         p.username &&
-                        p.username !==
-                            "Guest"
+                        p.username !== "Guest"
                 )
                 .map(
                     p => {
 
-                        return {
+                        const offTime =
+                            Math.floor(
+                                (
+                                    now -
+                                    (
+                                        p.lastUpdate ||
+                                        now
+                                    )
+                                ) /
+                                1000
+                            );
 
+                        const totalScore =
+                            Number(p.score || 0) +
+                            (
+                                offTime *
+                                Number(p.passiveLvl || 0)
+                            ) +
+                            (
+                                Number(p.tapLvl || 0) *
+                                100
+                            ) +
+                            (
+                                Number(p.passiveLvl || 0) *
+                                500
+                            );
+
+                        return {
                             username:
                                 p.username,
 
                             score:
-                                Number(
-                                    p.score ||
-                                    0
-                                )
+                                totalScore
                         };
                     }
                 )
