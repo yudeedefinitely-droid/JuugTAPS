@@ -37,8 +37,7 @@
 
         #loading-screen {
             position: fixed;
-            top: 0;
-            left: 0;
+            inset: 0;
             width: 100%;
             height: 100%;
             background: #000;
@@ -82,8 +81,7 @@
 
         #maint-screen {
             position: fixed;
-            top: 0;
-            left: 0;
+            inset: 0;
             width: 100%;
             height: 100%;
             background: #000;
@@ -98,8 +96,7 @@
 
         #particleCanvas {
             position: fixed;
-            top: 0;
-            left: 0;
+            inset: 0;
             width: 100%;
             height: 100%;
             z-index: 0;
@@ -132,7 +129,7 @@
             opacity: 0;
             pointer-events: none;
             transform: translateY(15px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all .3s cubic-bezier(.4,0,.2,1);
         }
 
         .screen.active {
@@ -175,17 +172,21 @@
             height: 240px;
             border: 4px solid var(--w);
             border-radius: 50%;
-            transition: transform 0.05s ease-out;
-            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
-            box-shadow: 0 0 20px rgba(255,255,255,0.05);
+            transition: transform .05s ease-out;
+            background: radial-gradient(
+                circle,
+                rgba(255,255,255,.05) 0%,
+                transparent 70%
+            );
+            box-shadow: 0 0 20px rgba(255,255,255,.05);
             position: relative;
             z-index: 2;
             touch-action: manipulation;
         }
 
         .main-circle.is-active {
-            transform: scale(0.92);
-            background: rgba(255,255,255,0.15);
+            transform: scale(.92);
+            background: rgba(255,255,255,.15);
         }
 
         .tap-effect {
@@ -194,7 +195,7 @@
             color: #fff;
             font-weight: 900;
             font-size: 26px;
-            animation: floatUp 0.6s ease-out forwards;
+            animation: floatUp .6s ease-out forwards;
             z-index: 10;
         }
 
@@ -219,22 +220,21 @@
 
         .bar-bg {
             height: 26px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,.05);
+            border: 1px solid rgba(255,255,255,.2);
             border-radius: 13px;
             margin: 15px 0;
             overflow: hidden;
             position: relative;
             backdrop-filter: blur(5px);
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,.5);
         }
 
         #e-fill {
             height: 100%;
             width: 100%;
-            background: linear-gradient(90deg, #333 0%, #fff 100%);
+            background: linear-gradient(90deg,#333 0%,#fff 100%);
             transition: width 1s linear;
-            position: relative;
         }
 
         #e-text {
@@ -248,7 +248,7 @@
             font-weight: 900;
             letter-spacing: 2px;
             color: var(--w);
-            text-shadow: 1px 1px 2px #000, 0 0 10px rgba(0,0,0,0.8);
+            text-shadow: 1px 1px 2px #000;
             z-index: 10;
         }
 
@@ -263,22 +263,22 @@
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
-            transition: 0.2s;
+            transition: .2s;
         }
 
         .card:active {
-            transform: scale(0.98);
+            transform: scale(.98);
             background: #151515;
         }
 
         .card.special {
-            border: 1px solid rgba(255,255,255,0.3);
-            background: linear-gradient(145deg, #111, #050505);
+            border: 1px solid rgba(255,255,255,.3);
+            background: linear-gradient(145deg,#111,#050505);
         }
 
         .card.stars {
             border: 1px solid #555;
-            background: linear-gradient(145deg, #222, #000);
+            background: linear-gradient(145deg,#222,#000);
         }
 
         .case-icon {
@@ -309,7 +309,7 @@
             bottom: 0;
             width: 100%;
             display: flex;
-            background: rgba(0,0,0,0.94);
+            background: rgba(0,0,0,.94);
             backdrop-filter: blur(15px);
             border-top: 1px solid var(--sg);
             padding: 10px 0 28px;
@@ -324,7 +324,7 @@
             font-size: 9px;
             font-weight: 800;
             cursor: pointer;
-            transition: 0.3s;
+            transition: .3s;
         }
 
         .nav-item.active {
@@ -337,12 +337,10 @@
             font-size: 21px;
             margin-bottom: 3px;
             filter: grayscale(1) brightness(2);
-            transition: 0.3s;
         }
 
         .nav-item.active span {
             filter: grayscale(0) brightness(1);
-            color: #fff;
         }
 
         .settings-btn {
@@ -359,13 +357,17 @@
             align-items: center;
         }
 
-        #admin-modal {
+        #admin-modal,
+        #winners-popup,
+        #minigame-modal {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
+            inset: 0;
+            width: 100vw;
+            height: 100dvh;
+        }
+
+        #admin-modal {
+            background: rgba(0,0,0,.9);
             z-index: 20000;
             display: none;
             align-items: center;
@@ -403,12 +405,7 @@
         }
 
         #winners-popup {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0,0,0,.6);
             backdrop-filter: blur(10px);
             z-index: 25000;
             display: none;
@@ -418,15 +415,14 @@
         }
 
         .winners-content {
-            background: rgba(20,20,20,0.85);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(20,20,20,.85);
+            border: 1px solid rgba(255,255,255,.1);
             border-radius: 24px;
             padding: 30px;
             width: 100%;
             max-width: 400px;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-            color: #fff;
+            box-shadow: 0 20px 40px rgba(0,0,0,.6);
         }
 
         .winner-row {
@@ -434,7 +430,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,.05);
             font-size: 16px;
             font-weight: 700;
         }
@@ -444,8 +440,8 @@
         }
 
         #show-winners-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,.05);
+            border: 1px solid rgba(255,255,255,.1);
             color: #fff;
             padding: 15px;
             border-radius: 12px;
@@ -454,11 +450,10 @@
             font-weight: 800;
             display: none;
             cursor: pointer;
-            backdrop-filter: blur(5px);
         }
 
         .my-rank-row {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,.1);
             border: 1px solid #fff;
             border-radius: 12px;
             margin-top: 15px;
@@ -469,13 +464,10 @@
         }
 
         /* MINI GAMES */
+
         #minigame-modal {
-            position: fixed !important;
-            inset: 0 !important;
-            width: 100vw !important;
-            height: 100dvh !important;
             background: rgba(0,0,0,.97);
-            z-index: 999999 !important;
+            z-index: 999999;
             display: none;
             align-items: center;
             justify-content: center;
@@ -519,10 +511,6 @@
             border-radius: 10px;
             font-weight: 900;
             cursor: pointer;
-        }
-
-        .mg-control:active {
-            transform: scale(.98);
         }
 
         .mini-games-grid {
@@ -585,6 +573,21 @@
             font-weight: 900;
         }
 
+        .exchange-box {
+            width: 100%;
+            padding: 15px;
+            background: #111;
+            border: 1px solid #292929;
+            border-radius: 14px;
+            margin-bottom: 10px;
+        }
+
+        .exchange-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         @media (max-width:390px) {
             .mini-games-grid {
                 grid-template-columns: 1fr 1fr;
@@ -610,7 +613,15 @@
 <body>
 
 <div id="loading-screen">
-    <img src="data:image/png;base64,PASTE_YOUR_EXISTING_LOADING_BASE64_HERE" class="loader-logo" alt="JuugTAPS">
+
+    <!-- КАРТИНКА ЗАГРУЗКИ -->
+    <!-- Положи свою картинку в assets/loading.png -->
+    <img
+        src="assets/loading.png"
+        class="loader-logo"
+        alt="JuugTAPS"
+    >
+
     <div class="loader-bar">
         <div class="loader-progress"></div>
     </div>
@@ -618,93 +629,253 @@
 
 <div id="maint-screen">
     <h1 style="font-size:50px;">🔧</h1>
-    <h2 style="margin:15px 0;">MAINTENANCE</h2>
+    <h2 style="margin:15px 0;">
+        MAINTENANCE
+    </h2>
 </div>
 
 <div id="winners-popup">
+
     <div class="winners-content">
-        <h2 style="margin-bottom:10px;font-weight:900;letter-spacing:1px;color:var(--w);">
+
+        <h2 style="margin-bottom:10px;font-weight:900;">
             🏆 EVENT CHAMPIONS
         </h2>
-        <div id="winners-list" style="margin-bottom:25px;"></div>
-        <button class="admin-btn" onclick="playSound('btn');document.getElementById('winners-popup').style.display='none'">
+
+        <div
+            id="winners-list"
+            style="margin-bottom:25px;"
+        ></div>
+
+        <button
+            class="admin-btn"
+            onclick="
+                playSound('btn');
+                document.getElementById('winners-popup').style.display='none'
+            "
+        >
             AWESOME!
         </button>
+
     </div>
 </div>
 
 <div id="admin-modal">
-    <div class="admin-content">
-        <h3 style="margin-bottom:20px;text-align:center;">ADMIN PANEL</h3>
 
-        <button id="event-toggle-btn" class="admin-btn" onclick="toggleEvent()">
+    <div class="admin-content">
+
+        <h3 style="margin-bottom:20px;text-align:center;">
+            ADMIN PANEL
+        </h3>
+
+        <button
+            id="event-toggle-btn"
+            class="admin-btn"
+            onclick="toggleEvent()"
+        >
             НАЧАТЬ ИВЕНТ
         </button>
 
-        <button id="event-rush-btn" class="admin-btn btn-danger hidden" onclick="endEventEarly()">
+        <button
+            id="event-rush-btn"
+            class="admin-btn btn-danger hidden"
+            onclick="endEventEarly()"
+        >
             ЗАКОНЧИТЬ ДОСРОЧНО
         </button>
 
-        <button class="admin-btn btn-danger" onclick="adminClearWinners()">
+        <button
+            class="admin-btn btn-danger"
+            onclick="adminClearWinners()"
+        >
             ОЧИСТИТЬ ПОБЕДИТЕЛЕЙ
         </button>
 
-        <button class="admin-btn btn-danger" onclick="toggleMaint()">
-            ТЕХ ПЕРЕРЫВ: <span id="maint-status">OFF</span>
+        <button
+            class="admin-btn btn-danger"
+            onclick="toggleMaint()"
+        >
+            ТЕХ ПЕРЕРЫВ:
+            <span id="maint-status">OFF</span>
         </button>
 
         <hr style="border:0;border-top:1px solid #333;margin:15px 0;">
 
-        <button class="admin-btn btn-danger" onclick="resetAllPlayers()">
+        <button
+            class="admin-btn btn-danger"
+            onclick="resetAllPlayers()"
+        >
             ОБНУЛИТЬ ВСЕХ ИГРОКОВ
         </button>
 
-        <div style="background:#222;padding:15px;border-radius:12px;margin-top:10px;">
+        <div
+            style="
+                background:#222;
+                padding:15px;
+                border-radius:12px;
+                margin-top:10px;
+            "
+        >
+
             <input
                 type="text"
                 id="target-user"
                 placeholder="username или ID"
-                style="width:100%;padding:12px;background:#000;border:1px solid #444;color:#fff;border-radius:8px;margin-bottom:10px;outline:none;"
+                style="
+                    width:100%;
+                    padding:12px;
+                    background:#000;
+                    border:1px solid #444;
+                    color:#fff;
+                    border-radius:8px;
+                    margin-bottom:10px;
+                    outline:none;
+                "
             >
 
-            <button class="admin-btn btn-danger" style="margin:0;" onclick="resetSpecificPlayer()">
+            <button
+                class="admin-btn btn-danger"
+                style="margin:0;"
+                onclick="resetSpecificPlayer()"
+            >
                 ОБНУЛИТЬ ОДНОГО
             </button>
+
         </div>
 
-        <button class="admin-btn btn-danger" style="margin-top:20px;" onclick="closeAdmin()">
+        <!-- ОДНОКРАТНЫЙ СБРОС РЕФЕРАЛОВ -->
+
+        <button
+            id="ref-reset-btn"
+            class="admin-btn btn-danger"
+            style="margin-top:10px;"
+            onclick="resetReferralsOnce()"
+        >
+            СБРОСИТЬ РЕФЕРАЛЫ — 1 РАЗ
+        </button>
+
+        <div
+            id="ref-reset-status"
+            style="
+                font-size:10px;
+                color:#666;
+                text-align:center;
+                margin-bottom:10px;
+            "
+        >
+            Сброс ещё доступен
+        </div>
+
+        <button
+            class="admin-btn btn-danger"
+            style="margin-top:10px;"
+            onclick="closeAdmin()"
+        >
             ЗАКРЫТЬ
         </button>
+
     </div>
 </div>
 
+<!-- MINI GAME -->
+
 <div id="minigame-modal">
+
     <div id="minigame-box">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+
+        <div
+            style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                margin-bottom:14px;
+            "
+        >
+
             <div>
-                <div id="mg-title" style="font-size:18px;font-weight:900;">MINI GAME</div>
-                <div id="mg-level" style="font-size:11px;color:#777;font-weight:800;">LEVEL 1</div>
+
+                <div
+                    id="mg-title"
+                    style="
+                        font-size:18px;
+                        font-weight:900;
+                    "
+                >
+                    MINI GAME
+                </div>
+
+                <div
+                    id="mg-level"
+                    style="
+                        font-size:11px;
+                        color:#777;
+                        font-weight:800;
+                    "
+                >
+                    LEVEL 1
+                </div>
+
             </div>
 
             <button
                 class="mg-control"
-                style="flex:0 0 auto;min-width:70px;padding:8px 12px;"
+                style="
+                    flex:0 0 auto;
+                    min-width:70px;
+                    padding:8px 12px;
+                "
                 onclick="closeMiniGame()"
             >
                 CLOSE
             </button>
+
         </div>
 
-        <div style="display:flex;justify-content:space-between;background:#111;border:1px solid #222;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:11px;">
-            <span id="mg-reward">Reward: 10 tokens</span>
-            <span id="mg-best">Best: 0</span>
+        <div
+            style="
+                display:flex;
+                justify-content:space-between;
+                background:#111;
+                border:1px solid #222;
+                border-radius:10px;
+                padding:10px 12px;
+                margin-bottom:12px;
+                font-size:11px;
+            "
+        >
+
+            <span id="mg-reward">
+                Reward: 10 tokens
+            </span>
+
+            <span id="mg-best">
+                Best: 0
+            </span>
+
         </div>
 
-        <div id="mg-info" style="font-size:11px;color:#888;line-height:1.5;margin-bottom:12px;"></div>
+        <div
+            id="mg-info"
+            style="
+                font-size:11px;
+                color:#888;
+                line-height:1.5;
+                margin-bottom:12px;
+            "
+        ></div>
 
         <div id="mg-stage"></div>
 
-        <div id="mg-controls" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;"></div>
+        <div
+            id="mg-controls"
+            style="
+                display:flex;
+                gap:8px;
+                flex-wrap:wrap;
+                margin-top:12px;
+            "
+        ></div>
+
     </div>
 </div>
 
@@ -713,355 +884,868 @@
 <div id="app">
 
 <section id="s-game" class="screen active">
+
     <div class="header">
-        <span id="p-name">@loading</span>
-        <span id="sync-text">ИВЕНТ ЗАКРЫТ</span>
+
+        <span id="p-name">
+            @loading
+        </span>
+
+        <span id="sync-text">
+            ИВЕНТ ЗАКРЫТ
+        </span>
+
     </div>
 
-    <p id="t-score-label" style="font-size:10px;font-weight:800;letter-spacing:3px;color:#444;">
+    <p
+        id="t-score-label"
+        style="
+            font-size:10px;
+            font-weight:800;
+            letter-spacing:3px;
+            color:#444;
+        "
+    >
         SCORE
     </p>
 
-    <div id="score">0</div>
+    <div id="score">
+        0
+    </div>
 
-    <div id="passive-display" style="color:#666;font-size:11px;font-weight:800;margin-top:5px;">
+    <div
+        id="passive-display"
+        style="
+            color:#666;
+            font-size:11px;
+            font-weight:800;
+            margin-top:5px;
+        "
+    >
         Passive: 0/sec
     </div>
 
     <div class="tap-area">
-        <div class="main-circle" id="tapBtn"></div>
+        <div
+            class="main-circle"
+            id="tapBtn"
+        ></div>
     </div>
 
     <div class="energy-box">
-        <p id="t-tap-label" style="font-size:10px;font-weight:800;letter-spacing:1px;color:#444;">
+
+        <p
+            id="t-tap-label"
+            style="
+                font-size:10px;
+                font-weight:800;
+                letter-spacing:1px;
+                color:#444;
+            "
+        >
             STAMINA
         </p>
 
         <div class="bar-bg">
+
             <div id="e-fill"></div>
-            <span id="e-text">150 / 150</span>
+
+            <span id="e-text">
+                150 / 150
+            </span>
+
         </div>
+
     </div>
+
 </section>
 
 <section id="s-top" class="screen">
-    <h2 id="t-top-title" style="align-self:flex-start;margin-bottom:20px;font-weight:900;">
+
+    <h2
+        id="t-top-title"
+        style="
+            align-self:flex-start;
+            margin-bottom:20px;
+            font-weight:900;
+        "
+    >
         TOP 5 JUUG'ERS
     </h2>
 
-    <button id="show-winners-btn" onclick="showWinnersManual()">
+    <button
+        id="show-winners-btn"
+        onclick="showWinnersManual()"
+    >
         🏆 LAST WINNERS
     </button>
 
-    <div id="leaderboard-list" style="width:100%;"></div>
-    <div id="my-rank-container" style="width:100%;"></div>
+    <div
+        id="leaderboard-list"
+        style="width:100%;"
+    ></div>
+
+    <div
+        id="my-rank-container"
+        style="width:100%;"
+    ></div>
+
 </section>
 
 <section id="s-shop" class="screen">
-    <h2 id="t-shop-title" style="align-self:flex-start;margin-bottom:20px;font-weight:900;">
+
+    <h2
+        id="t-shop-title"
+        style="
+            align-self:flex-start;
+            margin-bottom:20px;
+            font-weight:900;
+        "
+    >
         SHOP
     </h2>
 
-    <div id="shop-main" style="width:100%;">
+    <div
+        id="shop-main"
+        style="width:100%;"
+    >
 
-        <div class="card stars" onclick="buyStars()">
+        <div
+            class="card stars"
+            onclick="buyStars()"
+        >
+
             <div style="flex:1">
-                <b id="t-stars-up" style="font-size:18px;font-weight:900;color:#fff;">
+
+                <b
+                    id="t-stars-up"
+                    style="
+                        font-size:18px;
+                        font-weight:900;
+                        color:#fff;
+                    "
+                >
                     BUY 5M POINTS
                 </b>
 
                 <br>
 
-                <span id="t-stars-desc" style="font-size:12px;color:#888;">
+                <span
+                    id="t-stars-desc"
+                    style="
+                        font-size:12px;
+                        color:#888;
+                    "
+                >
                     Instant boost
                 </span>
+
             </div>
 
-            <button class="buy-btn" style="background:#fff;color:#000;">
+            <button
+                class="buy-btn"
+                style="background:#fff;color:#000;"
+            >
                 50 ⭐️
             </button>
+
         </div>
 
-        <div class="card special" id="case-card" onclick="openDailyCase()">
+        <div
+            class="card special"
+            id="case-card"
+            onclick="openDailyCase()"
+        >
+
             <div style="display:flex;align-items:center;">
-                <div class="case-icon">📦</div>
+
+                <div class="case-icon">
+                    📦
+                </div>
 
                 <div>
-                    <b id="t-case-name">DAILY CASE</b>
+
+                    <b id="t-case-name">
+                        DAILY CASE
+                    </b>
+
                     <br>
-                    <span id="case-status" style="font-size:11px;color:rgba(255,255,255,0.5)">
+
+                    <span
+                        id="case-status"
+                        style="
+                            font-size:11px;
+                            color:rgba(255,255,255,.5);
+                        "
+                    >
                         100 - 10,000 pts
                     </span>
+
                 </div>
+
             </div>
 
-            <button class="buy-btn" id="case-btn">
+            <button
+                class="buy-btn"
+                id="case-btn"
+            >
                 OPEN
             </button>
+
         </div>
 
-        <div class="card" onclick="openUpgrade('click')">
+        <div
+            class="card"
+            onclick="openUpgrade('click')"
+        >
+
             <div style="flex:1">
-                <b id="t-click-up" style="font-size:18px;font-weight:900;">
+
+                <b
+                    id="t-click-up"
+                    style="
+                        font-size:18px;
+                        font-weight:900;
+                    "
+                >
                     CLICK UPGRADES
                 </b>
 
                 <br>
 
-                <span id="t-click-desc" style="font-size:12px;color:#888;">
+                <span
+                    id="t-click-desc"
+                    style="
+                        font-size:12px;
+                        color:#888;
+                    "
+                >
                     Increase tap income
                 </span>
+
             </div>
 
-            <span style="color:var(--w);font-size:20px;font-weight:900;">
+            <span style="font-size:20px;font-weight:900;">
                 ➔
             </span>
+
         </div>
 
-        <div class="card" onclick="openUpgrade('passive')">
+        <div
+            class="card"
+            onclick="openUpgrade('passive')"
+        >
+
             <div style="flex:1">
-                <b id="t-pass-up" style="font-size:18px;font-weight:900;">
+
+                <b
+                    id="t-pass-up"
+                    style="
+                        font-size:18px;
+                        font-weight:900;
+                    "
+                >
                     PASSIVE INCOME
                 </b>
 
                 <br>
 
-                <span id="t-pass-desc" style="font-size:12px;color:#888;">
+                <span
+                    id="t-pass-desc"
+                    style="
+                        font-size:12px;
+                        color:#888;
+                    "
+                >
                     Automatic income
                 </span>
+
             </div>
 
-            <span style="color:var(--w);font-size:20px;font-weight:900;">
+            <span style="font-size:20px;font-weight:900;">
                 ➔
             </span>
+
         </div>
 
-        <div class="card" onclick="openUpgrade('energy')">
+        <div
+            class="card"
+            onclick="openUpgrade('energy')"
+        >
+
             <div style="flex:1">
-                <b id="t-nrg-up" style="font-size:18px;font-weight:900;">
+
+                <b
+                    id="t-nrg-up"
+                    style="
+                        font-size:18px;
+                        font-weight:900;
+                    "
+                >
                     MAX STAMINA
                 </b>
 
                 <br>
 
-                <span id="t-nrg-desc" style="font-size:12px;color:#888;">
+                <span
+                    id="t-nrg-desc"
+                    style="
+                        font-size:12px;
+                        color:#888;
+                    "
+                >
                     Increase energy cap
                 </span>
+
             </div>
 
-            <span style="color:var(--w);font-size:20px;font-weight:900;">
+            <span style="font-size:20px;font-weight:900;">
                 ➔
             </span>
+
         </div>
 
-        <div class="card" onclick="openUpgrade('regen')">
+        <div
+            class="card"
+            onclick="openUpgrade('regen')"
+        >
+
             <div style="flex:1">
-                <b id="t-reg-up" style="font-size:18px;font-weight:900;">
+
+                <b
+                    id="t-reg-up"
+                    style="
+                        font-size:18px;
+                        font-weight:900;
+                    "
+                >
                     STAMINA REGEN
                 </b>
 
                 <br>
 
-                <span id="t-reg-desc" style="font-size:12px;color:#888;">
+                <span
+                    id="t-reg-desc"
+                    style="
+                        font-size:12px;
+                        color:#888;
+                    "
+                >
                     Faster recovery
                 </span>
+
             </div>
 
-            <span style="color:var(--w);font-size:20px;font-weight:900;">
+            <span style="font-size:20px;font-weight:900;">
                 ➔
             </span>
+
         </div>
+
     </div>
 
-    <div id="shop-detail" class="hidden" style="width:100%;">
+    <div
+        id="shop-detail"
+        class="hidden"
+        style="width:100%;"
+    >
+
         <button
             id="t-back"
             onclick="backToShop()"
-            style="background:none;border:none;color:#fff;font-weight:800;margin-bottom:15px;cursor:pointer;display:flex;align-items:center;gap:5px;"
+            style="
+                background:none;
+                border:none;
+                color:#fff;
+                font-weight:800;
+                margin-bottom:15px;
+                cursor:pointer;
+            "
         >
             ← BACK
         </button>
 
         <div id="upgrade-items"></div>
+
     </div>
+
 </section>
 
 <section id="s-games" class="screen">
-    <h2 style="align-self:flex-start;margin-bottom:10px;font-weight:900;">
+
+    <h2
+        id="t-games-title"
+        style="
+            align-self:flex-start;
+            margin-bottom:10px;
+            font-weight:900;
+        "
+    >
         MINI GAMES
     </h2>
 
     <div class="token-display">
-        <span>🎟️ TOKENS</span>
-        <span id="token-score-games">0</span>
+
+        <span id="t-token-label">
+            🎟️ TOKENS
+        </span>
+
+        <span id="token-score-games">
+            0
+        </span>
+
+    </div>
+
+    <!-- ОБМЕН ТОКЕНОВ -->
+
+    <div class="exchange-box">
+
+        <div
+            style="
+                font-size:15px;
+                font-weight:900;
+                margin-bottom:8px;
+            "
+            id="t-exchange-title"
+        >
+            ОБМЕН ТОКЕНОВ
+        </div>
+
+        <div
+            style="
+                font-size:11px;
+                color:#777;
+                margin-bottom:12px;
+            "
+            id="t-exchange-desc"
+        >
+            100 токенов = 10 000 SCORE
+        </div>
+
+        <div class="exchange-row">
+
+            <div
+                style="
+                    flex:1;
+                    background:#0a0a0a;
+                    border:1px solid #222;
+                    border-radius:10px;
+                    padding:12px;
+                    text-align:center;
+                    font-weight:900;
+                "
+            >
+                100 🎟️
+            </div>
+
+            <div
+                style="
+                    font-size:18px;
+                    color:#666;
+                "
+            >
+                →
+            </div>
+
+            <div
+                style="
+                    flex:1;
+                    background:#0a0a0a;
+                    border:1px solid #222;
+                    border-radius:10px;
+                    padding:12px;
+                    text-align:center;
+                    font-weight:900;
+                "
+            >
+                10K SCORE
+            </div>
+
+            <button
+                class="buy-btn"
+                onclick="exchangeTokens()"
+                id="exchange-btn"
+            >
+                EXCHANGE
+            </button>
+
+        </div>
+
     </div>
 
     <div class="mini-games-grid">
 
-        <div class="mini-game-card" onclick="openMiniGame('night')">
+        <!-- Названия ИГР специально НЕ переводятся -->
+
+        <div
+            class="mini-game-card"
+            onclick="openMiniGame('night')"
+        >
+
             <div>
-                <div class="mg-icon">🌙</div>
-                <div class="mg-title">NIGHT SHIFT</div>
-                <div class="mg-desc">
-                    Simple FNAF-style survival. Check the room and close the door only when the monster is there.
+
+                <div class="mg-icon">
+                    🌙
                 </div>
+
+                <div class="mg-title">
+                    NIGHT SHIFT
+                </div>
+
+                <div
+                    class="mg-desc"
+                    id="mg-desc-night"
+                >
+                    Simple FNAF-style survival.
+                </div>
+
             </div>
 
-            <div class="mg-reward">
+            <div
+                class="mg-reward"
+                id="mg-reward-night"
+            >
                 Easy tutorial → harder levels
             </div>
+
         </div>
 
-        <div class="mini-game-card" onclick="openMiniGame('dash')">
+        <div
+            class="mini-game-card"
+            onclick="openMiniGame('dash')"
+        >
+
             <div>
-                <div class="mg-icon">🔺</div>
-                <div class="mg-title">JUUG DASH</div>
-                <div class="mg-desc">
-                    Jump over obstacles and reach the finish.
+
+                <div class="mg-icon">
+                    🔺
                 </div>
+
+                <div class="mg-title">
+                    JUUG DASH
+                </div>
+
+                <div
+                    class="mg-desc"
+                    id="mg-desc-dash"
+                >
+                    Jump over obstacles.
+                </div>
+
             </div>
 
-            <div class="mg-reward">
+            <div
+                class="mg-reward"
+                id="mg-reward-dash"
+            >
                 Gets faster
             </div>
+
         </div>
 
-        <div class="mini-game-card" onclick="openMiniGame('memory')">
+        <div
+            class="mini-game-card"
+            onclick="openMiniGame('memory')"
+        >
+
             <div>
-                <div class="mg-icon">🧠</div>
-                <div class="mg-title">MEMORY GRID</div>
-                <div class="mg-desc">
-                    Remember highlighted cells and repeat them.
+
+                <div class="mg-icon">
+                    🧠
                 </div>
+
+                <div class="mg-title">
+                    MEMORY GRID
+                </div>
+
+                <div
+                    class="mg-desc"
+                    id="mg-desc-memory"
+                >
+                    Remember the order.
+                </div>
+
             </div>
 
-            <div class="mg-reward">
+            <div
+                class="mg-reward"
+                id="mg-reward-memory"
+            >
                 More cells
             </div>
+
         </div>
 
-        <div class="mini-game-card" onclick="openMiniGame('quick')">
+        <div
+            class="mini-game-card"
+            onclick="openMiniGame('quick')"
+        >
+
             <div>
-                <div class="mg-icon">⚡</div>
-                <div class="mg-title">QUICK SWITCH</div>
-                <div class="mg-desc">
-                    Tap only when the screen says TAP.
+
+                <div class="mg-icon">
+                    ⚡
                 </div>
+
+                <div class="mg-title">
+                    QUICK SWITCH
+                </div>
+
+                <div
+                    class="mg-desc"
+                    id="mg-desc-quick"
+                >
+                    React at the correct moment.
+                </div>
+
             </div>
 
-            <div class="mg-reward">
+            <div
+                class="mg-reward"
+                id="mg-reward-quick"
+            >
                 Faster reactions
             </div>
+
         </div>
 
-        <div class="mini-game-card" onclick="openMiniGame('reactor')">
+        <div
+            class="mini-game-card"
+            onclick="openMiniGame('reactor')"
+        >
+
             <div>
-                <div class="mg-icon">☢️</div>
-                <div class="mg-title">REACTOR</div>
-                <div class="mg-desc">
-                    Remember and repeat the safe symbol sequence.
+
+                <div class="mg-icon">
+                    ☢️
                 </div>
+
+                <div class="mg-title">
+                    REACTOR
+                </div>
+
+                <div
+                    class="mg-desc"
+                    id="mg-desc-reactor"
+                >
+                    Remember the symbols.
+                </div>
+
             </div>
 
-            <div class="mg-reward">
+            <div
+                class="mg-reward"
+                id="mg-reward-reactor"
+            >
                 Longer sequence
             </div>
+
         </div>
 
     </div>
+
 </section>
 
 <section id="s-gear" class="screen">
-    <h2 id="t-gear-title" style="align-self:flex-start;margin-bottom:20px;font-weight:900;">
+
+    <h2
+        id="t-gear-title"
+        style="
+            align-self:flex-start;
+            margin-bottom:20px;
+            font-weight:900;
+        "
+    >
         SETTINGS
     </h2>
 
-    <div id="referral-card" class="card" style="display:block;cursor:default;">
+    <div
+        id="referral-card"
+        class="card"
+        style="display:block;cursor:default;"
+    >
 
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div
+            style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                margin-bottom:12px;
+            "
+        >
 
             <div>
+
                 <div style="font-size:18px;font-weight:900;">
                     🤝 REFERRALS
                 </div>
 
-                <div style="font-size:11px;color:#777;margin-top:4px;">
-                    +25 000 points for you and your invited friend
+                <div
+                    id="ref-description"
+                    style="
+                        font-size:11px;
+                        color:#777;
+                        margin-top:4px;
+                    "
+                >
+                    +25 000 points for you and your friend
                 </div>
+
             </div>
 
             <div style="text-align:right;">
-                <div id="ref-count" style="font-size:20px;font-weight:900;">
+
+                <div
+                    id="ref-count"
+                    style="
+                        font-size:20px;
+                        font-weight:900;
+                    "
+                >
                     0
                 </div>
 
-                <div style="font-size:9px;color:#666;">
+                <div
+                    id="ref-invited-label"
+                    style="
+                        font-size:9px;
+                        color:#666;
+                    "
+                >
                     INVITED
                 </div>
+
             </div>
 
         </div>
 
         <div style="display:flex;gap:8px;">
 
-            <button class="buy-btn" style="flex:1;" onclick="copyRefLink()">
+            <button
+                class="buy-btn"
+                style="flex:1;"
+                onclick="copyRefLink()"
+            >
                 COPY
             </button>
 
-            <button class="buy-btn" style="flex:1;" onclick="shareRefLink()">
+            <button
+                class="buy-btn"
+                style="flex:1;"
+                onclick="shareRefLink()"
+            >
                 SHARE
             </button>
 
         </div>
 
-        <div id="ref-earned" style="font-size:11px;color:#777;text-align:center;margin-top:10px;">
+        <div
+            id="ref-earned"
+            style="
+                font-size:11px;
+                color:#777;
+                text-align:center;
+                margin-top:10px;
+            "
+        >
             Earned: 0 pts
         </div>
+
     </div>
 
-    <button class="settings-btn" onclick="toggleLang()">
-        <span id="t-lang-label">Language</span>
-        <span id="cur-lang" style="color:#888">English</span>
+    <button
+        class="settings-btn"
+        onclick="toggleLang()"
+    >
+
+        <span id="t-lang-label">
+            Language
+        </span>
+
+        <span
+            id="cur-lang"
+            style="color:#888;"
+        >
+            English
+        </span>
+
     </button>
 
-    <button class="settings-btn" onclick="toggleSound()">
-        <span id="t-sound-label">Sound</span>
-        <span id="cur-sound" style="color:#888">ON</span>
+    <button
+        class="settings-btn"
+        onclick="toggleSound()"
+    >
+
+        <span id="t-sound-label">
+            Sound
+        </span>
+
+        <span
+            id="cur-sound"
+            style="color:#888;"
+        >
+            ON
+        </span>
+
     </button>
 
     <div id="admin-container"></div>
+
 </section>
 
 <nav>
-    <div class="nav-item" id="n-top" onclick="show('s-top')">
+
+    <div
+        class="nav-item"
+        id="n-top"
+        onclick="show('s-top')"
+    >
         <span>🏆</span>
         <p id="t-nav-top">TOP</p>
     </div>
 
-    <div class="nav-item active" id="n-game" onclick="show('s-game')">
+    <div
+        class="nav-item active"
+        id="n-game"
+        onclick="show('s-game')"
+    >
         <span>💎</span>
         <p id="t-nav-game">GAME</p>
     </div>
 
-    <div class="nav-item" id="n-shop" onclick="show('s-shop')">
+    <div
+        class="nav-item"
+        id="n-shop"
+        onclick="show('s-shop')"
+    >
         <span>🛒</span>
         <p id="t-nav-shop">SHOP</p>
     </div>
 
-    <div class="nav-item" id="n-games" onclick="show('s-games')">
+    <div
+        class="nav-item"
+        id="n-games"
+        onclick="show('s-games')"
+    >
         <span>🎮</span>
-        <p>GAMES</p>
+        <p id="t-nav-games">GAMES</p>
     </div>
 
-    <div class="nav-item" id="n-gear" onclick="show('s-gear')">
+    <div
+        class="nav-item"
+        id="n-gear"
+        onclick="show('s-gear')"
+    >
         <span>⚙️</span>
         <p id="t-nav-gear">SETTINGS</p>
     </div>
+
 </nav>
 
 </div>
 
 <script>
+
 const firebaseConfig = {
     apiKey: "AIzaSyDcUMfQAd9QnoPUVxfM9SWp_lHBc2CaRKY",
     authDomain: "juugtaaap.firebaseapp.com",
@@ -1072,16 +1756,23 @@ const firebaseConfig = {
     appId: "1:230755213175:web:60d2bd14da628347284b72"
 };
 
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(
+    firebaseConfig
+);
 
-const db = firebase.database();
-const tg = window.Telegram.WebApp;
+const db =
+    firebase.database();
+
+const tg =
+    window.Telegram.WebApp;
 
 tg.expand();
 
 const isMobile =
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
-    .test(navigator.userAgent);
+        .test(
+            navigator.userAgent
+        );
 
 const bgTracks = [
     'music/track1.mp3',
@@ -1090,47 +1781,86 @@ const bgTracks = [
 ];
 
 let currentTrackIndex =
-    Math.floor(Math.random() * bgTracks.length);
+    Math.floor(
+        Math.random() *
+        bgTracks.length
+    );
 
-const bgMusic = new Audio();
-bgMusic.volume = 0.05;
+const bgMusic =
+    new Audio();
+
+bgMusic.volume =
+    0.05;
 
 function playNextTrack() {
-    if (!state.sound || isMobile) return;
+
+    if (
+        !state.sound ||
+        isMobile
+    ) return;
 
     currentTrackIndex =
-        Math.floor(Math.random() * bgTracks.length);
+        Math.floor(
+            Math.random() *
+            bgTracks.length
+        );
 
     bgMusic.src =
-        bgTracks[currentTrackIndex];
+        bgTracks[
+            currentTrackIndex
+        ];
 
-    bgMusic.play().catch(()=>{});
+    bgMusic
+        .play()
+        .catch(
+            () => {}
+        );
 }
 
-bgMusic.onended = playNextTrack;
+bgMusic.onended =
+    playNextTrack;
 
-const sfxTap = new Audio('sounds/tap.mp3');
-const sfxBuy = new Audio('sounds/buy.mp3');
-const sfxBtn = new Audio('sounds/btn.mp3');
+const sfxTap =
+    new Audio(
+        'sounds/tap.mp3'
+    );
 
-let lastTapSoundAt = 0;
+const sfxBuy =
+    new Audio(
+        'sounds/buy.mp3'
+    );
 
-function playSound(type) {
+const sfxBtn =
+    new Audio(
+        'sounds/btn.mp3'
+    );
 
-    if (!state.sound) return;
+let lastTapSoundAt =
+    0;
+
+function playSound(
+    type
+) {
+
+    if (
+        !state.sound
+    ) return;
 
     const now =
         performance.now();
 
     if (
         type === 'tap' &&
-        now - lastTapSoundAt < 55
-    ) {
-        return;
-    }
+        now -
+            lastTapSoundAt <
+            55
+    ) return;
 
-    if (type === 'tap') {
-        lastTapSoundAt = now;
+    if (
+        type === 'tap'
+    ) {
+        lastTapSoundAt =
+            now;
     }
 
     try {
@@ -1142,11 +1872,21 @@ function playSound(type) {
                     ? sfxBuy
                     : sfxBtn;
 
-        if (type === 'tap') {
+        if (
+            type === 'tap'
+        ) {
 
-            audio.currentTime = 0;
-            audio.volume = 0.10;
-            audio.play().catch(()=>{});
+            audio.currentTime =
+                0;
+
+            audio.volume =
+                0.10;
+
+            audio
+                .play()
+                .catch(
+                    () => {}
+                );
 
         } else {
 
@@ -1158,126 +1898,519 @@ function playSound(type) {
                     ? 0.25
                     : 0.20;
 
-            clone.play().catch(()=>{});
+            clone
+                .play()
+                .catch(
+                    () => {}
+                );
         }
 
-    } catch(e) {}
+    } catch (e) {}
 }
 
-const MY_ID = 5291965471;
+const MY_ID =
+    5291965471;
 
 const user =
     tg.initDataUnsafe?.user ||
     {
         id: 0,
-        username: "Guest"
+        username:
+            "Guest"
     };
 
 const currentId =
-    user.id || 999999;
+    user.id ||
+    999999;
 
-let isLoaded = false;
+let isLoaded =
+    false;
 
 let state = {
-    score: 0,
-    energy: 150,
-    tapLvl: 1,
-    passiveLvl: 0,
-    maxEnergyLvl: 0,
-    regenLvl: 0,
-    isInfiniteEnergy: false,
-    lastUpdate: Date.now(),
-    lastCaseTime: 0,
-    username: "Guest",
-    lang: 'en',
-    sound: true,
-    tokens: 0,
-    miniGames: {}
+    score:
+        0,
+
+    energy:
+        150,
+
+    tapLvl:
+        1,
+
+    passiveLvl:
+        0,
+
+    maxEnergyLvl:
+        0,
+
+    regenLvl:
+        0,
+
+    isInfiniteEnergy:
+        false,
+
+    lastUpdate:
+        Date.now(),
+
+    lastCaseTime:
+        0,
+
+    username:
+        "Guest",
+
+    lang:
+        "en",
+
+    sound:
+        true,
+
+    tokens:
+        0,
+
+    miniGames:
+        {},
+
+    referralEpochClaimed:
+        0
 };
 
 let globalData = {
-    eventEnd: 0,
-    isMaint: false
+    eventEnd:
+        0,
+
+    isMaint:
+        false,
+
+    referralEpoch:
+        0,
+
+    referralResetUsed:
+        false
 };
 
 const langData = {
+
     en: {
-        scoreL: "SCORE",
-        tapL: "STAMINA",
-        passL: "Passive",
-        topT: "TOP 5 JUUG'ERS",
-        shopT: "SHOP",
-        gearT: "SETTINGS",
-        langL: "Language",
-        soundL: "Sound",
-        navTop: "TOP",
-        navGame: "GAME",
-        navShop: "SHOP",
-        navGear: "SETTINGS",
-        clUp: "CLICK UPGRADES",
-        clDe: "Increase tap income",
-        psUp: "PASSIVE INCOME",
-        psDe: "Automatic income",
-        nrgUp: "MAX STAMINA",
-        nrgDe: "Increase energy cap",
-        regUp: "STAMINA REGEN",
-        regDe: "Faster recovery",
-        caseName: "DAILY CASE",
-        caseOpen: "OPEN",
-        caseReady: "Ready to open!",
-        back: "BACK",
-        refL: "Referral Link",
-        cpL: "COPY",
-        starsUp: "BUY 5M POINTS",
-        starsDe: "Instant boost"
+
+        scoreL:
+            "SCORE",
+
+        tapL:
+            "STAMINA",
+
+        passL:
+            "Passive",
+
+        topT:
+            "TOP 5 JUUG'ERS",
+
+        shopT:
+            "SHOP",
+
+        gearT:
+            "SETTINGS",
+
+        langL:
+            "Language",
+
+        soundL:
+            "Sound",
+
+        navTop:
+            "TOP",
+
+        navGame:
+            "GAME",
+
+        navShop:
+            "SHOP",
+
+        navGames:
+            "GAMES",
+
+        navGear:
+            "SETTINGS",
+
+        gamesTitle:
+            "MINI GAMES",
+
+        token:
+            "🎟️ TOKENS",
+
+        exchangeTitle:
+            "TOKEN EXCHANGE",
+
+        exchangeDesc:
+            "100 tokens = 10,000 SCORE",
+
+        exchangeBtn:
+            "EXCHANGE",
+
+        clUp:
+            "CLICK UPGRADES",
+
+        clDe:
+            "Increase tap income",
+
+        psUp:
+            "PASSIVE INCOME",
+
+        psDe:
+            "Automatic income",
+
+        nrgUp:
+            "MAX STAMINA",
+
+        nrgDe:
+            "Increase energy cap",
+
+        regUp:
+            "STAMINA REGEN",
+
+        regDe:
+            "Faster recovery",
+
+        caseName:
+            "DAILY CASE",
+
+        caseOpen:
+            "OPEN",
+
+        caseReady:
+            "Ready to open!",
+
+        back:
+            "BACK",
+
+        starsUp:
+            "BUY 5M POINTS",
+
+        starsDe:
+            "Instant boost",
+
+        refDescription:
+            "+25,000 points for you and your friend",
+
+        invited:
+            "INVITED",
+
+        earned:
+            "Earned",
+
+        copy:
+            "COPY",
+
+        share:
+            "SHARE",
+
+        mini: {
+
+            nightDesc:
+                "Simple FNAF-style survival.",
+
+            nightReward:
+                "Easy tutorial → harder levels",
+
+            dashDesc:
+                "Jump over obstacles and reach the finish.",
+
+            dashReward:
+                "Gets faster",
+
+            memoryDesc:
+                "Remember the order of the highlighted cells.",
+
+            memoryReward:
+                "More cells",
+
+            quickDesc:
+                "Tap only at the correct moment.",
+
+            quickReward:
+                "Faster reactions",
+
+            reactorDesc:
+                "Remember and repeat the symbols.",
+
+            reactorReward:
+                "Longer sequence"
+        }
     },
 
     ru: {
-        scoreL: "СЧЕТ",
-        tapL: "ЭНЕРГИЯ",
-        passL: "Пассив",
-        topT: "ТОП 5 ДЖУГЕРОВ",
-        shopT: "МАГАЗИН",
-        gearT: "НАСТРОЙКИ",
-        langL: "Язык",
-        soundL: "Звук",
-        navTop: "ТОП",
-        navGame: "ИГРА",
-        navShop: "МАГАЗИН",
-        navGear: "НАСТРОЙКИ",
-        clUp: "ПРОКАЧКА КЛИКА",
-        clDe: "Увеличить доход",
-        psUp: "ПАССИВНЫЙ ДОХОД",
-        psDe: "Авто-доход",
-        nrgUp: "МАКС ЭНЕРГИЯ",
-        nrgDe: "Больше лимит",
-        regUp: "РЕГЕН ЭНЕРГИИ",
-        regDe: "Быстрое восстановление",
-        caseName: "ДНЕВНОЙ КЕЙС",
-        caseOpen: "ОТКРЫТЬ",
-        caseReady: "Можно открыть!",
-        back: "НАЗАД",
-        refL: "Реферальная Ссылка",
-        cpL: "КОПИРОВАТЬ",
-        starsUp: "КУПИТЬ 5M ОЧКОВ",
-        starsDe: "Быстрый буст"
+
+        scoreL:
+            "СЧЕТ",
+
+        tapL:
+            "ЭНЕРГИЯ",
+
+        passL:
+            "Пассив",
+
+        topT:
+            "ТОП 5 ДЖУГЕРОВ",
+
+        shopT:
+            "МАГАЗИН",
+
+        gearT:
+            "НАСТРОЙКИ",
+
+        langL:
+            "Язык",
+
+        soundL:
+            "Звук",
+
+        navTop:
+            "ТОП",
+
+        navGame:
+            "ИГРА",
+
+        navShop:
+            "МАГАЗИН",
+
+        navGames:
+            "ИГРЫ",
+
+        navGear:
+            "НАСТРОЙКИ",
+
+        gamesTitle:
+            "МИНИ-ИГРЫ",
+
+        token:
+            "🎟️ ЖЕТОНЫ",
+
+        exchangeTitle:
+            "ОБМЕН ЖЕТОНОВ",
+
+        exchangeDesc:
+            "100 жетонов = 10 000 SCORE",
+
+        exchangeBtn:
+            "ОБМЕНЯТЬ",
+
+        clUp:
+            "ПРОКАЧКА КЛИКА",
+
+        clDe:
+            "Увеличить доход",
+
+        psUp:
+            "ПАССИВНЫЙ ДОХОД",
+
+        psDe:
+            "Автоматический доход",
+
+        nrgUp:
+            "МАКС ЭНЕРГИЯ",
+
+        nrgDe:
+            "Увеличить запас энергии",
+
+        regUp:
+            "РЕГЕН ЭНЕРГИИ",
+
+        regDe:
+            "Быстрее восстановление",
+
+        caseName:
+            "ДНЕВНОЙ КЕЙС",
+
+        caseOpen:
+            "ОТКРЫТЬ",
+
+        caseReady:
+            "Можно открыть!",
+
+        back:
+            "НАЗАД",
+
+        starsUp:
+            "КУПИТЬ 5M ОЧКОВ",
+
+        starsDe:
+            "Быстрый буст",
+
+        refDescription:
+            "+25 000 очков тебе и приглашённому другу",
+
+        invited:
+            "ПРИГЛАШЕНО",
+
+        earned:
+            "Заработано",
+
+        copy:
+            "КОПИРОВАТЬ",
+
+        share:
+            "ПОДЕЛИТЬСЯ",
+
+        mini: {
+
+            nightDesc:
+                "Простая игра в стиле FNAF.",
+
+            nightReward:
+                "Обучающий уровень → сложнее дальше",
+
+            dashDesc:
+                "Прыгай через препятствия до финиша.",
+
+            dashReward:
+                "Становится быстрее",
+
+            memoryDesc:
+                "Запомни порядок подсвеченных клеток.",
+
+            memoryReward:
+                "Клеток становится больше",
+
+            quickDesc:
+                "Нажимай только в правильный момент.",
+
+            quickReward:
+                "Реакция становится быстрее",
+
+            reactorDesc:
+                "Запомни и повтори символы.",
+
+            reactorReward:
+                "Последовательность становится длиннее"
+        }
     }
 };
 
 function updateLangUI() {
 
     const l =
-        langData[state.lang];
+        langData[
+            state.lang
+        ];
 
-    document.getElementById(
-        't-score-label'
-    ).innerText =
-        l.scoreL;
+    const map = {
+
+        't-score-label':
+            'scoreL',
+
+        't-tap-label':
+            'tapL',
+
+        't-top-title':
+            'topT',
+
+        't-shop-title':
+            'shopT',
+
+        't-gear-title':
+            'gearT',
+
+        't-lang-label':
+            'langL',
+
+        't-sound-label':
+            'soundL',
+
+        't-nav-top':
+            'navTop',
+
+        't-nav-game':
+            'navGame',
+
+        't-nav-shop':
+            'navShop',
+
+        't-nav-games':
+            'navGames',
+
+        't-nav-gear':
+            'navGear',
+
+        't-games-title':
+            'gamesTitle',
+
+        't-token-label':
+            'token',
+
+        't-exchange-title':
+            'exchangeTitle',
+
+        't-exchange-desc':
+            'exchangeDesc',
+
+        'exchange-btn':
+            'exchangeBtn',
+
+        't-click-up':
+            'clUp',
+
+        't-click-desc':
+            'clDe',
+
+        't-pass-up':
+            'psUp',
+
+        't-pass-desc':
+            'psDe',
+
+        't-nrg-up':
+            'nrgUp',
+
+        't-nrg-desc':
+            'nrgDe',
+
+        't-reg-up':
+            'regUp',
+
+        't-reg-desc':
+            'regDe',
+
+        't-case-name':
+            'caseName',
+
+        'case-btn':
+            'caseOpen',
+
+        't-back':
+            'back',
+
+        't-stars-up':
+            'starsUp',
+
+        't-stars-desc':
+            'starsDe'
+    };
+
+    Object.keys(
+        map
+    ).forEach(
+        id => {
+
+            const el =
+                document.getElementById(
+                    id
+                );
+
+            if (
+                el
+            ) {
+
+                el.innerText =
+                    l[
+                        map[id]
+                    ];
+            }
+        }
+    );
 
     document.getElementById(
         'cur-lang'
     ).innerText =
-        state.lang === 'en'
+        state.lang ===
+            'en'
             ? "EN"
             : "RU";
 
@@ -1288,102 +2421,127 @@ function updateLangUI() {
             ? "ON"
             : "OFF";
 
-    const map = {
-        't-nav-gear': 'navGear',
-        't-gear-title': 'gearT',
-        't-tap-label': 'tapL',
-        't-top-title': 'topT',
-        't-shop-title': 'shopT',
-        't-click-up': 'clUp',
-        't-click-desc': 'clDe',
-        't-pass-up': 'psUp',
-        't-pass-desc': 'psDe',
-        't-nrg-up': 'nrgUp',
-        't-nrg-desc': 'nrgDe',
-        't-reg-up': 'regUp',
-        't-reg-desc': 'regDe',
-        't-back': 'back',
-        't-lang-label': 'langL',
-        't-sound-label': 'soundL',
-        't-nav-top': 'navTop',
-        't-nav-game': 'navGame',
-        't-nav-shop': 'navShop',
-        't-case-name': 'caseName',
-        'case-btn': 'caseOpen',
-        't-ref-label': 'refL',
-        't-copy-label': 'cpL',
-        't-stars-up': 'starsUp',
-        't-stars-desc': 'starsDe'
-    };
+    document.getElementById(
+        'ref-description'
+    ).innerText =
+        l.refDescription;
 
-    for (
-        let id in map
-    ) {
+    document.getElementById(
+        'ref-invited-label'
+    ).innerText =
+        l.invited;
 
-        const el =
-            document.getElementById(id);
-
-        if (el) {
-            el.innerText =
-                l[map[id]];
-        }
-    }
-
-    if (
-        document.getElementById(
-            'passive-display'
-        )
-    ) {
-
-        document.getElementById(
-            'passive-display'
-        ).innerText =
-            `${l.passL}: ${state.passiveLvl}/sec`;
-    }
+    updateMiniGameTexts();
 
     updateCaseUI();
-    refreshReferralStats();
+    updateUI();
     updateTokenUI();
+    refreshReferralStats();
+}
+
+function updateMiniGameTexts() {
+
+    const l =
+        langData[
+            state.lang
+        ].mini;
+
+    const pairs = {
+
+        'mg-desc-night':
+            l.nightDesc,
+
+        'mg-reward-night':
+            l.nightReward,
+
+        'mg-desc-dash':
+            l.dashDesc,
+
+        'mg-reward-dash':
+            l.dashReward,
+
+        'mg-desc-memory':
+            l.memoryDesc,
+
+        'mg-reward-memory':
+            l.memoryReward,
+
+        'mg-desc-quick':
+            l.quickDesc,
+
+        'mg-reward-quick':
+            l.quickReward,
+
+        'mg-desc-reactor':
+            l.reactorDesc,
+
+        'mg-reward-reactor':
+            l.reactorReward
+    };
+
+    Object.keys(
+        pairs
+    ).forEach(
+        id => {
+
+            const el =
+                document.getElementById(
+                    id
+                );
+
+            if (el) {
+                el.innerText =
+                    pairs[id];
+            }
+        }
+    );
 }
 
 function toggleLang() {
 
-    playSound('btn');
+    playSound(
+        'btn'
+    );
 
     state.lang =
-        state.lang === 'en'
+        state.lang ===
+            'en'
             ? 'ru'
             : 'en';
 
     updateLangUI();
-    updateUI();
     save();
 }
 
 function toggleSound() {
 
-    playSound('btn');
+    playSound(
+        'btn'
+    );
 
     state.sound =
         !state.sound;
 
-    document.getElementById(
-        'cur-sound'
-    ).innerText =
-        state.sound
-            ? "ON"
-            : "OFF";
+    if (
+        !state.sound
+    ) {
 
-    if (!state.sound) {
         bgMusic.pause();
-    } else if (!isMobile) {
+
+    } else if (
+        !isMobile
+    ) {
+
         playNextTrack();
     }
 
+    updateLangUI();
     save();
 }
 
-function getRank(lvl) {
+function getRank(
+    lvl
+) {
 
     const ranks = [
         "Noob Juug'er",
@@ -1403,7 +2561,9 @@ function getRank(lvl) {
     ];
 }
 
-function getUpgradeInfo(type) {
+function getUpgradeInfo(
+    type
+) {
 
     const lvl =
         state[
@@ -1416,9 +2576,13 @@ function getUpgradeInfo(type) {
                         : 'regenLvl'
         ];
 
-    if (type === 'click') {
+    if (
+        type ===
+        'click'
+    ) {
 
         return {
+
             cost:
                 Math.floor(
                     100 *
@@ -1436,9 +2600,13 @@ function getUpgradeInfo(type) {
         };
     }
 
-    if (type === 'passive') {
+    if (
+        type ===
+        'passive'
+    ) {
 
         return {
+
             cost:
                 Math.floor(
                     100 *
@@ -1456,11 +2624,18 @@ function getUpgradeInfo(type) {
         };
     }
 
-    if (type === 'energy') {
+    if (
+        type ===
+        'energy'
+    ) {
 
-        if (lvl >= 20) {
+        if (
+            lvl >=
+            20
+        ) {
 
             return {
+
                 cost:
                     500000000000,
 
@@ -1477,11 +2652,15 @@ function getUpgradeInfo(type) {
 
         const currentE =
             150 +
-            (lvl * 492);
+            lvl *
+            492;
 
         const nextE =
             150 +
-            ((lvl + 1) * 492);
+            (
+                lvl + 1
+            ) *
+            492;
 
         const cost =
             Math.floor(
@@ -1501,45 +2680,54 @@ function getUpgradeInfo(type) {
         };
     }
 
-    if (type === 'regen') {
+    const cost =
+        Math.floor(
+            5000000 *
+            Math.pow(
+                1.8,
+                lvl
+            )
+        );
 
-        const cost =
-            Math.floor(
-                5000000 *
-                Math.pow(
-                    1.8,
-                    lvl
-                )
-            );
+    return {
 
-        return {
-            cost,
-            val:
-                1 + lvl,
+        cost,
 
-            next:
-                2 + lvl
-        };
-    }
+        val:
+            1 +
+            lvl,
+
+        next:
+            2 +
+            lvl
+    };
 }
 
 function getMaxEnergyReal() {
+
     return state.isInfiniteEnergy
         ? '∞'
         : 150 +
-            (state.maxEnergyLvl * 492);
+            state.maxEnergyLvl *
+            492;
 }
 
 function getRegenReal() {
+
     return 1 +
         state.regenLvl;
 }
+
+/* ============================= */
+/* REFERRAL                     */
+/* ============================= */
 
 async function getBotUsername() {
 
     if (
         window.cachedBotUsername
     ) {
+
         return window.cachedBotUsername;
     }
 
@@ -1568,10 +2756,9 @@ async function getBotUsername() {
             return data.username;
         }
 
-    } catch (e) {
+    } catch(e) {
 
         console.warn(
-            'bot-info error:',
             e
         );
     }
@@ -1587,7 +2774,8 @@ async function getReferralLink() {
     if (
         !bot ||
         !currentId ||
-        currentId === 0
+        currentId ===
+            0
     ) {
 
         return '';
@@ -1595,14 +2783,16 @@ async function getReferralLink() {
 
     return (
         `https://t.me/` +
-        `${bot}` +
+        bot +
         `?startapp=ref_${currentId}`
     );
 }
 
 async function copyRefLink() {
 
-    playSound('btn');
+    playSound(
+        'btn'
+    );
 
     const link =
         await getReferralLink();
@@ -1610,9 +2800,10 @@ async function copyRefLink() {
     if (!link) {
 
         tg.showAlert(
-            state.lang === 'ru'
-                ? 'Не удалось получить ссылку.'
-                : 'Could not get referral link.'
+            state.lang ===
+                'ru'
+                ? "Не удалось получить ссылку."
+                : "Could not get referral link."
         );
 
         return;
@@ -1625,12 +2816,13 @@ async function copyRefLink() {
         );
 
         tg.showAlert(
-            state.lang === 'ru'
-                ? 'Ссылка скопирована!'
-                : 'Link copied!'
+            state.lang ===
+                'ru'
+                ? "Ссылка скопирована!"
+                : "Link copied!"
         );
 
-    } catch (e) {
+    } catch(e) {
 
         tg.showAlert(
             link
@@ -1640,7 +2832,9 @@ async function copyRefLink() {
 
 async function shareRefLink() {
 
-    playSound('btn');
+    playSound(
+        'btn'
+    );
 
     const link =
         await getReferralLink();
@@ -1648,18 +2842,20 @@ async function shareRefLink() {
     if (!link) {
 
         tg.showAlert(
-            state.lang === 'ru'
-                ? 'Не удалось получить ссылку.'
-                : 'Could not get referral link.'
+            state.lang ===
+                'ru'
+                ? "Не удалось получить ссылку."
+                : "Could not get referral link."
         );
 
         return;
     }
 
     const text =
-        state.lang === 'ru'
-            ? 'Заходи в JuugTAPS по моей ссылке и получай бонус!'
-            : 'Join JuugTAPS through my link and get a bonus!';
+        state.lang ===
+            'ru'
+            ? "Заходи в JuugTAPS по моей ссылке и получай бонус!"
+            : "Join JuugTAPS through my link and get a bonus!";
 
     const shareUrl =
         `https://t.me/share/url?url=` +
@@ -1681,7 +2877,7 @@ async function shareRefLink() {
             return;
         }
 
-    } catch (e) {}
+    } catch(e) {}
 
     if (
         navigator.share
@@ -1691,8 +2887,7 @@ async function shareRefLink() {
 
             await navigator.share({
                 title:
-                    'JuugTAPS',
-
+                    "JuugTAPS",
                 text,
                 url:
                     link
@@ -1700,25 +2895,94 @@ async function shareRefLink() {
 
             return;
 
-        } catch (e) {}
+        } catch(e) {}
     }
 
     await copyRefLink();
 }
 
-async function buyStars() {
-
-    playSound('btn');
+function refreshReferralStats() {
 
     if (
         !currentId ||
-        currentId === 0
+        currentId ===
+            0
+    ) return;
+
+    db.ref(
+        `users/${currentId}`
+    ).once(
+        'value',
+        snap => {
+
+            const data =
+                snap.val() ||
+                {};
+
+            const count =
+                document.getElementById(
+                    'ref-count'
+                );
+
+            const earned =
+                document.getElementById(
+                    'ref-earned'
+                );
+
+            if (
+                count
+            ) {
+
+                count.innerText =
+                    Number(
+                        data.referralsCount ||
+                        0
+                    );
+            }
+
+            if (
+                earned
+            ) {
+
+                earned.innerText =
+                    `${
+                        langData[
+                            state.lang
+                        ].earned
+                    }: ${
+                        format(
+                            Number(
+                                data.referralsEarned ||
+                                0
+                            )
+                        )
+                    } pts`;
+            }
+        }
+    );
+}
+
+/* ============================= */
+/* STARS                        */
+/* ============================= */
+
+async function buyStars() {
+
+    playSound(
+        'btn'
+    );
+
+    if (
+        !currentId ||
+        currentId ===
+            0
     ) {
 
         tg.showAlert(
-            state.lang === 'ru'
-                ? 'Не удалось определить Telegram аккаунт.'
-                : 'Could not detect Telegram account.'
+            state.lang ===
+                'ru'
+                ? "Не удалось определить Telegram аккаунт."
+                : "Could not detect Telegram account."
         );
 
         return;
@@ -1745,7 +3009,7 @@ async function buyStars() {
 
             throw new Error(
                 data?.error ||
-                'Invoice error'
+                "Invoice error"
             );
         }
 
@@ -1764,9 +3028,10 @@ async function buyStars() {
                     ) {
 
                         tg.showAlert(
-                            state.lang === 'ru'
-                                ? 'Оплата получена! Очки будут начислены автоматически.'
-                                : 'Payment received! Points will be added automatically.'
+                            state.lang ===
+                                'ru'
+                                ? "Оплата получена! Очки будут начислены автоматически."
+                                : "Payment received! Points will be added automatically."
                         );
                     }
                 }
@@ -1785,40 +3050,48 @@ async function buyStars() {
 
             window.open(
                 data.url,
-                '_blank'
+                "_blank"
             );
         }
 
-    } catch (error) {
+    } catch(e) {
 
         console.error(
-            'STARS ERROR:',
-            error
+            e
         );
 
         tg.showAlert(
-            state.lang === 'ru'
-                ? 'Не удалось открыть оплату. Попробуй ещё раз.'
-                : 'Could not open payment. Try again.'
+            state.lang ===
+                'ru'
+                ? "Не удалось открыть оплату."
+                : "Could not open payment."
         );
     }
 }
 
-// ADMIN
+/* ============================= */
+/* ADMIN                        */
+/* ============================= */
 
 function openAdmin() {
 
-    playSound('btn');
+    playSound(
+        'btn'
+    );
 
     document.getElementById(
         'admin-modal'
     ).style.display =
         'flex';
+
+    updateReferralResetUI();
 }
 
 function closeAdmin() {
 
-    playSound('btn');
+    playSound(
+        'btn'
+    );
 
     document.getElementById(
         'admin-modal'
@@ -1828,11 +3101,14 @@ function closeAdmin() {
 
 function toggleMaint() {
 
-    playSound('btn');
+    playSound(
+        'btn'
+    );
 
     db.ref(
         'global'
     ).update({
+
         isMaint:
             !globalData.isMaint
     });
@@ -1840,7 +3116,9 @@ function toggleMaint() {
 
 function toggleEvent() {
 
-    playSound('btn');
+    playSound(
+        'btn'
+    );
 
     if (
         globalData.eventEnd >
@@ -1856,28 +3134,22 @@ function toggleEvent() {
 
     } else {
 
-        const threeMonths =
-            Date.now() +
-            (
+        db.ref(
+            'global'
+        ).update({
+
+            eventEnd:
+                Date.now() +
                 90 *
                 24 *
                 60 *
                 60 *
                 1000
-            );
-
-        db.ref(
-            'global'
-        ).update({
-            eventEnd:
-                threeMonths
         });
     }
 }
 
 function endEventEarly() {
-
-    playSound('btn');
 
     if (
         confirm(
@@ -1888,6 +3160,7 @@ function endEventEarly() {
         db.ref(
             'global'
         ).update({
+
             eventEnd:
                 Date.now() -
                 10000
@@ -1897,11 +3170,9 @@ function endEventEarly() {
 
 function adminClearWinners() {
 
-    playSound('btn');
-
     if (
         confirm(
-            "Очистить победителей и закрыть ивент?"
+            "Очистить победителей?"
         )
     ) {
 
@@ -1912,24 +3183,18 @@ function adminClearWinners() {
         db.ref(
             'global'
         ).update({
+
             eventEnd:
                 0
         });
-
-        document.getElementById(
-            'show-winners-btn'
-        ).style.display =
-            'none';
     }
 }
 
 function resetAllPlayers() {
 
-    playSound('btn');
-
     if (
         !confirm(
-            "Внимание! Обнулить ВСЕХ?"
+            "Внимание! Обнулить ВСЕХ игроков?"
         )
     ) return;
 
@@ -1944,7 +3209,7 @@ function resetAllPlayers() {
                 {};
 
             for (
-                let id in users
+                const id in users
             ) {
 
                 db.ref(
@@ -1953,6 +3218,9 @@ function resetAllPlayers() {
 
                     score:
                         0,
+
+                    energy:
+                        150,
 
                     tapLvl:
                         1,
@@ -1969,9 +3237,6 @@ function resetAllPlayers() {
                     isInfiniteEnergy:
                         false,
 
-                    energy:
-                        150,
-
                     lastCaseTime:
                         0,
 
@@ -1981,9 +3246,7 @@ function resetAllPlayers() {
             }
 
             tg.showAlert(
-                state.lang === 'ru'
-                    ? 'Все игроки обнулены.'
-                    : 'All players reset.'
+                "Все игроки обнулены."
             );
         }
     );
@@ -1991,20 +3254,17 @@ function resetAllPlayers() {
 
 function resetSpecificPlayer() {
 
-    playSound('btn');
-
-    const rawTarget =
+    const raw =
         document.getElementById(
             'target-user'
-        )
-        .value
-        .trim();
+        ).value
+            .trim();
 
     const target =
-        rawTarget
+        raw
             .replace(
                 /^@/,
-                ''
+                ""
             )
             .toLowerCase();
 
@@ -2032,11 +3292,11 @@ function resetSpecificPlayer() {
                 const username =
                     String(
                         users[id]?.username ||
-                        ''
+                        ""
                     )
                     .replace(
                         /^@/,
-                        ''
+                        ""
                     )
                     .toLowerCase();
 
@@ -2059,9 +3319,7 @@ function resetSpecificPlayer() {
             ) {
 
                 tg.showAlert(
-                    state.lang === 'ru'
-                        ? 'Игрок не найден.'
-                        : 'Player not found.'
+                    "Игрок не найден."
                 );
 
                 return;
@@ -2073,6 +3331,9 @@ function resetSpecificPlayer() {
 
                 score:
                     0,
+
+                energy:
+                    150,
 
                 tapLvl:
                     1,
@@ -2089,9 +3350,6 @@ function resetSpecificPlayer() {
                 isInfiniteEnergy:
                     false,
 
-                energy:
-                    150,
-
                 lastCaseTime:
                     0,
 
@@ -2102,23 +3360,168 @@ function resetSpecificPlayer() {
 
                 tg.showAlert(
                     error
-                        ? (
-                            state.lang === 'ru'
-                                ? 'Ошибка обнуления.'
-                                : 'Reset error.'
-                        )
-                        : (
-                            state.lang === 'ru'
-                                ? 'Игрок обнулен.'
-                                : 'Player reset.'
-                        )
+                        ? "Ошибка обнуления."
+                        : "Игрок обнулен."
                 );
             });
         }
     );
 }
 
-// WINNERS
+/*
+    Однократный сброс реферальной истории.
+
+    Не удаляет игроков.
+    Не удаляет их SCORE.
+    Не удаляет прокачки.
+
+    Меняет только referralEpoch,
+    чтобы существующий пользователь
+    снова мог один раз быть приглашён.
+*/
+
+function resetReferralsOnce() {
+
+    if (
+        globalData.referralResetUsed
+    ) {
+
+        tg.showAlert(
+            state.lang ===
+                'ru'
+                ? "Сброс рефералов уже использован."
+                : "Referral reset was already used."
+        );
+
+        return;
+    }
+
+    if (
+        !confirm(
+            state.lang ===
+                'ru'
+                ? "Сбросить реферальную историю ОДИН РАЗ? После этого отменить нельзя."
+                : "Reset referral history ONE TIME? This cannot be undone."
+        )
+    ) return;
+
+    const nextEpoch =
+        Number(
+            globalData.referralEpoch ||
+            0
+        ) +
+        1;
+
+    db.ref(
+        'global'
+    ).update({
+
+        referralEpoch:
+            nextEpoch,
+
+        referralResetUsed:
+            true
+
+    }, error => {
+
+        if (
+            error
+        ) {
+
+            tg.showAlert(
+                "Ошибка сброса рефералов."
+            );
+
+            return;
+        }
+
+        /*
+            Старая история приглашений больше
+            не используется.
+
+            Игроки остаются в users,
+            поэтому их прогресс не исчезает.
+        */
+
+        db.ref(
+            'referralClaims'
+        ).remove();
+
+        tg.showAlert(
+            state.lang ===
+                'ru'
+                ? "Реферальная история сброшена. Теперь каждого старого пользователя можно пригласить один раз."
+                : "Referral history reset. Every old user can now be invited once."
+        );
+
+        updateReferralResetUI();
+    });
+}
+
+function updateReferralResetUI() {
+
+    const button =
+        document.getElementById(
+            'ref-reset-btn'
+        );
+
+    const status =
+        document.getElementById(
+            'ref-reset-status'
+        );
+
+    if (
+        !button ||
+        !status
+    ) return;
+
+    if (
+        globalData.referralResetUsed
+    ) {
+
+        button.disabled =
+            true;
+
+        button.style.opacity =
+            ".4";
+
+        button.innerText =
+            state.lang ===
+                'ru'
+                ? "СБРОС РЕФЕРАЛОВ УЖЕ ИСПОЛЬЗОВАН"
+                : "REFERRAL RESET ALREADY USED";
+
+        status.innerText =
+            state.lang ===
+                'ru'
+                ? "Повторный сброс невозможен."
+                : "Reset cannot be used again.";
+
+    } else {
+
+        button.disabled =
+            false;
+
+        button.style.opacity =
+            "1";
+
+        button.innerText =
+            state.lang ===
+                'ru'
+                ? "СБРОСИТЬ РЕФЕРАЛЫ — 1 РАЗ"
+                : "RESET REFERRALS — ONCE";
+
+        status.innerText =
+            state.lang ===
+                'ru'
+                ? "Сброс ещё доступен."
+                : "Reset is still available.";
+    }
+}
+
+/* ============================= */
+/* WINNERS                      */
+/* ============================= */
 
 function captureWinners() {
 
@@ -2129,14 +3532,15 @@ function captureWinners() {
         snap => {
 
             const data =
-                snap.val();
+                snap.val() ||
+                {};
 
             const now =
                 Date.now();
 
-            let players =
+            const players =
                 Object.values(
-                    data || {}
+                    data
                 )
                 .filter(
                     p =>
@@ -2160,39 +3564,21 @@ function captureWinners() {
                                 1000
                             );
 
-                        const totalScore =
-                            (
-                                p.score ||
-                                0
-                            ) +
-                            (
+                        return {
+
+                            username:
+                                p.username,
+
+                            score:
+                                (
+                                    p.score ||
+                                    0
+                                ) +
                                 offTime *
                                 (
                                     p.passiveLvl ||
                                     0
                                 )
-                            ) +
-                            (
-                                (
-                                    p.tapLvl ||
-                                    0
-                                ) *
-                                100
-                            ) +
-                            (
-                                (
-                                    p.passiveLvl ||
-                                    0
-                                ) *
-                                500
-                            );
-
-                        return {
-                            username:
-                                p.username,
-
-                            score:
-                                totalScore
                         };
                     }
                 )
@@ -2228,18 +3614,20 @@ function renderWinnersTable(
         "";
 
     const medals = [
-        '🥇',
-        '🥈',
-        '🥉'
+        "🥇",
+        "🥈",
+        "🥉"
     ];
 
     players.forEach(
         (p,i) => {
 
-            list.innerHTML += `
+            list.innerHTML +=
+                `
                 <div class="winner-row">
 
                     <div style="display:flex;align-items:center;gap:10px;">
+
                         <span style="font-size:24px;">
                             ${medals[i]}
                         </span>
@@ -2247,20 +3635,23 @@ function renderWinnersTable(
                         <span>
                             @${p.username}
                         </span>
+
                     </div>
 
-                    <span style="color:var(--w);font-family:monospace;font-size:16px;">
-                        ${format(p.score)}
+                    <span>
+                        ${format(
+                            p.score
+                        )}
                     </span>
 
                 </div>
-            `;
+                `;
         }
     );
 }
 
 function fetchAndShowWinners(
-    isAutoLaunch = false
+    auto = false
 ) {
 
     db.ref(
@@ -2281,7 +3672,7 @@ function fetchAndShowWinners(
                 );
 
                 if (
-                    isAutoLaunch
+                    auto
                 ) {
 
                     document.getElementById(
@@ -2299,22 +3690,23 @@ function fetchAndShowWinners(
     );
 }
 
-window.showWinnersManual =
-    () => {
+function showWinnersManual() {
 
-        playSound('btn');
+    playSound(
+        'btn'
+    );
 
-        document.getElementById(
-            'winners-popup'
-        ).style.display =
-            'flex';
+    document.getElementById(
+        'winners-popup'
+    ).style.display =
+        'flex';
 
-        fetchAndShowWinners(
-            false
-        );
-    };
+    fetchAndShowWinners();
+}
 
-// GLOBAL
+/* ============================= */
+/* GLOBAL                       */
+/* ============================= */
 
 db.ref(
     'global'
@@ -2329,65 +3721,82 @@ db.ref(
                     0,
 
                 isMaint:
+                    false,
+
+                referralEpoch:
+                    0,
+
+                referralResetUsed:
                     false
             };
 
-        const maintStatusElement =
+        const maintenance =
             document.getElementById(
                 'maint-status'
             );
 
         if (
-            maintStatusElement
+            maintenance
         ) {
 
-            maintStatusElement.innerText =
+            maintenance.innerText =
                 globalData.isMaint
-                    ? 'ON'
-                    : 'OFF';
+                    ? "ON"
+                    : "OFF";
         }
-
-        const isMaint =
-            globalData.isMaint &&
-            Number(currentId) !==
-                MY_ID;
 
         document.getElementById(
             'maint-screen'
         ).style.display =
-            isMaint
-                ? 'flex'
-                : 'none';
+            (
+                globalData.isMaint &&
+                Number(
+                    currentId
+                ) !==
+                    MY_ID
+            )
+                ? "flex"
+                : "none";
+
+        const eventButton =
+            document.getElementById(
+                'event-toggle-btn'
+            );
+
+        const rushButton =
+            document.getElementById(
+                'event-rush-btn'
+            );
 
         if (
-            globalData.eventEnd >
-            Date.now()
+            eventButton &&
+            rushButton
         ) {
 
-            document.getElementById(
-                'event-toggle-btn'
-            ).innerText =
-                "ЗАКРЫТЬ ИВЕНТ";
+            if (
+                globalData.eventEnd >
+                Date.now()
+            ) {
 
-            document.getElementById(
-                'event-rush-btn'
-            ).classList.remove(
-                'hidden'
-            );
+                eventButton.innerText =
+                    "ЗАКРЫТЬ ИВЕНТ";
 
-        } else {
+                rushButton.classList.remove(
+                    'hidden'
+                );
 
-            document.getElementById(
-                'event-toggle-btn'
-            ).innerText =
-                "НАЧАТЬ ИВЕНТ";
+            } else {
 
-            document.getElementById(
-                'event-rush-btn'
-            ).classList.add(
-                'hidden'
-            );
+                eventButton.innerText =
+                    "НАЧАТЬ ИВЕНТ";
+
+                rushButton.classList.add(
+                    'hidden'
+                );
+            }
         }
+
+        updateReferralResetUI();
     }
 );
 
@@ -2404,115 +3813,45 @@ function updateEventTimer() {
     const now =
         Date.now();
 
-    const isEventActive =
+    const active =
         globalData.eventEnd >
         now;
 
     if (
         wasEvent &&
-        !isEventActive &&
-        globalData.eventEnd !==
-            0
+        !active &&
+        globalData.eventEnd
     ) {
 
         captureWinners();
     }
 
     wasEvent =
-        isEventActive;
+        active;
 
     if (
-        isEventActive
+        active
     ) {
-
-        document.getElementById(
-            'show-winners-btn'
-        ).style.display =
-            'none';
 
         const diff =
             globalData.eventEnd -
             now;
 
-        const totalDays =
+        const days =
             Math.floor(
                 diff /
                 86400000
             );
 
-        const months =
-            Math.floor(
-                totalDays /
-                30
-            );
+        sync.innerText =
+            `EVENT: ${days} DAYS`;
 
-        const days =
-            totalDays %
-            30;
-
-        if (
-            diff <
-            86400000
-        ) {
-
-            const h =
-                Math.floor(
-                    (
-                        diff /
-                        3600000
-                    ) %
-                    24
-                );
-
-            const m =
-                Math.floor(
-                    (
-                        diff /
-                        60000
-                    ) %
-                    60
-                );
-
-            const s =
-                Math.floor(
-                    (
-                        diff /
-                        1000
-                    ) %
-                    60
-                );
-
-            sync.innerText =
-                `END IN: ${h}h ${m}m ${s}s`;
-
-            sync.style.color =
-                "#555";
-
-        } else {
-
-            if (
-                months >
-                0
-            ) {
-
-                sync.innerText =
-                    `EVENT: ${months}M ${days}D`;
-
-            } else {
-
-                sync.innerText =
-                    `EVENT: ${days} DAYS`;
-            }
-
-            sync.style.color =
-                "#555";
-        }
+        sync.style.color =
+            "#555";
 
     } else if (
         globalData.eventEnd >
-            0 &&
-        globalData.eventEnd <=
-            now
+        0
     ) {
 
         sync.innerText =
@@ -2520,19 +3859,6 @@ function updateEventTimer() {
 
         sync.style.color =
             "#555";
-
-        if (
-            isLoaded &&
-            !window.winnersShownThisSession
-        ) {
-
-            fetchAndShowWinners(
-                true
-            );
-
-            window.winnersShownThisSession =
-                true;
-        }
 
         document.getElementById(
             'show-winners-btn'
@@ -2559,7 +3885,9 @@ setInterval(
     1000
 );
 
-// PARTICLES
+/* ============================= */
+/* PARTICLES                    */
+/* ============================= */
 
 const canvas =
     document.getElementById(
@@ -2570,9 +3898,6 @@ const ctx =
     canvas.getContext(
         '2d'
     );
-
-let bgParticles =
-    [];
 
 function resize() {
 
@@ -2590,9 +3915,13 @@ window.addEventListener(
 
 resize();
 
+const bgParticles =
+    [];
+
 class BgP {
 
     constructor() {
+
         this.reset();
     }
 
@@ -2640,10 +3969,12 @@ class BgP {
             this.speedY;
 
         if (
-            this.x < 0 ||
+            this.x <
+                0 ||
             this.x >
                 canvas.width ||
-            this.y < 0 ||
+            this.y <
+                0 ||
             this.y >
                 canvas.height
         ) {
@@ -2693,6 +4024,7 @@ function animate() {
 
     bgParticles.forEach(
         p => {
+
             p.update();
             p.draw();
         }
@@ -2705,11 +4037,14 @@ function animate() {
 
 animate();
 
-// TAP
+/* ============================= */
+/* TAP                          */
+/* ============================= */
 
 function getClickPower() {
 
-    return 1 +
+    return (
+        1 +
         Math.max(
             0,
             (
@@ -2720,7 +4055,8 @@ function getClickPower() {
                 1
             ) *
             2
-        );
+        )
+    );
 }
 
 const tapBtn =
@@ -2733,22 +4069,14 @@ tapBtn.addEventListener(
     e => {
 
         if (
-            !isLoaded ||
-            (
-                state.energy <= 0 &&
-                !state.isInfiniteEnergy
-            )
+            !isLoaded
         ) return;
 
         if (
-            state.sound &&
-            bgMusic.paused &&
-            bgMusic.src === "" &&
-            !isMobile
-        ) {
-
-            playNextTrack();
-        }
+            state.energy <=
+                0 &&
+            !state.isInfiniteEnergy
+        ) return;
 
         playSound(
             'tap'
@@ -2758,11 +4086,11 @@ tapBtn.addEventListener(
             'is-active'
         );
 
-        const clickPower =
+        const power =
             getClickPower();
 
         state.score +=
-            clickPower;
+            power;
 
         state.tokens =
             Number(
@@ -2774,22 +4102,12 @@ tapBtn.addEventListener(
         if (
             !state.isInfiniteEnergy
         ) {
+
             state.energy--;
         }
 
         updateUI();
         updateTokenUI();
-
-        if (
-            state.sound &&
-            tg.HapticFeedback
-        ) {
-
-            tg.HapticFeedback
-                .impactOccurred(
-                    'light'
-                );
-        }
 
         const num =
             document.createElement(
@@ -2800,7 +4118,7 @@ tapBtn.addEventListener(
             'tap-effect';
 
         num.innerText =
-            `+${clickPower}`;
+            `+${power}`;
 
         num.style.left =
             e.clientX +
@@ -2824,70 +4142,64 @@ tapBtn.addEventListener(
 
 window.addEventListener(
     'pointerup',
-    () =>
-        tapBtn.classList.remove(
-            'is-active'
-        )
-);
-
-// DAILY CASE
-
-window.openDailyCase =
     () => {
 
-        playSound(
-            'btn'
+        tapBtn.classList.remove(
+            'is-active'
         );
+    }
+);
 
-        const now =
-            Date.now();
+/* ============================= */
+/* DAILY CASE                   */
+/* ============================= */
 
-        if (
-            now <
-            (
-                state.lastCaseTime ||
-                0
-            ) +
-            (
-                24 *
-                60 *
-                60 *
-                1000
-            )
-        ) return;
+function openDailyCase() {
 
-        const reward =
-            Math.floor(
-                Math.random() *
-                9901
-            ) +
-            100;
+    playSound(
+        'btn'
+    );
 
-        state.score +=
-            reward;
+    const now =
+        Date.now();
 
-        state.lastCaseTime =
-            now;
+    if (
+        now <
+        (
+            state.lastCaseTime ||
+            0
+        ) +
+        86400000
+    ) return;
 
-        playSound(
-            'buy'
-        );
+    const reward =
+        Math.floor(
+            Math.random() *
+            9901
+        ) +
+        100;
 
-        alert(
-            (
-                state.lang ===
-                    'ru'
-                    ? "Вы получили: "
-                    : "You received: "
-            ) +
-            reward +
-            " pts!"
-        );
+    state.score +=
+        reward;
 
-        updateUI();
-        updateCaseUI();
-        save();
-    };
+    state.lastCaseTime =
+        now;
+
+    tg.showAlert(
+        (
+            state.lang ===
+                'ru'
+                ? "Вы получили: "
+                : "You received: "
+        ) +
+        reward +
+        " pts!"
+    );
+
+    updateUI();
+    updateCaseUI();
+    save();
+}
 
 function updateCaseUI() {
 
@@ -2901,23 +4213,15 @@ function updateCaseUI() {
             'case-status'
         );
 
-    const now =
-        Date.now();
-
     const nextTime =
         (
             state.lastCaseTime ||
             0
         ) +
-        (
-            24 *
-            60 *
-            60 *
-            1000
-        );
+        86400000;
 
     if (
-        now >=
+        Date.now() >=
         nextTime
     ) {
 
@@ -2929,71 +4233,69 @@ function updateCaseUI() {
                 state.lang
             ].caseReady;
 
-        status.style.color =
-            "rgba(255,255,255,.8)";
-
-    } else {
-
-        btn.disabled =
-            true;
-
-        const diff =
-            nextTime -
-            now;
-
-        const h =
-            Math.floor(
-                diff /
-                3600000
-            );
-
-        const m =
-            Math.floor(
-                (
-                    diff %
-                    3600000
-                ) /
-                60000
-            );
-
-        const s =
-            Math.floor(
-                (
-                    diff %
-                    60000
-                ) /
-                1000
-            );
-
-        status.innerText =
-            `${h}h ${m}m ${s}s`;
-
-        status.style.color =
-            "#555";
+        return;
     }
+
+    btn.disabled =
+        true;
+
+    const diff =
+        nextTime -
+        Date.now();
+
+    const h =
+        Math.floor(
+            diff /
+            3600000
+        );
+
+    const m =
+        Math.floor(
+            (
+                diff %
+                3600000
+            ) /
+            60000
+        );
+
+    const s =
+        Math.floor(
+            (
+                diff %
+                60000
+            ) /
+            1000
+        );
+
+    status.innerText =
+        `${h}h ${m}m ${s}s`;
 }
 
-// SAVE
+/* ============================= */
+/* SAVE                         */
+/* ============================= */
 
 function save() {
 
     if (
-        isLoaded &&
-        currentId !== 0
-    ) {
+        !isLoaded ||
+        currentId ===
+            0
+    ) return;
 
-        state.lastUpdate =
-            Date.now();
+    state.lastUpdate =
+        Date.now();
 
-        db.ref(
-            `users/${currentId}`
-        ).update(
-            state
-        );
-    }
+    db.ref(
+        `users/${currentId}`
+    ).update(
+        state
+    );
 }
 
-// LOAD USER
+/* ============================= */
+/* LOAD USER + REFERRAL         */
+/* ============================= */
 
 db.ref(
     `users/${currentId}`
@@ -3005,10 +4307,8 @@ db.ref(
             snap.val();
 
         const startParam =
-            tg.initDataUnsafe?.start_param;
-
-        let isNewRef =
-            false;
+            tg.initDataUnsafe
+                ?.start_param;
 
         if (
             data
@@ -3017,7 +4317,7 @@ db.ref(
             const now =
                 Date.now();
 
-            const offTime =
+            const offline =
                 Math.floor(
                     (
                         now -
@@ -3029,88 +4329,85 @@ db.ref(
                     1000
                 );
 
-            const rE =
-                data.isInfiniteEnergy
-                    ? '∞'
-                    : Math.min(
-                        150 +
-                        (
-                            (
-                                data.maxEnergyLvl ||
-                                0
-                            ) *
-                            492
-                        ),
+            const maxEnergy =
+                150 +
+                (
+                    Number(
+                        data.maxEnergyLvl ||
+                        0
+                    ) *
+                    492
+                );
 
-                        (
-                            data.energy ||
-                            150
+            state =
+                {
+                    ...state,
+                    ...data,
+
+                    score:
+                        Number(
+                            data.score ||
+                            0
                         ) +
                         (
-                            offTime *
-                            (
-                                1 +
-                                (
-                                    data.regenLvl ||
-                                    0
-                                )
+                            offline *
+                            Number(
+                                data.passiveLvl ||
+                                0
                             )
-                        )
-                    );
+                        ),
 
-            state = {
-                ...state,
-                ...data,
+                    energy:
+                        data.isInfiniteEnergy
+                            ? '∞'
+                            : Math.min(
+                                maxEnergy,
 
-                score:
-                    (
-                        data.score ||
-                        0
-                    ) +
-                    (
-                        offTime *
-                        (
-                            data.passiveLvl ||
+                                Number(
+                                    data.energy ||
+                                    150
+                                ) +
+                                offline *
+                                (
+                                    1 +
+                                    Number(
+                                        data.regenLvl ||
+                                        0
+                                    )
+                                )
+                            ),
+
+                    tokens:
+                        Number(
+                            data.tokens ||
+                            0
+                        ),
+
+                    miniGames:
+                        data.miniGames ||
+                        {},
+
+                    referralEpochClaimed:
+                        Number(
+                            data.referralEpochClaimed ||
                             0
                         )
-                    ),
-
-                energy:
-                    rE,
-
-                tokens:
-                    Number(
-                        data.tokens ||
-                        0
-                    ),
-
-                miniGames:
-                    data.miniGames ||
-                    {}
-            };
-
-        } else {
-
-            if (
-                startParam &&
-                startParam.startsWith(
-                    'ref_'
-                )
-            ) {
-
-                state.tapLvl =
-                    3;
-
-                state.score =
-                    25000;
-
-                isNewRef =
-                    true;
-            }
+                };
         }
 
+        /*
+            Реферальная система.
+
+            До специального однократного сброса:
+            пригласить можно только пользователя,
+            который ещё не был игроком.
+
+            После сброса:
+            можно пригласить любого старого пользователя,
+            но один раз в новом referralEpoch.
+        */
+
         if (
-            !data &&
             startParam &&
             startParam.startsWith(
                 'ref_'
@@ -3134,68 +4431,164 @@ db.ref(
                     0
             ) {
 
-                db.ref(
-                    `referralClaims/${inviterId}/${currentId}`
-                ).transaction(
+                const epoch =
+                    Number(
+                        globalData.referralEpoch ||
+                        0
+                    );
 
-                    claim =>
-                        claim ||
-                        {
-                            createdAt:
-                                Date.now(),
+                const resetWasUsed =
+                    Boolean(
+                        globalData.referralResetUsed
+                    );
 
-                            invitedId:
-                                currentId
+                const canUseReferral =
+                    (
+                        !data &&
+                        epoch ===
+                            0
+                    )
+                    ||
+                    (
+                        resetWasUsed &&
+                        Number(
+                            state.referralEpochClaimed ||
+                            0
+                        ) <
+                            epoch
+                    );
+
+                if (
+                    canUseReferral
+                ) {
+
+                    const claimPath =
+                        resetWasUsed
+                            ? `referralClaims/${epoch}/${inviterId}/${currentId}`
+                            : `referralClaims/initial/${inviterId}/${currentId}`;
+
+                    db.ref(
+                        claimPath
+                    ).transaction(
+
+                        existing => {
+
+                            if (
+                                existing
+                            ) {
+                                return existing;
+                            }
+
+                            return {
+                                createdAt:
+                                    Date.now(),
+
+                                invitedUser:
+                                    currentId
+                            };
                         },
 
-                    (
-                        error,
-                        committed
-                    ) => {
+                        (
+                            error,
+                            committed
+                        ) => {
 
-                        if (
-                            error ||
-                            !committed
-                        ) return;
+                            if (
+                                error ||
+                                !committed
+                            ) return;
 
-                        db.ref(
-                            `users/${inviterId}`
-                        ).transaction(
+                            /*
+                                Награда приглашённому:
+                                +25,000
+                            */
 
-                            inviter => {
+                            state.score =
+                                Number(
+                                    state.score ||
+                                    0
+                                ) +
+                                25000;
 
-                                if (
-                                    !inviter
-                                ) {
+                            state.referralEpochClaimed =
+                                epoch;
+
+                            /*
+                                Если новый игрок —
+                                даём начальный уровень клика.
+                                Старому после сброса прогресс не трогаем.
+                            */
+
+                            if (
+                                !data
+                            ) {
+
+                                state.tapLvl =
+                                    3;
+                            }
+
+                            save();
+
+                            /*
+                                Награда пригласившему:
+                                +25,000
+                            */
+
+                            db.ref(
+                                `users/${inviterId}`
+                            ).transaction(
+
+                                inviter => {
+
+                                    if (
+                                        !inviter
+                                    ) {
+                                        return inviter;
+                                    }
+
+                                    inviter.score =
+                                        Number(
+                                            inviter.score ||
+                                            0
+                                        ) +
+                                        25000;
+
+                                    inviter.referralsCount =
+                                        Number(
+                                            inviter.referralsCount ||
+                                            0
+                                        ) +
+                                        1;
+
+                                    inviter.referralsEarned =
+                                        Number(
+                                            inviter.referralsEarned ||
+                                            0
+                                        ) +
+                                        25000;
+
                                     return inviter;
                                 }
+                            );
 
-                                inviter.score =
-                                    Number(
-                                        inviter.score ||
-                                        0
-                                    ) +
-                                    25000;
+                            setTimeout(
+                                () => {
 
-                                inviter.referralsCount =
-                                    Number(
-                                        inviter.referralsCount ||
-                                        0
-                                    ) +
-                                    1;
+                                    tg.showAlert(
+                                        state.lang ===
+                                            'ru'
+                                            ? "Реферальный бонус! +25 000 очков."
+                                            : "Referral bonus! +25,000 points."
+                                    );
 
-                                inviter.referralsEarned =
-                                    Number(
-                                        inviter.referralsEarned ||
-                                        0
-                                    ) +
-                                    25000;
+                                    updateUI();
 
-                                return inviter;
-                            }
-                        );
-                    }
-                );
+                                },
+                                300
+                            );
+                        }
+                    );
+                }
             }
         }
 
@@ -3203,12 +4596,6 @@ db.ref(
             user.username ||
             data?.username ||
             `User_${currentId}`;
-
-        state.tokens =
-            Number(
-                state.tokens ||
-                0
-            );
 
         state.miniGames =
             state.miniGames ||
@@ -3226,37 +4613,6 @@ db.ref(
         }
 
         document.getElementById(
-            'loading-screen'
-        ).style.opacity =
-            '0';
-
-        setTimeout(
-            () => {
-
-                document.getElementById(
-                    'loading-screen'
-                ).style.display =
-                    'none';
-
-                if (
-                    isNewRef
-                ) {
-
-                    tg.showAlert(
-                        state.lang ===
-                            'ru'
-
-                            ? "Вы пришли по ссылке! +25000 очков и 3 Ур. Клика!"
-
-                            : "Referral bonus! +25000 pts & Lvl 3 Click!"
-                    );
-                }
-
-            },
-            500
-        );
-
-        document.getElementById(
             'p-name'
         ).innerText =
             "@" +
@@ -3272,8 +4628,11 @@ db.ref(
             ).innerHTML =
                 `
                 <button
-                    class="admin-btn btn-neutral"
-                    style="border:1px solid #fff;margin-top:10px;"
+                    class="admin-btn"
+                    style="
+                        border:1px solid #fff;
+                        margin-top:10px;
+                    "
                     onclick="openAdmin()"
                 >
                     ОТКРЫТЬ АДМИНКУ
@@ -3284,11 +4643,23 @@ db.ref(
         updateLangUI();
         updateUI();
         updateCaseUI();
-        updateTokenUI();
+        updateReferralResetUI();
 
-        setInterval(
-            updateCaseUI,
-            1000
+        document.getElementById(
+            'loading-screen'
+        ).style.opacity =
+            '0';
+
+        setTimeout(
+            () => {
+
+                document.getElementById(
+                    'loading-screen'
+                ).style.display =
+                    'none';
+
+            },
+            500
         );
     }
 );
@@ -3307,92 +4678,9 @@ window.addEventListener(
     }
 );
 
-// UI
-
-function refreshReferralStats() {
-
-    if (
-        !currentId ||
-        currentId ===
-            0
-    ) return;
-
-    db.ref(
-        `users/${currentId}`
-    ).once(
-        'value',
-        snap => {
-
-            const data =
-                snap.val() ||
-                {};
-
-            const countEl =
-                document.getElementById(
-                    'ref-count'
-                );
-
-            const earnedEl =
-                document.getElementById(
-                    'ref-earned'
-                );
-
-            if (
-                countEl
-            ) {
-
-                countEl.innerText =
-                    Number(
-                        data.referralsCount ||
-                        0
-                    );
-            }
-
-            if (
-                earnedEl
-            ) {
-
-                earnedEl.innerText =
-                    `${
-                        state.lang ===
-                            'ru'
-                            ? 'Заработано'
-                            : 'Earned'
-                    }: ${
-                        format(
-                            Number(
-                                data.referralsEarned ||
-                                0
-                            )
-                        )
-                    } pts`;
-            }
-        }
-    );
-}
-
-function updateTokenUI() {
-
-    const value =
-        format(
-            Number(
-                state.tokens ||
-                0
-            )
-        );
-
-    const a =
-        document.getElementById(
-            'token-score-games'
-        );
-
-    if (
-        a
-    ) {
-        a.innerText =
-            value;
-    }
-}
+/* ============================= */
+/* UI                           */
+/* ============================= */
 
 function updateUI() {
 
@@ -3406,9 +4694,15 @@ function updateUI() {
     document.getElementById(
         'passive-display'
     ).innerText =
-        `${langData[state.lang].passL}: ${state.passiveLvl}/sec`;
+        `${
+            langData[
+                state.lang
+            ].passL
+        }: ${
+            state.passiveLvl
+        }/sec`;
 
-    const mE =
+    const maxEnergy =
         getMaxEnergyReal();
 
     document.getElementById(
@@ -3420,7 +4714,7 @@ function updateUI() {
                 : Math.floor(
                     state.energy
                 )
-        } / ${mE}`;
+        } / ${maxEnergy}`;
 
     document.getElementById(
         'e-fill'
@@ -3429,43 +4723,91 @@ function updateUI() {
             ? '100%'
             : (
                 (
-                    state.energy /
-                    mE
+                    Number(
+                        state.energy
+                    ) /
+                    Number(
+                        maxEnergy
+                    )
                 ) *
                 100
             ) +
             '%';
+}
 
-    refreshReferralStats();
+function updateTokenUI() {
+
+    const token =
+        document.getElementById(
+            'token-score-games'
+        );
+
+    if (
+        token
+    ) {
+
+        token.innerText =
+            format(
+                Number(
+                    state.tokens ||
+                    0
+                )
+            );
+    }
 }
 
 function format(n) {
 
-    return n >= 1e9
-        ? (
+    n =
+        Number(
+            n ||
+            0
+        );
+
+    if (
+        n >=
+        1e9
+    ) {
+
+        return (
             n /
             1e9
         ).toFixed(2) +
-            'B'
+        'B';
+    }
 
-        : n >= 1e6
-            ? (
-                n /
-                1e6
-            ).toFixed(2) +
-                'M'
+    if (
+        n >=
+        1e6
+    ) {
 
-            : n >= 1e3
-                ? (
-                    n /
-                    1e3
-                ).toFixed(1) +
-                    'K'
+        return (
+            n /
+            1e6
+        ).toFixed(2) +
+        'M';
+    }
 
-                : Math.floor(
-                    n
-                );
+    if (
+        n >=
+        1e3
+    ) {
+
+        return (
+            n /
+            1e3
+        ).toFixed(1) +
+        'K';
+    }
+
+    return Math.floor(
+        n
+    );
 }
+
+/* ============================= */
+/* TOP                          */
+/* ============================= */
 
 function loadLeaderboard() {
 
@@ -3474,7 +4816,7 @@ function loadLeaderboard() {
             'leaderboard-list'
         );
 
-    const myRankCont =
+    const myRank =
         document.getElementById(
             'my-rank-container'
         );
@@ -3486,16 +4828,13 @@ function loadLeaderboard() {
         snap => {
 
             const data =
-                snap.val();
-
-            if (
-                !data
-            ) return;
+                snap.val() ||
+                {};
 
             const now =
                 Date.now();
 
-            let players =
+            const players =
                 Object.values(
                     data
                 )
@@ -3509,7 +4848,7 @@ function loadLeaderboard() {
                 .map(
                     p => {
 
-                        const offTime =
+                        const offline =
                             Math.floor(
                                 (
                                     now -
@@ -3522,19 +4861,18 @@ function loadLeaderboard() {
                             );
 
                         return {
+
                             ...p,
 
                             currentScore:
-                                (
+                                Number(
                                     p.score ||
                                     0
                                 ) +
-                                (
-                                    offTime *
-                                    (
-                                        p.passiveLvl ||
-                                        0
-                                    )
+                                offline *
+                                Number(
+                                    p.passiveLvl ||
+                                    0
                                 )
                         };
                     }
@@ -3548,68 +4886,68 @@ function loadLeaderboard() {
             list.innerHTML =
                 "";
 
-            const top5 =
-                players.slice(
+            players
+                .slice(
                     0,
                     5
-                );
+                )
+                .forEach(
+                    (p,i) => {
 
-            top5.forEach(
-                (p,i) => {
+                        const medals = [
+                            "🥇",
+                            "🥈",
+                            "🥉",
+                            "4️⃣",
+                            "5️⃣"
+                        ];
 
-                    const medals = [
-                        '🥇',
-                        '🥈',
-                        '🥉',
-                        '4️⃣',
-                        '5️⃣'
-                    ];
+                        list.innerHTML +=
+                            `
+                            <div
+                                class="card"
+                                style="${
+                                    p.username ===
+                                    state.username
+                                        ? "border-color:#fff;"
+                                        : ""
+                                }"
+                            >
 
-                    const rankName =
-                        getRank(
-                            p.tapLvl
-                        );
+                                <div style="font-size:20px;min-width:40px;">
+                                    ${medals[i]}
+                                </div>
 
-                    list.innerHTML +=
-                        `
-                        <div
-                            class="card"
-                            style="${
-                                p.username ===
-                                state.username
-                                    ? 'border-color:#fff;'
-                                    : ''
-                            }"
-                        >
+                                <div style="flex:1;">
 
-                            <div style="font-size:20px;min-width:40px;">
-                                ${medals[i]}
-                            </div>
+                                    <div style="font-weight:900;">
+                                        @${p.username}
+                                    </div>
 
-                            <div style="flex:1">
+                                    <div style="font-size:10px;color:#555;">
+                                        ${
+                                            getRank(
+                                                p.tapLvl
+                                            )
+                                        }
+                                    </div>
+
+                                </div>
 
                                 <div style="font-weight:900;">
-                                    @${p.username}
-                                </div>
-
-                                <div style="font-size:10px;color:#555">
-                                    ${rankName} (Lvl ${p.tapLvl || 1})
+                                    ${
+                                        format(
+                                            p.currentScore
+                                        )
+                                    }
                                 </div>
 
                             </div>
+                            `;
+                    }
+                );
 
-                            <div style="font-weight:900;">
-                                ${format(
-                                    p.currentScore
-                                )}
-                            </div>
-
-                        </div>
-                        `;
-                }
-            );
-
-            const myIndex =
+            const index =
                 players.findIndex(
                     p =>
                         p.username ===
@@ -3617,143 +4955,139 @@ function loadLeaderboard() {
                 );
 
             if (
-                myIndex >
+                index >
                 4
             ) {
 
-                myRankCont.innerHTML =
+                myRank.innerHTML =
                     `
                     <div class="my-rank-row">
 
-                        <div>
-                            #${myIndex + 1}
+                        <span>
+                            #${index + 1}
                             @${state.username}
-                        </div>
+                        </span>
 
-                        <div>
+                        <span>
                             ${format(
-                                players[
-                                    myIndex
-                                ].currentScore
+                                players[index]
+                                    .currentScore
                             )}
-                        </div>
+                        </span>
 
                     </div>
                     `;
 
             } else {
 
-                myRankCont.innerHTML =
+                myRank.innerHTML =
                     "";
             }
         }
     );
 }
 
-window.show =
-    id => {
+function show(id) {
 
-        playSound(
-            'btn'
-        );
+    playSound(
+        'btn'
+    );
 
-        document.querySelectorAll(
-            '.screen'
-        ).forEach(
-            s =>
-                s.classList.remove(
-                    'active'
-                )
-        );
+    document.querySelectorAll(
+        '.screen'
+    ).forEach(
+        screen =>
+            screen.classList.remove(
+                'active'
+            )
+    );
 
-        document.querySelectorAll(
-            '.nav-item'
-        ).forEach(
-            n =>
-                n.classList.remove(
-                    'active'
-                )
-        );
+    document.querySelectorAll(
+        '.nav-item'
+    ).forEach(
+        nav =>
+            nav.classList.remove(
+                'active'
+            )
+    );
 
-        document.getElementById(
-            id
-        ).classList.add(
-            'active'
-        );
+    document.getElementById(
+        id
+    ).classList.add(
+        'active'
+    );
 
-        document.getElementById(
-            'n-' +
-            id.split('-')[1]
-        ).classList.add(
-            'active'
-        );
+    document.getElementById(
+        'n-' +
+        id.split(
+            '-'
+        )[1]
+    ).classList.add(
+        'active'
+    );
 
-        if (
-            id ===
-            's-top'
-        ) {
+    if (
+        id ===
+        's-top'
+    ) {
 
-            loadLeaderboard();
-        }
+        loadLeaderboard();
+    }
+}
 
-        if (
-            id ===
-            's-games'
-        ) {
+/* ============================= */
+/* UPGRADES                     */
+/* ============================= */
 
-            updateTokenUI();
-        }
-    };
+function openUpgrade(
+    type
+) {
 
-window.openUpgrade =
-    type => {
+    playSound(
+        'btn'
+    );
 
-        playSound(
-            'btn'
-        );
+    document.getElementById(
+        'shop-main'
+    ).classList.add(
+        'hidden'
+    );
 
-        document.getElementById(
-            'shop-main'
-        ).classList.add(
-            'hidden'
-        );
+    document.getElementById(
+        'shop-detail'
+    ).classList.remove(
+        'hidden'
+    );
 
-        document.getElementById(
-            'shop-detail'
-        ).classList.remove(
-            'hidden'
-        );
+    renderUpgradeItems(
+        type
+    );
+}
 
-        renderUpgradeItems(
-            type
-        );
-    };
+function backToShop() {
 
-window.backToShop =
-    () => {
+    playSound(
+        'btn'
+    );
 
-        playSound(
-            'btn'
-        );
+    document.getElementById(
+        'shop-main'
+    ).classList.remove(
+        'hidden'
+    );
 
-        document.getElementById(
-            'shop-main'
-        ).classList.remove(
-            'hidden'
-        );
-
-        document.getElementById(
-            'shop-detail'
-        ).classList.add(
-            'hidden'
-        );
-    };
+    document.getElementById(
+        'shop-detail'
+    ).classList.add(
+        'hidden'
+    );
+}
 
 function renderUpgradeItems(
     type
 ) {
 
-    const cont =
+    const box =
         document.getElementById(
             'upgrade-items'
         );
@@ -3763,14 +5097,13 @@ function renderUpgradeItems(
             type
         );
 
-    const buyBtnHtml =
+    const button =
         info.isMax
 
             ? `
                 <button
                     class="buy-btn"
                     disabled
-                    style="background:#333;color:#555;"
                 >
                     MAX
                 </button>
@@ -3782,11 +5115,15 @@ function renderUpgradeItems(
                     ${
                         state.score <
                         info.cost
-                            ? 'disabled'
-                            : ''
+                            ? "disabled"
+                            : ""
                     }
-                    onclick="buy('${type}',${info.cost})"
-                    style="min-width:90px;"
+                    onclick="
+                        buy(
+                            '${type}',
+                            ${info.cost}
+                        )
+                    "
                 >
                     ${format(
                         info.cost
@@ -3794,12 +5131,7 @@ function renderUpgradeItems(
                 </button>
             `;
 
-    const rankName =
-        getRank(
-            info.val
-        );
-
-    cont.innerHTML =
+    box.innerHTML =
         `
         <div
             class="card"
@@ -3808,10 +5140,6 @@ function renderUpgradeItems(
                 flex-direction:column;
                 align-items:flex-start;
                 gap:10px;
-                padding:20px;
-                background:linear-gradient(145deg,#161616,#0a0a0a);
-                border:1px solid #333;
-                border-radius:16px;
             "
         >
 
@@ -3829,20 +5157,21 @@ function renderUpgradeItems(
                     <div
                         style="
                             font-size:11px;
-                            color:#fff;
                             font-weight:900;
-                            text-transform:uppercase;
                             margin-bottom:5px;
                         "
                     >
-                        ${rankName}
+                        ${
+                            getRank(
+                                info.val
+                            )
+                        }
                     </div>
 
                     <div
                         style="
                             font-size:22px;
                             font-weight:900;
-                            color:#fff;
                         "
                     >
 
@@ -3854,14 +5183,15 @@ function renderUpgradeItems(
                                 font-size:16px;
                             "
                         >
-                            → ${info.next}
+                            →
+                            ${info.next}
                         </span>
 
                     </div>
 
                 </div>
 
-                ${buyBtnHtml}
+                ${button}
 
             </div>
 
@@ -3869,85 +5199,129 @@ function renderUpgradeItems(
         `;
 }
 
-window.buy =
-    (type,p) => {
+function buy(
+    type,
+    cost
+) {
 
-        playSound(
-            'btn'
-        );
+    if (
+        state.score <
+        cost
+    ) return;
+
+    state.score -=
+        cost;
+
+    if (
+        type ===
+        'click'
+    ) {
+
+        state.tapLvl++;
+
+    } else if (
+        type ===
+        'passive'
+    ) {
+
+        state.passiveLvl++;
+
+    } else if (
+        type ===
+        'energy'
+    ) {
 
         if (
-            state.score >=
-            p
+            state.maxEnergyLvl >=
+            20
         ) {
 
-            state.score -=
-                p;
+            state.isInfiniteEnergy =
+                true;
 
-            if (
-                type ===
-                'click'
-            ) {
+        } else {
 
-                state.tapLvl++;
-
-            } else if (
-                type ===
-                'passive'
-            ) {
-
-                state.passiveLvl++;
-
-            } else if (
-                type ===
-                'energy'
-            ) {
-
-                if (
-                    state.maxEnergyLvl >=
-                    20
-                ) {
-
-                    state.isInfiniteEnergy =
-                        true;
-
-                } else {
-
-                    state.maxEnergyLvl++;
-                }
-
-            } else if (
-                type ===
-                'regen'
-            ) {
-
-                state.regenLvl++;
-            }
-
-            updateUI();
-
-            renderUpgradeItems(
-                type
-            );
-
-            save();
-
-            playSound(
-                'buy'
-            );
-
-            if (
-                state.sound &&
-                tg.HapticFeedback
-            ) {
-
-                tg.HapticFeedback
-                    .notificationOccurred(
-                        'success'
-                    );
-            }
+            state.maxEnergyLvl++;
         }
-    };
+
+    } else if (
+        type ===
+        'regen'
+    ) {
+
+        state.regenLvl++;
+    }
+
+    save();
+
+    updateUI();
+
+    renderUpgradeItems(
+        type
+    );
+
+    playSound(
+        'buy'
+    );
+}
+
+/* ============================= */
+/* TOKEN EXCHANGE               */
+/* ============================= */
+
+function exchangeTokens() {
+
+    const cost =
+        100;
+
+    const score =
+        10000;
+
+    if (
+        Number(
+            state.tokens ||
+            0
+        ) <
+        cost
+    ) {
+
+        tg.showAlert(
+            state.lang ===
+                'ru'
+                ? "Нужно 100 жетонов."
+                : "You need 100 tokens."
+        );
+
+        return;
+    }
+
+    state.tokens -=
+        cost;
+
+    state.score +=
+        score;
+
+    save();
+
+    updateUI();
+
+    updateTokenUI();
+
+    playSound(
+        'buy'
+    );
+
+    tg.showAlert(
+        state.lang ===
+            'ru'
+            ? "✅ Обмен выполнен: +10 000 SCORE"
+            : "✅ Exchange completed: +10,000 SCORE"
+    );
+}
+
+/* ============================= */
+/* PASSIVE                      */
+/* ============================= */
 
 setInterval(
     () => {
@@ -3957,46 +5331,39 @@ setInterval(
         ) return;
 
         state.score +=
-            (
+            Number(
                 state.passiveLvl ||
                 0
             );
 
-        state.tokens =
+        /*
+            Пассивный доход тоже
+            постепенно даёт жетоны.
+        */
+
+        state.tokens +=
             Number(
-                state.tokens ||
+                state.passiveLvl ||
                 0
-            ) +
-            Math.max(
-                0,
-                Number(
-                    state.passiveLvl ||
-                    0
-                )
             );
 
         if (
             !state.isInfiniteEnergy
         ) {
 
-            const mE =
-                getMaxEnergyReal();
+            const max =
+                Number(
+                    getMaxEnergyReal()
+                );
 
-            const rG =
-                getRegenReal();
-
-            if (
-                state.energy <
-                mE
-            ) {
-
-                state.energy =
-                    Math.min(
-                        mE,
-                        state.energy +
-                        rG
-                    );
-            }
+            state.energy =
+                Math.min(
+                    max,
+                    Number(
+                        state.energy
+                    ) +
+                    getRegenReal()
+                );
         }
 
         updateUI();
@@ -4020,17 +5387,29 @@ setInterval(
     10000
 );
 
-// MINI GAMES
+/* ============================= */
+/* MINI GAME COMMON             */
+/* ============================= */
 
 const miniGameTitles = {
-    night: 'NIGHT SHIFT',
-    dash: 'JUUG DASH',
-    memory: 'MEMORY GRID',
-    quick: 'QUICK SWITCH',
-    reactor: 'REACTOR'
+    night:
+        "NIGHT SHIFT",
+
+    dash:
+        "JUUG DASH",
+
+    memory:
+        "MEMORY GRID",
+
+    quick:
+        "QUICK SWITCH",
+
+    reactor:
+        "REACTOR"
 };
 
 let miniGameState = {
+
     type:
         null,
 
@@ -4057,17 +5436,10 @@ function getMiniLevel(
     type
 ) {
 
-    const entry =
-        (
-            state.miniGames &&
-            state.miniGames[type]
-        ) ||
-        {};
-
     return Math.max(
         1,
         Number(
-            entry.level ||
+            state.miniGames?.[type]?.level ||
             1
         )
     );
@@ -4077,15 +5449,8 @@ function getMiniBest(
     type
 ) {
 
-    const entry =
-        (
-            state.miniGames &&
-            state.miniGames[type]
-        ) ||
-        {};
-
     return Number(
-        entry.best ||
+        state.miniGames?.[type]?.best ||
         0
     );
 }
@@ -4098,15 +5463,13 @@ function getMiniReward(
         10 *
         Math.pow(
             1.45,
-            Math.max(
-                0,
-                level - 1
-            )
+            level -
+            1
         )
     );
 }
 
-function ensureMiniEntry(
+function ensureMini(
     type
 ) {
 
@@ -4132,242 +5495,14 @@ function ensureMiniEntry(
             };
     }
 
-    return state.miniGames[type];
+    return state.miniGames[
+        type
+    ];
 }
-
-function miniWin(
-    type,
-    scoreValue
-) {
-
-    const entry =
-        ensureMiniEntry(
-            type
-        );
-
-    const base =
-        miniGameState.reward;
-
-    const reward =
-        Math.floor(
-            base *
-            (
-                1 +
-                Math.min(
-                    2,
-                    Math.max(
-                        0,
-                        scoreValue -
-                        1
-                    ) *
-                    .08
-                )
-            )
-        );
-
-    state.tokens =
-        Number(
-            state.tokens ||
-            0
-        ) +
-        reward;
-
-    entry.best =
-        Math.max(
-            Number(
-                entry.best ||
-                0
-            ),
-            scoreValue
-        );
-
-    entry.level =
-        Number(
-            entry.level ||
-            1
-        ) +
-        1;
-
-    updateTokenUI();
-    save();
-
-    tg.showAlert(
-        state.lang ===
-            'ru'
-            ? `Победа! +${format(reward)} токенов`
-            : `Victory! +${format(reward)} tokens`
-    );
-}
-
-function miniFail() {
-
-    save();
-
-    tg.showAlert(
-        state.lang ===
-            'ru'
-            ? 'Неудача. Уровень не понижен.'
-            : 'Failed. Your level stays the same.'
-    );
-}
-
-window.openMiniGame =
-    function(type) {
-
-        closeMiniGame();
-
-        const level =
-            getMiniLevel(
-                type
-            );
-
-        const reward =
-            getMiniReward(
-                level
-            );
-
-        miniGameState =
-            {
-                type,
-                level,
-                reward,
-                running:
-                    true,
-                timer:
-                    null,
-                animation:
-                    null,
-                cleanup:
-                    null
-            };
-
-        document.getElementById(
-            'mg-title'
-        ).innerText =
-            miniGameTitles[
-                type
-            ];
-
-        document.getElementById(
-            'mg-level'
-        ).innerText =
-            `LEVEL ${level}`;
-
-        document.getElementById(
-            'mg-reward'
-        ).innerText =
-            `Reward: ${format(reward)} tokens`;
-
-        document.getElementById(
-            'mg-best'
-        ).innerText =
-            `Best: ${format(getMiniBest(type))}`;
-
-        document.getElementById(
-            'minigame-modal'
-        ).style.display =
-            'flex';
-
-        if (
-            type ===
-            'night'
-        ) startNightGame();
-
-        if (
-            type ===
-            'dash'
-        ) startDashGame();
-
-        if (
-            type ===
-            'memory'
-        ) startMemoryGame();
-
-        if (
-            type ===
-            'quick'
-        ) startQuickGame();
-
-        if (
-            type ===
-            'reactor'
-        ) startReactorGame();
-    };
-
-window.closeMiniGame =
-    function() {
-
-        if (
-            miniGameState.timer
-        ) {
-
-            clearTimeout(
-                miniGameState.timer
-            );
-        }
-
-        if (
-            miniGameState.animation
-        ) {
-
-            cancelAnimationFrame(
-                miniGameState.animation
-            );
-        }
-
-        if (
-            typeof miniGameState.cleanup ===
-            'function'
-        ) {
-
-            try {
-                miniGameState.cleanup();
-            } catch (e) {}
-        }
-
-        miniGameState =
-            {
-                type:
-                    null,
-
-                level:
-                    1,
-
-                reward:
-                    10,
-
-                running:
-                    false,
-
-                timer:
-                    null,
-
-                animation:
-                    null,
-
-                cleanup:
-                    null
-            };
-
-        document.getElementById(
-            'minigame-modal'
-        ).style.display =
-            'none';
-
-        document.getElementById(
-            'mg-stage'
-        ).innerHTML =
-            '';
-
-        document.getElementById(
-            'mg-controls'
-        ).innerHTML =
-            '';
-    };
 
 function finishMiniGame(
     type,
-    scoreValue = 1
+    result
 ) {
 
     if (
@@ -4395,9 +5530,60 @@ function finishMiniGame(
         );
     }
 
-    miniWin(
-        type,
-        scoreValue
+    const entry =
+        ensureMini(
+            type
+        );
+
+    const reward =
+        Math.floor(
+            miniGameState.reward *
+            (
+                1 +
+                Math.min(
+                    2,
+                    (
+                        Number(
+                            result
+                        ) -
+                        1
+                    ) *
+                    .08
+                )
+            )
+        );
+
+    state.tokens +=
+        reward;
+
+    entry.best =
+        Math.max(
+            entry.best ||
+            0,
+            Number(
+                result
+            ) ||
+            0
+        );
+
+    entry.level =
+        Number(
+            entry.level ||
+            1
+        ) +
+        1;
+
+    save();
+
+    updateTokenUI();
+
+    tg.showAlert(
+        state.lang ===
+            'ru'
+
+            ? `Победа! +${format(reward)} жетонов.`
+
+            : `Victory! +${format(reward)} tokens.`
     );
 }
 
@@ -4430,10 +5616,200 @@ function loseMiniGame(
         );
     }
 
-    miniFail();
+    tg.showAlert(
+        state.lang ===
+            'ru'
+            ? "Неудача. Уровень не потерян."
+            : "Failed. Your level was not lost."
+    );
 }
 
-// NIGHT SHIFT — максимально простой FNAF-стиль
+function openMiniGame(
+    type
+) {
+
+    closeMiniGame();
+
+    const level =
+        getMiniLevel(
+            type
+        );
+
+    miniGameState =
+        {
+            type,
+
+            level,
+
+            reward:
+                getMiniReward(
+                    level
+                ),
+
+            running:
+                true,
+
+            timer:
+                null,
+
+            animation:
+                null,
+
+            cleanup:
+                null
+        };
+
+    const lang =
+        state.lang ===
+            'ru';
+
+    document.getElementById(
+        'mg-title'
+    ).innerText =
+        miniGameTitles[
+            type
+        ];
+
+    document.getElementById(
+        'mg-level'
+    ).innerText =
+        lang
+            ? `УРОВЕНЬ ${level}`
+            : `LEVEL ${level}`;
+
+    document.getElementById(
+        'mg-reward'
+    ).innerText =
+        lang
+            ? `Награда: ${format(miniGameState.reward)} жетонов`
+            : `Reward: ${format(miniGameState.reward)} tokens`;
+
+    document.getElementById(
+        'mg-best'
+    ).innerText =
+        lang
+            ? `Рекорд: ${format(getMiniBest(type))}`
+            : `Best: ${format(getMiniBest(type))}`;
+
+    document.getElementById(
+        'minigame-modal'
+    ).style.display =
+        'flex';
+
+    if (
+        type ===
+        'night'
+    ) {
+
+        startNightGame();
+    }
+
+    if (
+        type ===
+        'dash'
+    ) {
+
+        startDashGame();
+    }
+
+    if (
+        type ===
+        'memory'
+    ) {
+
+        startMemoryGame();
+    }
+
+    if (
+        type ===
+        'quick'
+    ) {
+
+        startQuickGame();
+    }
+
+    if (
+        type ===
+        'reactor'
+    ) {
+
+        startReactorGame();
+    }
+}
+
+function closeMiniGame() {
+
+    if (
+        miniGameState.timer
+    ) {
+
+        clearTimeout(
+            miniGameState.timer
+        );
+    }
+
+    if (
+        miniGameState.animation
+    ) {
+
+        cancelAnimationFrame(
+            miniGameState.animation
+        );
+    }
+
+    if (
+        typeof miniGameState.cleanup ===
+        'function'
+    ) {
+
+        try {
+            miniGameState.cleanup();
+        } catch(e) {}
+    }
+
+    miniGameState = {
+
+        type:
+            null,
+
+        level:
+            1,
+
+        reward:
+            10,
+
+        running:
+            false,
+
+        timer:
+            null,
+
+        animation:
+            null,
+
+        cleanup:
+            null
+    };
+
+    document.getElementById(
+        'minigame-modal'
+    ).style.display =
+        'none';
+
+    document.getElementById(
+        'mg-stage'
+    ).innerHTML =
+        "";
+
+    document.getElementById(
+        'mg-controls'
+    ).innerHTML =
+        "";
+}
+
+/* ============================= */
+/* NIGHT SHIFT                  */
+/* ============================= */
 
 function startNightGame() {
 
@@ -4468,11 +5844,16 @@ function startNightGame() {
     let last =
         performance.now();
 
+    const russian =
+        state.lang ===
+        'ru';
+
     const surviveFor =
         14 +
         Math.min(
             20,
-            level * 2
+            level *
+            2
         );
 
     stage.innerHTML =
@@ -4498,7 +5879,11 @@ function startNightGame() {
                     margin-bottom:14px;
                 "
             >
-                NIGHT SHIFT
+                ${
+                    russian
+                        ? "НОЧНАЯ СМЕНА"
+                        : "NIGHT SHIFT"
+                }
             </div>
 
             <div
@@ -4513,7 +5898,6 @@ function startNightGame() {
                     align-items:center;
                     justify-content:center;
                     position:relative;
-                    overflow:hidden;
                 "
             >
 
@@ -4550,7 +5934,11 @@ function startNightGame() {
                         color:#777;
                     "
                 >
-                    ДВЕРЬ ОТКРЫТА
+                    ${
+                        russian
+                            ? "ДВЕРЬ ОТКРЫТА"
+                            : "DOOR OPEN"
+                    }
                 </div>
 
             </div>
@@ -4571,13 +5959,19 @@ function startNightGame() {
                         margin-bottom:7px;
                     "
                 >
+
                     <span>
-                        ЭНЕРГИЯ
+                        ${
+                            russian
+                                ? "ЭНЕРГИЯ"
+                                : "POWER"
+                        }
                     </span>
 
                     <span id="night-power">
                         100%
                     </span>
+
                 </div>
 
                 <div
@@ -4599,6 +5993,7 @@ function startNightGame() {
                     ></div>
 
                 </div>
+
             </div>
 
             <div
@@ -4611,7 +6006,11 @@ function startNightGame() {
                     line-height:1.4;
                 "
             >
-                Нажми «ПРОВЕРИТЬ». Если увидишь 👤 — закрой дверь.
+                ${
+                    russian
+                        ? "Нажми «ПРОВЕРИТЬ». Если увидишь 👤 — закрой дверь."
+                        : "Press CHECK. If you see 👤 — close the door."
+                }
             </div>
 
         </div>
@@ -4623,14 +6022,22 @@ function startNightGame() {
             class="mg-control"
             id="night-check"
         >
-            💡 ПРОВЕРИТЬ
+            ${
+                russian
+                    ? "💡 ПРОВЕРИТЬ"
+                    : "💡 CHECK"
+            }
         </button>
 
         <button
             class="mg-control"
             id="night-door"
         >
-            🚪 ЗАКРЫТЬ ДВЕРЬ
+            ${
+                russian
+                    ? "🚪 ЗАКРЫТЬ ДВЕРЬ"
+                    : "🚪 CLOSE DOOR"
+            }
         </button>
         `;
 
@@ -4675,6 +6082,13 @@ function startNightGame() {
             !miniGameState.running
         ) return;
 
+        power =
+            Math.max(
+                0,
+                power -
+                1
+            );
+
         if (
             monster ===
             'door'
@@ -4687,7 +6101,9 @@ function startNightGame() {
                 'scale(1.12)';
 
             messageEl.innerText =
-                '⚠️ МОНСТР У ДВЕРИ! ЗАКРОЙ ЕЁ!';
+                russian
+                    ? "⚠️ МОНСТР У ДВЕРИ! ЗАКРОЙ ЕЁ!"
+                    : "⚠️ MONSTER AT THE DOOR! CLOSE IT!";
 
         } else {
 
@@ -4698,14 +6114,10 @@ function startNightGame() {
                 'scale(1)';
 
             messageEl.innerText =
-                '✅ Безопасно. Дверь пока можно оставить открытой.';
+                russian
+                    ? "✅ Безопасно. Дверь пока можно оставить открытой."
+                    : "✅ Safe. You can keep the door open.";
         }
-
-        power =
-            Math.max(
-                0,
-                power - 1
-            );
     }
 
     checkBtn.onclick =
@@ -4726,35 +6138,45 @@ function startNightGame() {
             ) {
 
                 statusEl.innerText =
-                    'ДВЕРЬ ЗАКРЫТА';
-
-                statusEl.style.color =
-                    '#fff';
+                    russian
+                        ? "ДВЕРЬ ЗАКРЫТА"
+                        : "DOOR CLOSED";
 
                 doorBtn.innerText =
-                    '🚪 ОТКРЫТЬ ДВЕРЬ';
+                    russian
+                        ? "🚪 ОТКРЫТЬ ДВЕРЬ"
+                        : "🚪 OPEN DOOR";
 
                 messageEl.innerText =
                     monster ===
                         'door'
-
-                        ? '✅ Хорошо! Ты заблокировал монстра.'
-
-                        : 'Дверь закрыта, но она тратит энергию.';
+                        ? (
+                            russian
+                                ? "✅ Дверь спасла тебя."
+                                : "✅ The door saved you."
+                        )
+                        : (
+                            russian
+                                ? "Дверь закрыта, но она тратит энергию."
+                                : "The door is closed, but it uses power."
+                        );
 
             } else {
 
                 statusEl.innerText =
-                    'ДВЕРЬ ОТКРЫТА';
-
-                statusEl.style.color =
-                    '#777';
+                    russian
+                        ? "ДВЕРЬ ОТКРЫТА"
+                        : "DOOR OPEN";
 
                 doorBtn.innerText =
-                    '🚪 ЗАКРЫТЬ ДВЕРЬ';
+                    russian
+                        ? "🚪 ЗАКРЫТЬ ДВЕРЬ"
+                        : "🚪 CLOSE DOOR";
 
                 messageEl.innerText =
-                    'Дверь открыта. Проверь комнату.';
+                    russian
+                        ? "Дверь открыта. Проверь комнату."
+                        : "Door open. Check the room.";
             }
         };
 
@@ -4769,7 +6191,8 @@ function startNightGame() {
         ) {
 
             monster =
-                roll < .55
+                roll <
+                .55
                     ? 'middle'
                     : 'far';
 
@@ -4799,13 +6222,17 @@ function startNightGame() {
                     'far';
 
                 messageEl.innerText =
-                    '✅ Дверь спасла тебя. Монстр ушёл.';
+                    russian
+                        ? "✅ Дверь спасла тебя. Монстр ушёл."
+                        : "✅ The door saved you. The monster left.";
 
             } else {
 
                 loseMiniGame(
                     'night'
                 );
+
+                return;
             }
         }
 
@@ -4853,11 +6280,9 @@ function startNightGame() {
             dt *
             (
                 doorClosed
-                    ? (
-                        .80 +
+                    ? .80 +
                         level *
                         .05
-                    )
                     : .22
             );
 
@@ -4930,7 +6355,9 @@ function startNightGame() {
         );
 }
 
-// JUUG DASH
+/* ============================= */
+/* JUUG DASH                    */
+/* ============================= */
 
 function startDashGame() {
 
@@ -4950,7 +6377,7 @@ function startDashGame() {
     let y =
         0;
 
-    let vy =
+    let velocity =
         0;
 
     let grounded =
@@ -4972,6 +6399,10 @@ function startDashGame() {
 
     let last =
         performance.now();
+
+    const russian =
+        state.lang ===
+        'ru';
 
     stage.innerHTML =
         `
@@ -5021,7 +6452,11 @@ function startDashGame() {
                 color:#666;
             "
         >
-            SPACE / JUMP
+            ${
+                russian
+                    ? "ПРОБЕЛ / JUMP"
+                    : "SPACE / JUMP"
+            }
         </div>
         `;
 
@@ -5052,7 +6487,7 @@ function startDashGame() {
             !grounded
         ) return;
 
-        vy =
+        velocity =
             520;
 
         grounded =
@@ -5067,9 +6502,9 @@ function startDashGame() {
 
             if (
                 e.code ===
-                    'Space' ||
+                    "Space" ||
                 e.code ===
-                    'ArrowUp'
+                    "ArrowUp"
             ) {
 
                 e.preventDefault();
@@ -5157,12 +6592,12 @@ function startDashGame() {
         last =
             now;
 
-        vy -=
+        velocity -=
             1180 *
             dt;
 
         y +=
-            vy *
+            velocity *
             dt;
 
         if (
@@ -5173,7 +6608,7 @@ function startDashGame() {
             y =
                 0;
 
-            vy =
+            velocity =
                 0;
 
             grounded =
@@ -5218,22 +6653,22 @@ function startDashGame() {
             i--
         ) {
 
-            const sp =
+            const spike =
                 spikes[i];
 
-            sp.x -=
+            spike.x -=
                 speed *
                 dt;
 
-            sp.el.style.left =
-                `${sp.x}px`;
+            spike.el.style.left =
+                `${spike.x}px`;
 
             if (
-                sp.x <
+                spike.x <
                 -40
             ) {
 
-                sp.el.remove();
+                spike.el.remove();
 
                 spikes.splice(
                     i,
@@ -5244,9 +6679,9 @@ function startDashGame() {
             }
 
             const hitX =
-                sp.x <
+                spike.x <
                     63 &&
-                sp.x +
+                spike.x +
                     24 >
                     38;
 
@@ -5276,10 +6711,8 @@ function startDashGame() {
             Math.min(
                 100,
                 Math.floor(
-                    (
-                        distance /
-                        target
-                    ) *
+                    distance /
+                    target *
                     100
                 )
             );
@@ -5296,12 +6729,9 @@ function startDashGame() {
 
             finishMiniGame(
                 'dash',
-                Math.max(
-                    1,
-                    Math.floor(
-                        target /
-                        100
-                    )
+                Math.floor(
+                    target /
+                    100
                 )
             );
 
@@ -5320,7 +6750,9 @@ function startDashGame() {
         );
 }
 
-// MEMORY GRID
+/* ============================= */
+/* MEMORY GRID — ПО ПОРЯДКУ     */
+/* ============================= */
 
 function startMemoryGame() {
 
@@ -5337,6 +6769,10 @@ function startMemoryGame() {
     const level =
         miniGameState.level;
 
+    const russian =
+        state.lang ===
+        'ru';
+
     const size =
         level < 4
             ? 3
@@ -5348,7 +6784,7 @@ function startMemoryGame() {
         size *
         size;
 
-    const count =
+    const amount =
         Math.min(
             total - 1,
             2 +
@@ -5358,15 +6794,12 @@ function startMemoryGame() {
     const pattern =
         [];
 
-    let selected =
-        [];
-
     while (
         pattern.length <
-        count
+        amount
     ) {
 
-        const n =
+        const number =
             Math.floor(
                 Math.random() *
                 total
@@ -5374,15 +6807,18 @@ function startMemoryGame() {
 
         if (
             !pattern.includes(
-                n
+                number
             )
         ) {
 
             pattern.push(
-                n
+                number
             );
         }
     }
+
+    let input =
+        [];
 
     stage.innerHTML =
         `
@@ -5395,11 +6831,22 @@ function startMemoryGame() {
             "
         >
             ${
-                level === 1
-                    ? 'Запомни белые клетки, потом нажимай их в том же порядке.'
-                    : 'Повтори последовательность. Она становится длиннее.'
+                russian
+                    ? "Квадраты появятся по очереди. Запомни порядок, потом нажми их в том же порядке."
+                    : "Squares will appear one by one. Remember the order, then tap them in the same order."
             }
         </div>
+
+        <div
+            id="memory-status"
+            style="
+                text-align:center;
+                font-size:13px;
+                font-weight:900;
+                min-height:22px;
+                padding:3px 10px 8px;
+            "
+        ></div>
 
         <div
             id="memory-grid"
@@ -5418,13 +6865,22 @@ function startMemoryGame() {
             class="mg-control"
             id="memory-reset"
         >
-            RESET
+            ${
+                russian
+                    ? "ЗАНОВО"
+                    : "RESET"
+            }
         </button>
         `;
 
     const grid =
         document.getElementById(
             'memory-grid'
+        );
+
+    const status =
+        document.getElementById(
+            'memory-status'
         );
 
     const cells =
@@ -5456,6 +6912,9 @@ function startMemoryGame() {
         cell.style.borderRadius =
             '10px';
 
+        cell.style.transition =
+            'background .15s, transform .15s';
+
         grid.appendChild(
             cell
         );
@@ -5465,106 +6924,164 @@ function startMemoryGame() {
         );
     }
 
-    const showTime =
+    let showing =
+        true;
+
+    let sequenceStep =
+        0;
+
+    /*
+        ВАЖНО:
+        больше НЕ показываем все клетки
+        одновременно.
+
+        Теперь:
+        1 → подсветка
+        2 → подсветка
+        3 → подсветка
+        ...
+        после чего ввод.
+    */
+
+    const interval =
         Math.max(
-            600,
-            1200 -
-            Math.min(
-                600,
-                (
-                    level -
-                    1
-                ) *
-                55
-            )
+            450,
+            700 -
+            level *
+            25
         );
 
-    pattern.forEach(
-        index => {
+    function showNext() {
 
-            cells[index].style.background =
-                '#fff';
+        if (
+            !miniGameState.running
+        ) return;
 
-            setTimeout(
-                () => {
+        if (
+            sequenceStep >=
+            pattern.length
+        ) {
 
-                    if (
-                        cells[index]
-                    ) {
+            showing =
+                false;
 
-                        cells[index].style.background =
-                            '#0f0f0f';
-                    }
+            sequenceStep =
+                0;
 
-                },
-                showTime
-            );
+            status.innerText =
+                russian
+                    ? "ТЕПЕРЬ ПОВТОРИ ПОРЯДОК"
+                    : "NOW REPEAT THE ORDER";
+
+            enableMemoryInput();
+
+            return;
         }
-    );
 
-    miniGameState.timer =
-        setTimeout(
-            () => {
+        cells.forEach(
+            cell => {
 
-                cells.forEach(
-                    cell => {
+                cell.style.background =
+                    '#0f0f0f';
 
-                        cell.onclick =
-                            () => {
-
-                                if (
-                                    !miniGameState.running
-                                ) return;
-
-                                const index =
-                                    Number(
-                                        cell.dataset.index
-                                    );
-
-                                const expected =
-                                    pattern[
-                                        selected.length
-                                    ];
-
-                                if (
-                                    index !==
-                                    expected
-                                ) {
-
-                                    loseMiniGame(
-                                        'memory'
-                                    );
-
-                                    return;
-                                }
-
-                                cell.style.background =
-                                    '#666';
-
-                                selected.push(
-                                    index
-                                );
-
-                                if (
-                                    selected.length ===
-                                    pattern.length
-                                ) {
-
-                                    finishMiniGame(
-                                        'memory',
-                                        pattern.length
-                                    );
-                                }
-                            };
-                    }
-                );
-
-            },
-            showTime +
-            count *
-            20 +
-            250
+                cell.style.transform =
+                    'scale(1)';
+            }
         );
+
+        const index =
+            pattern[
+                sequenceStep
+            ];
+
+        cells[
+            index
+        ].style.background =
+            '#fff';
+
+        cells[
+            index
+        ].style.transform =
+            'scale(.90)';
+
+        status.innerText =
+            russian
+                ? `СМОТРИ: ${sequenceStep + 1} / ${pattern.length}`
+                : `WATCH: ${sequenceStep + 1} / ${pattern.length}`;
+
+        sequenceStep++;
+
+        miniGameState.timer =
+            setTimeout(
+                showNext,
+                interval
+            );
+    }
+
+    function enableMemoryInput() {
+
+        cells.forEach(
+            cell => {
+
+                cell.onclick =
+                    () => {
+
+                        if (
+                            showing ||
+                            !miniGameState.running
+                        ) return;
+
+                        const index =
+                            Number(
+                                cell.dataset.index
+                            );
+
+                        const expected =
+                            pattern[
+                                input.length
+                            ];
+
+                        if (
+                            index !==
+                            expected
+                        ) {
+
+                            loseMiniGame(
+                                'memory'
+                            );
+
+                            return;
+                        }
+
+                        cell.style.background =
+                            '#666';
+
+                        cell.style.transform =
+                            'scale(.94)';
+
+                        input.push(
+                            index
+                        );
+
+                        status.innerText =
+                            russian
+                                ? `ПРАВИЛЬНО: ${input.length} / ${pattern.length}`
+                                : `CORRECT: ${input.length} / ${pattern.length}`;
+
+                        if (
+                            input.length ===
+                            pattern.length
+                        ) {
+
+                            finishMiniGame(
+                                'memory',
+                                pattern.length
+                            );
+                        }
+                    };
+            }
+        );
+    }
 
     document.getElementById(
         'memory-reset'
@@ -5578,9 +7095,28 @@ function startMemoryGame() {
                 startMemoryGame();
             }
         };
+
+    status.innerText =
+        russian
+            ? "ЗАПОМИНАЙ"
+            : "MEMORIZE";
+
+    /*
+        Небольшая пауза,
+        чтобы игрок видел первый квадрат
+        отдельно от открытия окна.
+    */
+
+    miniGameState.timer =
+        setTimeout(
+            showNext,
+            650
+        );
 }
 
-// QUICK SWITCH
+/* ============================= */
+/* QUICK SWITCH                 */
+/* ============================= */
 
 function startQuickGame() {
 
@@ -5593,6 +7129,10 @@ function startQuickGame() {
         document.getElementById(
             'mg-controls'
         );
+
+    const russian =
+        state.lang ===
+        'ru';
 
     const level =
         miniGameState.level;
@@ -5635,7 +7175,11 @@ function startQuickGame() {
             class="mg-control"
             id="quick-button"
         >
-            TAP
+            ${
+                russian
+                    ? "НАЖАТЬ"
+                    : "TAP"
+            }
         </button>
         `;
 
@@ -5676,26 +7220,31 @@ function startQuickGame() {
 
         screen.innerText =
             waiting
-                ? 'WAIT'
-                : 'TAP';
+                ? (
+                    russian
+                        ? "ЖДИ"
+                        : "WAIT"
+                )
+                : (
+                    russian
+                        ? "ЖМИ"
+                        : "TAP"
+                );
 
         screen.style.color =
             waiting
-                ? '#777'
-                : '#fff';
-
-        const delay =
-            Math.max(
-                470,
-                1150 -
-                level *
-                40
-            );
+                ? "#777"
+                : "#fff";
 
         timeout =
             setTimeout(
                 nextRound,
-                delay
+                Math.max(
+                    470,
+                    1150 -
+                    level *
+                    40
+                )
             );
     }
 
@@ -5744,7 +7293,9 @@ function startQuickGame() {
         };
 }
 
-// REACTOR
+/* ============================= */
+/* REACTOR                      */
+/* ============================= */
 
 function startReactorGame() {
 
@@ -5761,13 +7312,16 @@ function startReactorGame() {
     const level =
         miniGameState.level;
 
-    const symbols =
-        [
-            '▲',
-            '■',
-            '●',
-            '◆'
-        ];
+    const russian =
+        state.lang ===
+        'ru';
+
+    const symbols = [
+        '▲',
+        '■',
+        '●',
+        '◆'
+    ];
 
     const length =
         Math.min(
@@ -5813,7 +7367,7 @@ function startReactorGame() {
                 letter-spacing:8px;
             "
         >
-            ${sequence.join(' ')}
+            ${sequence.join(" ")}
         </div>
         `;
 
@@ -5823,7 +7377,17 @@ function startReactorGame() {
         <button class="mg-control" data-reactor="■">■</button>
         <button class="mg-control" data-reactor="●">●</button>
         <button class="mg-control" data-reactor="◆">◆</button>
-        <button class="mg-control" id="reactor-reset">RESET</button>
+
+        <button
+            class="mg-control"
+            id="reactor-reset"
+        >
+            ${
+                russian
+                    ? "ЗАНОВО"
+                    : "RESET"
+            }
+        </button>
         `;
 
     const display =
@@ -5831,80 +7395,78 @@ function startReactorGame() {
             'reactor-display'
         );
 
-    const revealTime =
-        Math.max(
-            900,
-            1800 -
-            level *
-            80
-        );
-
     miniGameState.timer =
         setTimeout(
             () => {
 
                 display.innerText =
-                    state.lang === 'ru'
-                        ? 'ВВОД'
-                        : 'INPUT';
+                    russian
+                        ? "ВВОД"
+                        : "INPUT";
 
-                document.querySelectorAll(
-                    '[data-reactor]'
-                ).forEach(
-                    button => {
+                document
+                    .querySelectorAll(
+                        '[data-reactor]'
+                    )
+                    .forEach(
+                        button => {
 
-                        button.onclick =
-                            () => {
+                            button.onclick =
+                                () => {
 
-                                if (
-                                    !miniGameState.running
-                                ) return;
+                                    if (
+                                        !miniGameState.running
+                                    ) return;
 
-                                const value =
-                                    button.dataset.reactor;
+                                    const value =
+                                        button.dataset.reactor;
 
-                                const expected =
-                                    sequence[
-                                        input.length
-                                    ];
+                                    const expected =
+                                        sequence[
+                                            input.length
+                                        ];
 
-                                if (
-                                    value !==
-                                    expected
-                                ) {
+                                    if (
+                                        value !==
+                                        expected
+                                    ) {
 
-                                    loseMiniGame(
-                                        'reactor'
+                                        loseMiniGame(
+                                            'reactor'
+                                        );
+
+                                        return;
+                                    }
+
+                                    input.push(
+                                        value
                                     );
 
-                                    return;
-                                }
+                                    display.innerText =
+                                        input.join(
+                                            " "
+                                        );
 
-                                input.push(
-                                    value
-                                );
-
-                                display.innerText =
-                                    input.join(
-                                        ' '
-                                    );
-
-                                if (
-                                    input.length ===
-                                    sequence.length
-                                ) {
-
-                                    finishMiniGame(
-                                        'reactor',
+                                    if (
+                                        input.length ===
                                         sequence.length
-                                    );
-                                }
-                            };
-                    }
-                );
+                                    ) {
 
+                                        finishMiniGame(
+                                            'reactor',
+                                            sequence.length
+                                        );
+                                    }
+                                };
+                        }
+                    );
             },
-            revealTime
+            Math.max(
+                900,
+                1800 -
+                level *
+                80
+            )
         );
 
     document.getElementById(
@@ -5916,11 +7478,12 @@ function startReactorGame() {
                 [];
 
             display.innerText =
-                state.lang === 'ru'
-                    ? 'ВВОД'
-                    : 'INPUT';
+                russian
+                    ? "ВВОД"
+                    : "INPUT";
         };
 }
+
 </script>
 
 </body>
