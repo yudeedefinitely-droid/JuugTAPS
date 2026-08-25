@@ -1521,7 +1521,7 @@ bgMusic.volume =
 bgMusic.preload = "auto";
 
 let musicUnlocked = false;
-let sfxEnabled = true;
+let sfxEnabled = !isMobile;
 
 function unlockMusic() {
     if (musicUnlocked || !state.sound) return;
@@ -1531,19 +1531,24 @@ function unlockMusic() {
 
 function playNextTrack() {
     if (!state.sound) return;
+
     currentTrackIndex =
         Math.floor(
             Math.random() *
             bgTracks.length
         );
+
     bgMusic.src =
-        bgTracks[
-            currentTrackIndex
-        ];
-    bgMusic.play()
-        .catch(
-            () => {}
-        );
+        bgTracks[currentTrackIndex];
+
+    try { bgMusic.load(); } catch (e) {}
+
+    const promise = bgMusic.play();
+    if (promise && typeof promise.catch === 'function') {
+        promise.catch(() => {
+            musicUnlocked = false;
+        });
+    }
 }
 bgMusic.onended =
     playNextTrack;
@@ -2051,17 +2056,14 @@ function toggleLang() {
     save();
 }
 function toggleSound() {
-    sfxEnabled = true;
-    const wasPlaying = !bgMusic.paused;
+    /* Кнопка Звук управляет только музыкой. На телефоне SFX не включаются. */
     state.sound = !state.sound;
 
     if (!state.sound) {
         bgMusic.pause();
     } else {
         musicUnlocked = false;
-        if (!wasPlaying) {
-            unlockMusic();
-        }
+        unlockMusic();
     }
 
     updateLangUI();
@@ -2182,22 +2184,9 @@ async function getBotUsername() {
     return "";
 }
 async function getReferralLink() {
-    const bot =
-        await getBotUsername();
-    if (
-        !bot ||
-        !currentId ||
-        currentId ===
-            0
-    ) {
-        return "";
-    }
-    return (
-        "https://t.me/" +
-        bot +
-        "?startapp=ref_" +
-        currentId
-    );
+    const bot = await getBotUsername();
+    if (!bot || !currentId || currentId === 0) return '';
+    return `https://t.me/${bot}?startapp=ref_${encodeURIComponent(String(currentId))}`;
 }
 async function copyRefLink() {
     const link =
@@ -2359,175 +2348,87 @@ function resetReferrals() {
     });
 }
 async function buyStars() {
-    playSound(
-        "btn"
-    );
-    if (
-        !currentId ||
-        currentId ===
-            0
-    ) {
-        tg.showAlert(
-            state.lang ===
-                "ru"
-                ? "Не удалось определить Telegram аккаунт."
-                : "Could not detect Telegram account."
-        );
+    if (!currentId || currentId === 0) {
+        tg.showAlert(state.lang === 'ru' ? 'Не удалось определить Telegram аккаунт.' : 'Could not detect Telegram account.');
         return;
     }
+
     try {
-        const response =
-            await fetch(
-                `https://botlol-9x4v.onrender.com/create-invoice?user_id=${encodeURIComponent(currentId)}`,
-                {
-                    cache:
-                        "no-store"
-                }
-            );
-        const data =
-            await response.json();
-        if (
-            !data ||
-            !data.url
-        ) {
-            throw new Error(
-                data?.error ||
-                "Invoice error"
-            );
-        }
-        if (
-            typeof tg.openInvoice ===
-            "function"
-        ) {
-            tg.openInvoice(
-                data.url,
-                status => {
-                    if (
-                        status ===
-                        "paid"
-                    ) {
-                        tg.showAlert(
-                            state.lang ===
-                                "ru"
-                                ? "Оплата получена! Очки скоро начислятся."
-                                : "Payment received! Points will be added shortly."
-                        );
-                        setTimeout(
-                            claimPendingStars,
-                            1200
-                        );
-                    }
-                }
-            );
-        } else if (
-            typeof tg.openTelegramLink ===
-            "function"
-        ) {
-            tg.openTelegramLink(
-                data.url
-            );
-        } else {
-            window.open(
-                data.url,
-                "_blank"
-            );
-        }
-    } catch(e) {
-        console.error(
-            "STARS ERROR",
-            e
+        const query =
+            `user_id=${encodeURIComponent(String(currentId))}` +
+            `&username=${encodeURIComponent(user.username || '')}`;
+
+        const response = await fetch(
+            `https://botlol-9x4v.onrender.com/create-invoice?${query}`,
+            { method: 'GET', cache: 'no-store' }
         );
-        tg.showAlert(
-            state.lang ===
-                "ru"
-                ? "Не удалось открыть оплату."
-                : "Could not open payment."
-        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data || !data.url) {
+            throw new Error(data?.error || `Invoice HTTP ${response.status}`);
+        }
+
+        if (typeof tg.openInvoice === 'function') {
+            tg.openInvoice(data.url, status => {
+                console.log('JUUGTAPS STARS:', status);
+                if (status === 'paid') {
+                    tg.showAlert(state.lang === 'ru' ? '✅ Оплата получена. Проверяю начисление…' : '✅ Payment received. Checking the reward…');
+                    setTimeout(claimPendingStars, 800);
+                    setTimeout(claimPendingStars, 2500);
+                    setTimeout(claimPendingStars, 5000);
+                }
+            });
+            return;
+        }
+
+        if (typeof tg.openTelegramLink === 'function') {
+            tg.openTelegramLink(data.url);
+            return;
+        }
+
+        window.open(data.url, '_blank');
+    } catch (error) {
+        console.error('STARS ERROR:', error);
+        tg.showAlert(state.lang === 'ru' ? '❌ Не удалось открыть оплату. Открой /start в боте и попробуй снова.' : '❌ Could not open payment. Open /start in the bot and try again.');
     }
 }
 function claimPendingStars() {
-    if (
-        !currentId ||
-        currentId ===
-            0
-    ) return;
-    db.ref(
-        `users/${currentId}/pendingStars`
-    ).once(
-        "value",
-        snap => {
-            const pending =
-                snap.val() ||
-                {};
-            Object.keys(
-                pending
-            ).forEach(
-                chargeId => {
-                    const item =
-                        pending[
-                            chargeId
-                        ];
-                    if (
-                        !item ||
-                        item.claimed
-                    ) return;
-                    const path =
-                        `users/${currentId}/pendingStars/${chargeId}`;
-                    db.ref(
-                        path
-                    ).transaction(
-                        current => {
-                            if (
-                                !current ||
-                                current.claimed
-                            ) {
-                                return current;
-                            }
-                            return {
-                                ...current,
-                                claimed:
-                                    true,
-                                claimedAt:
-                                    Date.now()
-                            };
-                        },
-                        (
-                            error,
-                            committed,
-                            finalSnapshot
-                        ) => {
-                            if (
-                                error ||
-                                !committed
-                            ) return;
-                            const finalData =
-                                finalSnapshot.val() ||
-                                {};
-                            const points =
-                                Number(
-                                    finalData.points ||
-                                    0
-                                );
-                            if (
-                                points <=
-                                0
-                            ) return;
-                            state.score +=
-                                points;
-                            save();
-                            updateUI();
-                            tg.showAlert(
-                                state.lang ===
-                                    "ru"
-                                    ? `+${format(points)} SCORE за покупку!`
-                                    : `+${format(points)} SCORE from purchase!`
-                            );
-                        }
-                    );
+    if (!currentId || currentId === 0) return;
+
+    db.ref(`users/${currentId}/pendingStars`).once('value', snap => {
+        const pending = snap.val() || {};
+
+        Object.keys(pending).forEach(chargeId => {
+            const item = pending[chargeId];
+            if (!item || item.claimed) return;
+
+            const path = `users/${currentId}/pendingStars/${chargeId}`;
+
+            db.ref(path).transaction(
+                current => {
+                    if (!current || current.claimed) return current;
+                    return { ...current, claimed: true, claimedAt: Date.now() };
+                },
+                (error, committed, finalSnapshot) => {
+                    if (error || !committed || !finalSnapshot) {
+                        if (error) console.error('STARS CLAIM ERROR:', error);
+                        return;
+                    }
+
+                    const finalData = finalSnapshot.val() || {};
+                    const points = Number(finalData.points || 0);
+                    if (points <= 0) return;
+
+                    state.score = Number(state.score || 0) + points;
+                    updateUI();
+                    save();
+
+                    tg.showAlert(state.lang === 'ru' ? `✅ +${format(points)} SCORE за покупку!` : `✅ +${format(points)} SCORE from purchase!`);
                 }
             );
-        }
-    );
+        });
+    });
 }
 function openAdmin() {
     playSound(
