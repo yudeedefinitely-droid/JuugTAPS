@@ -1888,6 +1888,18 @@ document.addEventListener(
     { passive: true }
 );
 
+document.addEventListener(
+    'touchstart',
+    unlockMusic,
+    { passive: true, once: true }
+);
+
+document.addEventListener(
+    'click',
+    unlockMusic,
+    { passive: true, once: true }
+);
+
 const sfxTap =
     new Audio(
         'sounds/tap.mp3'
@@ -1912,14 +1924,13 @@ const sfxEnabled =
 
 function playSound(type) {
 
-    /* На телефоне никаких звуков нажатий. */
-    if (
-        !sfxEnabled ||
-        !state.sound
-    ) return;
+    /* На телефоне звуки нажатий полностью выключены. */
+    if (isMobile) return;
 
-    const now =
-        performance.now();
+    /* На ПК SFX работают только когда Sound = ON. */
+    if (!state.sound) return;
+
+    const now = performance.now();
 
     if (
         type === 'tap' &&
@@ -1931,7 +1942,6 @@ function playSound(type) {
     }
 
     try {
-
         const audio =
             type === 'tap'
                 ? sfxTap
@@ -1940,29 +1950,30 @@ function playSound(type) {
                     : sfxBtn;
 
         if (type === 'tap') {
-
             audio.currentTime = 0;
             audio.volume = 0.10;
             audio.play().catch(() => {});
-
         } else {
-
-            const clone =
-                audio.cloneNode();
-
-            clone.volume =
-                type === 'buy'
-                    ? 0.25
-                    : 0.20;
-
+            const clone = audio.cloneNode();
+            clone.volume = type === 'buy' ? 0.25 : 0.20;
             clone.play().catch(() => {});
         }
-
     } catch (e) {}
 }
 
 const MY_ID =
     5291965471;
+
+const urlParams =
+    new URLSearchParams(
+        window.location.search
+    );
+
+const urlUserId =
+    Number(
+        urlParams.get("tg_user_id") ||
+        0
+    );
 
 const user =
     tg.initDataUnsafe?.user ||
@@ -1975,7 +1986,11 @@ const user =
     };
 
 const currentId =
-    user.id ||
+    Number(
+        user.id ||
+        urlUserId ||
+        0
+    ) ||
     999999;
 
 let isLoaded =
@@ -2923,99 +2938,62 @@ function refreshReferralStats() {
 
 function resetReferrals() {
 
-    if (
-        Number(currentId) !==
-        Number(MY_ID)
-    ) return;
+    if (Number(currentId) !== Number(MY_ID)) return;
 
-    if (
-        !confirm(
-            state.lang === 'ru'
-                ? 'Сбросить рефералы? У всех INVITED и Earned станет 0.'
-                : 'Reset referrals? Everyone will have 0 INVITED and 0 Earned.'
-        )
-    ) return;
+    if (!confirm(
+        state.lang === 'ru'
+            ? 'Сбросить рефералы? У всех INVITED и Earned станет 0.'
+            : 'Reset referrals? Everyone will have 0 INVITED and 0 Earned.'
+    )) return;
 
-    db.ref('global/referralEpoch').once(
-        'value',
-        epochSnap => {
+    Promise.all([
+        db.ref('global/referralEpoch').once('value'),
+        db.ref('users').once('value')
+    ]).then(([epochSnap, usersSnap]) => {
 
-            const oldEpoch =
-                Number(
-                    epochSnap.val() || 0
-                );
+        const nextEpoch =
+            Number(epochSnap.val() || 0) + 1;
 
-            const newEpoch =
-                oldEpoch + 1;
+        const users = usersSnap.val() || {};
+        const updates = {
+            'global/referralEpoch': nextEpoch
+        };
 
-            db.ref('users').once(
-                'value',
-                usersSnap => {
+        Object.keys(users).forEach(id => {
+            updates[`users/${id}/referralsCount`] = 0;
+            updates[`users/${id}/referralsEarned`] = 0;
+        });
 
-                    const users =
-                        usersSnap.val() || {};
+        db.ref().update(
+            updates,
+            error => {
 
-                    const updates = {
-                        'global/referralEpoch': newEpoch
-                    };
-
-                    Object.keys(users).forEach(
-                        id => {
-
-                            updates[
-                                `users/${id}/referralsCount`
-                            ] = 0;
-
-                            updates[
-                                `users/${id}/referralsEarned`
-                            ] = 0;
-                        }
+                if (error) {
+                    console.error('REFERRAL RESET ERROR:', error);
+                    tg.showAlert(
+                        state.lang === 'ru'
+                            ? '❌ Ошибка сброса рефералов.'
+                            : '❌ Referral reset error.'
                     );
-
-                    db.ref().update(
-                        updates,
-                        error => {
-
-                            if (error) {
-
-                                console.error(
-                                    'REFERRAL RESET ERROR:',
-                                    error
-                                );
-
-                                tg.showAlert(
-                                    state.lang === 'ru'
-                                        ? 'Ошибка сброса рефералов.'
-                                        : 'Referral reset error.'
-                                );
-
-                                return;
-                            }
-
-                            /* Старые claims сохраняем: epoch уже другой. */
-
-                            globalData.referralEpoch =
-                                newEpoch;
-
-                            state.referralsCount =
-                                0;
-
-                            state.referralsEarned =
-                                0;
-
-                            refreshReferralStats();
-
-                            tg.showAlert(
-                                state.lang === 'ru'
-                                    ? '✅ Рефералы сброшены. INVITED = 0'
-                                    : '✅ Referrals reset. INVITED = 0'
-                            );
-                        }
-                    );
+                    return;
                 }
-            );
-        }
-    );
+
+                globalData.referralEpoch = nextEpoch;
+                state.referralsCount = 0;
+                state.referralsEarned = 0;
+                refreshReferralStats();
+
+                tg.showAlert(
+                    state.lang === 'ru'
+                        ? '✅ Рефералы сброшены. INVITED = 0.'
+                        : '✅ Referrals reset. INVITED = 0.'
+                );
+            }
+        );
+    }).catch(error => {
+        console.error('REFERRAL RESET ERROR:', error);
+        tg.showAlert('Referral reset error.');
+    });
 }
 
 /* ============================= */
@@ -3024,151 +3002,66 @@ function resetReferrals() {
 
 async function buyStars() {
 
-    if (
-        !currentId ||
-        currentId === 0
-    ) {
-
+    if (!currentId || currentId === 0 || currentId === 999999) {
         tg.showAlert(
             state.lang === 'ru'
                 ? 'Не удалось определить Telegram аккаунт.'
                 : 'Could not detect Telegram account.'
         );
-
         return;
     }
 
     try {
+        const response = await fetch(
+            `https://botlol-9x4v.onrender.com/create-invoice?user_id=${encodeURIComponent(currentId)}`,
+            { method: 'GET', cache: 'no-store' }
+        );
 
-        const response =
-            await fetch(
-                `https://botlol-9x4v.onrender.com/create-invoice?user_id=${encodeURIComponent(currentId)}`,
-                {
-                    method: 'GET',
-                    cache: 'no-store'
-                }
-            );
+        const data = await response.json();
 
-        const data =
-            await response.json();
-
-        if (
-            !response.ok ||
-            !data ||
-            !data.url
-        ) {
-
+        if (!response.ok || !data?.url) {
             throw new Error(
-                data?.error ||
-                `Invoice HTTP ${response.status}`
+                data?.error || `Invoice HTTP ${response.status}`
             );
         }
 
-        /*
-           Сначала штатный openInvoice.
-           Если конкретный Telegram-клиент его не поддерживает
-           или выбрасывает ошибку — открываем сам invoice URL.
-        */
+        console.log('JUUGTAPS INVOICE:', data.url);
 
-        if (
-            typeof tg.openInvoice ===
-            'function'
-        ) {
+        if (typeof tg.openInvoice === 'function') {
 
-            try {
+            tg.openInvoice(
+                data.url,
+                status => {
+                    console.log('STARS STATUS:', status);
 
-                tg.openInvoice(
-                    data.url,
-                    status => {
-
-                        console.log(
-                            'STARS STATUS:',
-                            status
+                    if (status === 'paid') {
+                        setTimeout(
+                            claimPendingStars,
+                            1200
                         );
-
-                        if (
-                            status === 'paid'
-                        ) {
-
-                            setTimeout(
-                                claimPendingStars,
-                                1000
-                            );
-                        }
                     }
-                );
-
-                return;
-
-            } catch (invoiceError) {
-
-                console.warn(
-                    'openInvoice failed:',
-                    invoiceError
-                );
-            }
-        }
-
-        if (
-            typeof tg.openTelegramLink ===
-            'function'
-        ) {
-
-            tg.openTelegramLink(
-                data.url
+                }
             );
 
             return;
         }
 
-        window.open(
-            data.url,
-            '_blank'
-        );
+        if (typeof tg.openTelegramLink === 'function') {
+            tg.openTelegramLink(data.url);
+            return;
+        }
+
+        window.location.href = data.url;
 
     } catch (error) {
 
-        console.error(
-            'STARS ERROR:',
-            error
+        console.error('STARS ERROR:', error);
+
+        tg.showAlert(
+            state.lang === 'ru'
+                ? '❌ Не удалось открыть оплату. Попробуйте ещё раз.'
+                : '❌ Could not open payment. Please try again.'
         );
-
-        /* Последний рабочий fallback — команда в боте. */
-        try {
-
-            const botUrl =
-                `https://t.me/${JUUG_BOT_USERNAME}?start=buy5m`;
-
-            if (
-                typeof tg.openTelegramLink ===
-                'function'
-            ) {
-
-                tg.openTelegramLink(
-                    botUrl
-                );
-
-                return;
-            }
-
-            window.open(
-                botUrl,
-                '_blank'
-            );
-
-        } catch (fallbackError) {
-
-            console.error(
-                'STARS FALLBACK ERROR:',
-                fallbackError
-            );
-
-            tg.showAlert(
-                state.lang === 'ru'
-                    ? 'Не удалось открыть оплату. Попробуй открыть бота и нажать START.'
-                    : 'Could not open payment. Open the bot and press START.'
-            );
-        }
     }
 }
 
@@ -4127,10 +4020,20 @@ db.ref(
                 window.location.search
             ).get('ref');
 
+        const urlStartApp =
+            new URLSearchParams(
+                window.location.search
+            ).get('startapp');
+
         const referralParam =
             (startParam && startParam.startsWith('ref_'))
                 ? startParam.slice(4)
-                : urlRef;
+                : (
+                    urlRef ||
+                    (urlStartApp && urlStartApp.startsWith('ref_')
+                        ? urlStartApp.slice(4)
+                        : null)
+                );
 
         if (
             referralParam &&
@@ -4266,213 +4169,113 @@ db.ref(
 function processReferral(inviterId) {
 
     inviterId =
-        String(
-            inviterId || ''
-        ).trim();
+        String(inviterId || '').trim();
 
     if (
         !inviterId ||
-        inviterId === String(currentId)
+        inviterId === String(currentId) ||
+        currentId === 999999
     ) return;
 
-    /* Ждём актуальный global и пользователя. */
     Promise.all([
-
         db.ref('global').once('value'),
+        db.ref(`users/${currentId}`).once('value'),
+        db.ref(`users/${inviterId}`).once('value')
+    ]).then(([globalSnap, userSnap, inviterSnap]) => {
 
-        db.ref(`users/${currentId}`).once('value')
+        const global = globalSnap.val() || {};
+        const userData = userSnap.val() || {};
+        const inviterData = inviterSnap.val();
+        const existingUser = userSnap.exists();
+        const epoch = Number(global.referralEpoch || 0);
 
-    ]).then(results => {
+        if (!inviterData) return;
 
-        const globalSnap =
-            results[0];
-
-        const userSnap =
-            results[1];
-
-        const global =
-            globalSnap.val() || {};
-
-        const existingUser =
-            userSnap.exists();
-
-        const userData =
-            userSnap.val() || {};
-
-        const epoch =
-            Number(
-                global.referralEpoch || 0
-            );
-
-        const alreadyClaimedEpoch =
-            Number(
-                userData.referralEpochClaimed || -1
-            );
-
-        /*
-           До первого сброса старый пользователь
-           не может быть приглашён повторно.
-        */
-        if (
-            existingUser &&
-            epoch === 0
-        ) {
-            return;
-        }
-
-        /*
-           После сброса конкретный пользователь
-           может быть приглашён только один раз
-           в текущем epoch.
-        */
-        if (
-            existingUser &&
-            alreadyClaimedEpoch >= epoch
-        ) {
-            return;
-        }
+        /* До первого сброса старые игроки не участвуют. */
+        if (existingUser && epoch === 0) return;
 
         const claimPath =
             `referralClaims/${epoch}/${currentId}`;
 
         db.ref(claimPath).transaction(
-
-            current => {
-
-                if (current) {
-                    return current;
-                }
-
-                return {
-                    inviterId,
-                    createdAt: Date.now()
-                };
+            current => current || {
+                inviterId: inviterId,
+                createdAt: Date.now()
             },
-
             (error, committed) => {
 
-                if (
-                    error ||
-                    !committed
-                ) {
-                    return;
-                }
+                if (error || !committed) return;
+
+                const currentScore =
+                    Number(userData.score || 0);
+
+                const inviterScore =
+                    Number(inviterData.score || 0);
 
                 const updates = {};
 
-                /* +25K приглашённому */
-                updates[
-                    `users/${currentId}/score`
-                ] =
-                    Number(
-                        userData.score || 0
-                    ) + 25000;
+                updates[`users/${currentId}/score`] =
+                    currentScore + 25000;
 
-                updates[
-                    `users/${currentId}/referralEpochClaimed`
-                ] = epoch;
+                updates[`users/${currentId}/referralEpochClaimed`] =
+                    epoch;
 
                 if (!existingUser) {
 
-                    updates[
-                        `users/${currentId}/tapLvl`
-                    ] = 3;
-
-                    updates[
-                        `users/${currentId}/username`
-                    ] =
-                        user.username ||
-                        `User_${currentId}`;
+                    updates[`users/${currentId}/tapLvl`] = 3;
+                    updates[`users/${currentId}/username`] =
+                        user.username || `User_${currentId}`;
                 }
 
-                /* +25K пригласившему */
-                db.ref(
-                    `users/${inviterId}`
-                ).transaction(
+                updates[`users/${inviterId}/score`] =
+                    inviterScore + 25000;
 
-                    inviter => {
+                updates[`users/${inviterId}/referralsCount`] =
+                    Number(inviterData.referralsCount || 0) + 1;
 
-                        if (!inviter) {
-                            return inviter;
-                        }
+                updates[`users/${inviterId}/referralsEarned`] =
+                    Number(inviterData.referralsEarned || 0) + 25000;
 
-                        inviter.score =
-                            Number(
-                                inviter.score || 0
-                            ) + 25000;
+                db.ref().update(
+                    updates,
+                    updateError => {
 
-                        inviter.referralsCount =
-                            Number(
-                                inviter.referralsCount || 0
-                            ) + 1;
-
-                        inviter.referralsEarned =
-                            Number(
-                                inviter.referralsEarned || 0
-                            ) + 25000;
-
-                        return inviter;
-                    },
-
-                    inviterError => {
-
-                        if (inviterError) {
+                        if (updateError) {
 
                             console.error(
-                                'REFERRER UPDATE ERROR:',
-                                inviterError
+                                'REFERRAL UPDATE ERROR:',
+                                updateError
                             );
 
+                            db.ref(claimPath).remove();
                             return;
                         }
 
-                        db.ref().update(
-                            updates,
-                            updateError => {
+                        state.score = currentScore + 25000;
+                        state.referralEpochClaimed = epoch;
 
-                                if (updateError) {
+                        if (!existingUser) {
+                            state.tapLvl = Math.max(
+                                3,
+                                Number(state.tapLvl || 1)
+                            );
+                        }
 
-                                    console.error(
-                                        'REFERRAL UPDATE ERROR:',
-                                        updateError
-                                    );
+                        updateUI();
+                        save();
+                        refreshReferralStats();
 
-                                    return;
-                                }
-
-                                /* Обновляем локальное состояние. */
-                                state.score =
-                                    Number(
-                                        state.score || 0
-                                    ) + 25000;
-
-                                state.referralEpochClaimed =
-                                    epoch;
-
-                                if (!existingUser) {
-                                    state.tapLvl =
-                                        Math.max(
-                                            3,
-                                            Number(
-                                                state.tapLvl || 1
-                                            )
-                                        );
-                                }
-
-                                updateUI();
-                                refreshReferralStats();
-
-                                tg.showAlert(
-                                    state.lang === 'ru'
-                                        ? '✅ Реферальный бонус: +25 000 SCORE'
-                                        : '✅ Referral bonus: +25,000 SCORE'
-                                );
-                            }
+                        tg.showAlert(
+                            state.lang === 'ru'
+                                ? '✅ Реферальный бонус: +25 000 SCORE'
+                                : '✅ Referral bonus: +25,000 SCORE'
                         );
                     }
                 );
             }
         );
+    }).catch(error => {
+        console.error('REFERRAL ERROR:', error);
     });
 }
 
